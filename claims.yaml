@@ -79,9 +79,17 @@ claims:
     status: pending
     evidence: "first outcomes 2026-07-22: IN golden_cross_hist +5d n=14 hit 21% median -0.37% but excess +0.59%; too small to cite. Weekly cron accrues."
 
+  factor-combo-grid-no-fdr-survivors:
+    statement: "NO strategy-market combo in the factor_combo grid (12 hypotheses, IN+US) survives family-wide BH-FDR at q=0.10 — including nominally-significant cells (not_distress US p=.039, low_asset_growth US p=.040)"
+    repo: market-pipeline (home)
+    code: [multiple_testing.py]
+    status: validated
+    evidence: "reports/MULTIPLE_TESTING.md 2026-07-22; dof = n_years-1 (annual observations, conservative)"
+    note: "Citing any single-cell 'edge' from this grid without an FDR pass is now a claims-policy violation. Cells may still be real — the grid as searched cannot distinguish them from selection noise."
+
 # ---- known gaps (not claims — work items that gate future claims) ----
 gaps:
-  - "No multiple-testing control across ~11 strategies x 7 markets: adopt deflated Sharpe / BH-FDR before any new 'X beats Y' claim"
+  - "[ADDRESSED 2026-07-22] multiple_testing.py: BH-FDR grid gate + deflated-Sharpe helper; first run: 0/12 survivors"
   - "JP/KR/EU price panels stale (end 2026-06-29..07-02) — signal scoring pending; refresh cadence undefined"
   - "No regime conditioning anywhere (full-period averages only)"
   - "Factors never jointly tested (spanning / Fama-MacBeth with controls)"
