@@ -149,16 +149,22 @@ def audit():
     # sha spot-check: 20 random current files
     sample = random.sample(rows, min(20, len(rows)))
     mismatch = [p for p, s, _ in sample if os.path.exists(p) and sha256(p) != s]
-    # cloud presence per dataset (size-only check, cheap)
+    # replication matrix: verify each dataset on BOTH clouds (size-only)
     cloud_missing = 0
+    replication = []
     for source, (root, dataset) in SOURCES.items():
         if dataset is None or not os.path.isdir(root):
             continue
-        r = subprocess.run([RCLONE, "check", root, f"{REMOTE}/{dataset}",
-                            "--one-way", "--size-only"],
-                           capture_output=True, text=True)
-        if r.returncode != 0:
-            cloud_missing += 1
+        legs = {"local": "✅"}
+        for label, base in (("dropbox", "dropbox:market-data-backup/current"),
+                            ("gdrive", "googledrive:market-data-backup/current")):
+            r = subprocess.run([RCLONE, "check", root, f"{base}/{dataset}",
+                                "--one-way", "--size-only"],
+                               capture_output=True, text=True)
+            legs[label] = "✅" if r.returncode == 0 else "❌"
+            if r.returncode != 0:
+                cloud_missing += 1
+        replication.append((source, legs))
     # duplicates: current groups sharing a sha
     dupes = c.execute("""
       select count(*), sum(w) from (
@@ -192,10 +198,17 @@ def audit():
         "|---|---|",
         f"| missing locally | {len(missing)} |",
         f"| sha spot-check mismatches (n=20) | {len(mismatch)} |",
-        f"| datasets failing Dropbox check | {cloud_missing} |",
+        f"| dataset-legs failing cloud check | {cloud_missing} |",
         f"| duplicate groups (linked, not re-stored) | {dupe_groups} |",
         f"| wasted bytes if duplicates were copies | {wasted/1e6:.1f} MB |",
         f"| stale sources (no batch in {STALE_DAYS}d) | {', '.join(stale) or 'none'} |",
+        "",
+        "## Replication matrix (local / Dropbox / Google Drive; GitHub = regular-git leg)",
+        "",
+        "| dataset | local | dropbox | gdrive |",
+        "|---|---|---|---|",
+        *[f"| {s} | {l['local']} | {l['dropbox']} | {l['gdrive']} |"
+          for s, l in replication],
         "",
         "## Recent batches",
         "",
