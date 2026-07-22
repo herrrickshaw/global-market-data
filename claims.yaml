@@ -73,11 +73,15 @@ claims:
       - "OTHER markets' panels have NO survivorship audit — do not extend this credential to US/JP/KR/CN/EU"
 
   signal-ledger-calibration:
-    statement: "Scan signals (4,852+, live) have measured forward-return calibration"
+    statement: "Scan signals have measured forward-return calibration; 20,347 scored signal-horizons after rescued-snapshot backfill"
     repo: market-pipeline (home)
-    code: [score_signals.py]
-    status: pending
-    evidence: "first outcomes 2026-07-22: IN golden_cross_hist +5d n=14 hit 21% median -0.37% but excess +0.59%; too small to cite. Weekly cron accrues."
+    code: [score_signals.py, backfill_signals.py]
+    status: provisional
+    evidence: "2026-07-22, June-12..26 cohort (TRUE point-in-time snapshots): US darvas BUY +21d n=1,751 hit 66% median +2.70% excess +2.10%; IN BUY +21d n=334 hit 65% +3.11% excess +0.92%; SELL signals FAIL everywhere (hit 34-43% — breakdowns tend to bounce); +5d horizons ~ coin flip"
+    staleness_triggers:
+      - "single two-week regime window (Jun 2026) — needs more cohorts before validated; weekly cron accrues"
+      - "US legs on raw Close — re-check when US adjusted panel lands"
+    note: "SELL-signal failure is itself actionable: darvas BREAKDOWN_SELL as a short signal is contrarian in this cohort"
 
   factor-combo-grid-no-fdr-survivors:
     statement: "NO strategy-market combo in the factor_combo grid (12 hypotheses, IN+US) survives family-wide BH-FDR at q=0.10 — including nominally-significant cells (not_distress US p=.039, low_asset_growth US p=.040)"
