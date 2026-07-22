@@ -43,7 +43,9 @@ SOURCES = {  # source name -> (local root, dropbox dataset name or None)
     "cache_seed":  (os.path.join(GMD, "cache_seed"), "gmd-cache_seed"),
     "pipeline":    (os.path.join(HOME, "market-pipeline/code/python_files/cache_seed"),
                     "pipeline-cache_seed"),
-    "market_cache": (os.path.join(HOME, "Downloads/market_cache"), None),
+    "market_cache": (os.path.join(HOME, "Downloads/market_cache"), "market_cache"),
+    "gss_cache":   (os.path.join(HOME, "repos/global-stock-screener/cache_seed"),
+                    "gss-cache_seed"),
 }
 EXT = (".parquet", ".csv", ".db", ".duckdb", ".sqlite", ".gz", ".json", ".xlsx")
 STALE_DAYS = 7
