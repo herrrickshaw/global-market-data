@@ -62,3 +62,4 @@ cache_seed/ltm/KR.parquet
 cache_seed/ltm/CN.parquet
 cache_seed/ltm/IN.parquet
 *.bak
+warehouse/etl_registry.sqlite
