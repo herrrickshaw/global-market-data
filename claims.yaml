@@ -1,0 +1,91 @@
+# Claims ledger — every headline research conclusion, its evidence, and what
+# would make it stale. Companion to the repos.yaml portfolio catalog.
+#
+# Rules:
+#   - A conclusion is CITABLE only while status: validated and no
+#     staleness_trigger has fired.
+#   - When a trigger fires (data upgrade, coverage fix), status drops to
+#     stale-rerun until the analysis is re-run on the new data.
+#   - New headline claims get an entry BEFORE they're written up.
+# Statuses: validated | provisional | stale-rerun | refuted | pending
+# Seeded 2026-07-22 from repo reports + session records.
+
+claims:
+  piotroski-edge-is-illiquidity-not-size:
+    statement: "The Piotroski F-score premium in India tracks stock ILLIQUIDITY, not firm size; LARGE+illiquid is the strongest cell (+33.7pp)"
+    repo: piotroski-liquidity-research
+    code: [backtest_piotroski_plus.py, cost_vs_edge.py]
+    status: validated
+    evidence: "double-sort size x illiquidity; turnover~mcap corr +0.797 had conflated them"
+    staleness_triggers:
+      - "re-run on XBRL filing-dated fundamentals (110,942 results to 2015) — current run uses screener.in export dating"
+      - "re-run with split/bonus-ADJUSTED prices account-wide (IN adjusted 2026-07-21; heuristic CA filter was used before)"
+
+  illiquidity-edge-capacity:
+    statement: "The India illiquid-name edge survives at $100k (+11.3% net) but is dead by $10M; capacity ~$300-500k"
+    repo: piotroski-liquidity-research
+    code: [cost_vs_edge.py]
+    status: validated
+    evidence: "Corwin-Schultz spread + Amihud impact; %ADV 60.8% at $1M book"
+    staleness_triggers:
+      - "adjusted-price re-run (raw-Close split artifacts inflate illiquid returns)"
+
+  us-piotroski-inverted:
+    statement: "On point-in-time SEC EDGAR data, high F-score US stocks UNDERPERFORM (classic Piotroski inverted)"
+    repo: piotroski-liquidity-research
+    status: validated
+    evidence: "PIT EDGAR fundamentals backtest"
+    staleness_triggers:
+      - "US price panel was letter-biased in early runs — confirm run used global-stock-screener 9,278-sym panel, not the interrupted alphabetical collection"
+
+  piotroski-dominates-everywhere:
+    statement: "Piotroski dominates all 7 markets"
+    repo: global-market-research-platform
+    status: refuted
+    evidence: "variance claim on a 272-stock sample; real backtest shows mean-reversion wins US/KR/CN/JP, India momentum-friendly, Golden Cross weakest everywhere. Reconciliation note in-repo."
+
+  liquidity-predicts-scan-pass:
+    statement: "Liquidity predicts firm quality (+) and stock returns (-); 50>200DMA pass-rate association robust (India p=3.7e-12, Japan replicates); Darvas flips sign by market"
+    repo: global-market-research-platform
+    status: provisional
+    evidence: "single-day cross-sections ONLY — no forward returns"
+    staleness_triggers:
+      - "forward-return validation via signal ledger scoring (score_signals.py, cron live 2026-07-22) — upgrade to validated or refuted as outcomes accrue"
+
+  india-fake-illiquidity-premium-raw-close:
+    statement: "Raw (unadjusted) Close manufactures a fake +12.2% illiquid premium with 248% sd; CA filter collapses sd to 29%"
+    repo: global-market-data
+    status: validated
+    evidence: "GOLDBEES/SETFGOLD 1:100 unit splits, KAUSHALYA reverse split; backtest_liquidity_forward.py filter"
+    note: "Root cause now properly fixed for IN via warehouse/ohlcv_adj + adjustment_factors (23,480 CAs). JP/KR/CN/EU/US still raw Close — every momentum/breakout/illiquidity conclusion there inherits this risk."
+
+  roace-via-statements-not-ratios:
+    statement: "ROACE is computable for India via yfinance income_stmt+balance_sheet (RELIANCE 9.0%, TCS 54.9% verified); reconstructing capital employed from ratios FAILS"
+    repo: piotroski-liquidity-research
+    code: [roace_by_liquidity.py]
+    status: validated
+
+  survivorship-gmd-india:
+    statement: "gmd India 10.5y panel passes survivorship checks: 964/3,476 symbols retained after delisting"
+    repo: global-market-data
+    status: validated
+    staleness_triggers:
+      - "OTHER markets' panels have NO survivorship audit — do not extend this credential to US/JP/KR/CN/EU"
+
+  signal-ledger-calibration:
+    statement: "Scan signals (4,852+, live) have measured forward-return calibration"
+    repo: market-pipeline (home)
+    code: [score_signals.py]
+    status: pending
+    evidence: "first outcomes 2026-07-22: IN golden_cross_hist +5d n=14 hit 21% median -0.37% but excess +0.59%; too small to cite. Weekly cron accrues."
+
+# ---- known gaps (not claims — work items that gate future claims) ----
+gaps:
+  - "No multiple-testing control across ~11 strategies x 7 markets: adopt deflated Sharpe / BH-FDR before any new 'X beats Y' claim"
+  - "JP/KR/EU price panels stale (end 2026-06-29..07-02) — signal scoring pending; refresh cadence undefined"
+  - "No regime conditioning anywhere (full-period averages only)"
+  - "Factors never jointly tested (spanning / Fama-MacBeth with controls)"
+  - "Costs embedded only in cost_vs_edge.py, not the common harness"
+  - "India trade/macro repos: correlational only, no event-study identification"
+  - "Physical-economy layers (CGD/outlets/mandi/tolls) collected but unanalyzed; mandi->CPI and outlets->listed-stock joins unexploited"
+  - "XBRL x CA-history x bhavcopy PIT event studies (earnings drift, post-split) not yet built — highest-value unexploited join"
