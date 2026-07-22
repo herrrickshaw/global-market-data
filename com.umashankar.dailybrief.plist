@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd schedule for the token-free Daily Market Brief (macOS).
+  Runs daily_pipeline.sh at 07:35 local — no Claude session needed.
+
+  Install:
+    1. Put your Gmail App Password in the EnvironmentVariables below
+       (Google Account → Security → 2-Step Verification → App passwords).
+    2. cp com.umashankar.dailybrief.plist ~/Library/LaunchAgents/
+    3. launchctl load ~/Library/LaunchAgents/com.umashankar.dailybrief.plist
+       (launchctl unload ... to stop)
+  It only fires while the Mac is awake/logged in; for guaranteed runs use a
+  server or `caffeinate`.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.umashankar.dailybrief</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/umashankar/Downloads/code/python_files/daily_pipeline.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>GMAIL_USER</key><string>umashankartd1991@gmail.com</string>
+    <key>GMAIL_APP_PASSWORD</key><string>PUT-YOUR-16-CHAR-APP-PASSWORD-HERE</string>
+    <key>MAIL_TO</key><string>umashankartd1991@gmail.com</string>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>7</integer>
+    <key>Minute</key><integer>35</integer>
+  </dict>
+  <key>WorkingDirectory</key><string>/Users/umashankar/Downloads/code/python_files</string>
+  <key>StandardOutPath</key><string>/Users/umashankar/Downloads/code/python_files/launchd_out.log</string>
+  <key>StandardErrorPath</key><string>/Users/umashankar/Downloads/code/python_files/launchd_err.log</string>
+</dict>
+</plist>

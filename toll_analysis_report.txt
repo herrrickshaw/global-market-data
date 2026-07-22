@@ -1,0 +1,80 @@
+
+================================================================================
+TOLL PLAZA TRAFFIC & COLLECTION ANALYSIS REPORT
+================================================================================
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Report Generated: 2026-06-23 12:04:44
+Total Collections: ₹0.20 Crore
+Average Daily Collection: ₹0.06 Lakhs
+Average Plaza Revenue: ₹0.01 Lakhs
+Active Toll Plazas: 1401
+Date Range: 2024-01-01 to 2024-12-23
+
+KEY METRICS
+--------------------------------------------------------------------------------
+Total Toll Plazas in Network: 1402
+States with Toll Infrastructure: 85
+Data Points Analyzed: 33,600
+
+TOP 15 PERFORMING TOLL PLAZAS
+--------------------------------------------------------------------------------
+ 1. 514                                      | Gujarat              | ₹    0.02L ( 0.12%)
+ 2. Deshnok Toll Plaza                       | Rajasthan            | ₹    0.02L ( 0.12%)
+ 3. 772                                      | Tamil Nadu           | ₹    0.02L ( 0.12%)
+ 4. 839                                      | nan                  | ₹    0.02L ( 0.12%)
+ 5. 363                                      | Uttar Pradesh        | ₹    0.02L ( 0.12%)
+ 6. 590                                      | Madhya Pradesh       | ₹    0.02L ( 0.12%)
+ 7. 1134                                     | Andhra Pradesh       | ₹    0.02L ( 0.11%)
+ 8. 627                                      | Madhya Pradesh       | ₹    0.02L ( 0.11%)
+ 9. 267                                      | UP- Haryana borderSonipat- Jhajjar | ₹    0.02L ( 0.11%)
+10. 432                                      | Rajasthan            | ₹    0.02L ( 0.11%)
+11. Takoli toll plaza                        | Himachal Pradesh     | ₹    0.02L ( 0.11%)
+12. 221                                      | Andhra Pradesh       | ₹    0.02L ( 0.11%)
+13. Boriach Toll Plaza                       | Gujarat              | ₹    0.02L ( 0.11%)
+14. 491                                      | Rajasthan            | ₹    0.02L ( 0.11%)
+15. Nagwan Toll Plaza                        | nan                  | ₹    0.02L ( 0.11%)
+
+================================================================================
+COLLECTIONS BY STATE
+--------------------------------------------------------------------------------
+Rajasthan                : ₹      2.11L (10.50%)
+Uttar Pradesh            : ₹      2.01L ( 9.99%)
+Maharashtra              : ₹      1.47L ( 7.29%)
+Tamil Nadu               : ₹      1.38L ( 6.86%)
+Andhra Pradesh           : ₹      1.36L ( 6.74%)
+Madhya Pradesh           : ₹      1.02L ( 5.07%)
+Delhi                    : ₹      1.00L ( 4.98%)
+Gujarat                  : ₹      0.86L ( 4.26%)
+Karnataka                : ₹      0.86L ( 4.26%)
+Punjab                   : ₹      0.65L ( 3.21%)
+West Bengal              : ₹      0.59L ( 2.92%)
+Haryana                  : ₹      0.54L ( 2.67%)
+Telangana                : ₹      0.50L ( 2.48%)
+Amritsar -Jamnagar Section
+6-lane access controlled Greenfield highway from Km. 4+888 to Km 130+073 of Rajasthan/Gujarat
+border to
+Santalpur section of NH-754A as a part of Amritsar-Jamnagar Economic Corridor in the State of
+Gujarat: ₹      0.13L ( 0.63%)
+Delhi- Vadodara Mumbai Expressway NE-4 in the state of Madhya Pradesh: ₹      0.11L ( 0.55%)
+
+================================================================================
+MONTHLY TRENDS
+--------------------------------------------------------------------------------
+Month        | Collections (L) |   Change %
+--------------------------------------------------------------------------------
+2024-01  | ₹         1.73 |     +0.00%
+2024-02  | ₹         1.63 |     -6.14%
+2024-03  | ₹         1.73 |     +6.67%
+2024-04  | ₹         1.69 |     -2.78%
+2024-05  | ₹         1.76 |     +4.18%
+2024-06  | ₹         1.65 |     -6.09%
+2024-07  | ₹         1.75 |     +5.84%
+2024-08  | ₹         1.72 |     -1.50%
+2024-09  | ₹         1.67 |     -2.98%
+2024-10  | ₹         1.75 |     +5.02%
+2024-11  | ₹         1.70 |     -2.98%
+2024-12  | ₹         1.36 |    -20.15%
+
+================================================================================

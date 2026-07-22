@@ -1,0 +1,12 @@
+# Minimal runtime deps for the bhavcopy / multi-market screener image
+pandas==2.3.3
+numpy==2.0.2
+pyarrow==21.0.0
+lmdb==2.2.1
+openpyxl==3.1.5
+requests==2.32.5
+nsepython==2.97
+bseindia==1.1
+nse==3.1.0
+feedparser==6.0.12
+vaderSentiment==3.3.2

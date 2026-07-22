@@ -1,0 +1,2976 @@
+{
+  "generated": "2026-07-03T00:14:14.245079",
+  "repository": "/Users/umashankar/Downloads/code/python_files",
+  "main_branch": "main",
+  "branches": {
+    "archive/legacy-scanners": {
+      "name": "archive/legacy-scanners",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/legacy-scanners",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "chore/consolidate-features": {
+      "name": "chore/consolidate-features",
+      "file_count": 223,
+      "latest_commit": {
+        "hash": "b5451144",
+        "message": "docs: consolidate \u2014 FEATURES.md capability catalog + README link",
+        "date": "2026-07-02 08:31:30 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "chore/consolidate-features",
+      "unique_files": [],
+      "file_types": {
+        ".py": 103,
+        ".parquet": 60,
+        ".md": 21,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "archive/expansion-screener-v3.1": {
+      "name": "archive/expansion-screener-v3.1",
+      "file_count": 231,
+      "latest_commit": {
+        "hash": "84fe1fb7",
+        "message": "feat: global expansion screening framework v3.1 - 20 country deployment",
+        "date": "2026-07-02 01:34:59 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: global",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "deploy_expansion_screener.py"
+      ],
+      "file_types": {
+        ".py": 108,
+        ".parquet": 59,
+        ".md": 31,
+        ".txt": 13,
+        ".json": 5,
+        "no_ext": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": true,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ]
+    },
+    "+ mailer": {
+      "name": "+ mailer",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "+ mailer",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/yfinance-fundamentals": {
+      "name": "feature/yfinance-fundamentals",
+      "file_count": 204,
+      "latest_commit": {
+        "hash": "233205d6",
+        "message": "style: fix ruff E401/I001 in yfinance-fundamentals test + refresh manifest",
+        "date": "2026-07-02 06:32:31 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: yfinance-fundamentals",
+      "unique_files": [],
+      "file_types": {
+        ".py": 88,
+        ".parquet": 60,
+        ".md": 18,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/duckdb-query": {
+      "name": "feature/duckdb-query",
+      "file_count": 201,
+      "latest_commit": {
+        "hash": "99c49a79",
+        "message": "feat: query.py \u2014 DuckDB SQL layer over the parquet seeds",
+        "date": "2026-07-02 04:31:10 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: duckdb-query",
+      "unique_files": [],
+      "file_types": {
+        ".py": 85,
+        ".parquet": 60,
+        ".md": 18,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "global-expansion-screener-v3.1": {
+      "name": "global-expansion-screener-v3.1",
+      "file_count": 237,
+      "latest_commit": {
+        "hash": "be56d584",
+        "message": "feat(option-a): Implement vCRUD as Mandatory Workflow Step",
+        "date": "2026-07-02 23:57:39 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "global-expansion-screener-v3.1",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "VCRUD_MANDATORY_WORKFLOW.md",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "file_types": {
+        ".py": 108,
+        ".parquet": 59,
+        ".md": 33,
+        ".txt": 14,
+        ".json": 5,
+        ".sh": 5,
+        "no_ext": 3,
+        ".R": 3,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": true,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ]
+    },
+    "feature/batch-a-analytics": {
+      "name": "feature/batch-a-analytics",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: batch-a-analytics",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/api-health": {
+      "name": "feature/api-health",
+      "file_count": 250,
+      "latest_commit": {
+        "hash": "9469f6d6",
+        "message": "feat(dashboard): API health card + probes",
+        "date": "2026-07-02 11:15:37 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: api-health",
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "file_types": {
+        ".py": 127,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "archive/pre-declutter-full-snapshot": {
+      "name": "archive/pre-declutter-full-snapshot",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/pre-declutter-full-snapshot",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/adr-16-ohlc-provider": {
+      "name": "feature/adr-16-ohlc-provider",
+      "file_count": 250,
+      "latest_commit": {
+        "hash": "cc8216ae",
+        "message": "docs(adr): ADR-16 \u2014 Stooq-first OHLC + optional EODHD; reject Bloomberg/Groww",
+        "date": "2026-07-02 18:35:18 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: adr-16-ohlc-provider",
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "file_types": {
+        ".py": 127,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "archive/full-snapshot-2026-07": {
+      "name": "archive/full-snapshot-2026-07",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/full-snapshot-2026-07",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/decision-register": {
+      "name": "feature/decision-register",
+      "file_count": 248,
+      "latest_commit": {
+        "hash": "da79ebfc",
+        "message": "style: black-format governance.py + refresh checksums",
+        "date": "2026-07-02 10:56:20 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: decision-register",
+      "unique_files": [
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py",
+        "DECISIONS.md"
+      ],
+      "file_types": {
+        ".py": 125,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/pi-flows-delta": {
+      "name": "feature/pi-flows-delta",
+      "file_count": 222,
+      "latest_commit": {
+        "hash": "4bbc3cf9",
+        "message": "feat(PI): F-01 FII/DII+VIX regime signal + F-13 watchlist decision-delta",
+        "date": "2026-07-02 08:22:43 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: pi-flows-delta",
+      "unique_files": [],
+      "file_types": {
+        ".py": 103,
+        ".parquet": 60,
+        ".md": 20,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/run-timing": {
+      "name": "feature/run-timing",
+      "file_count": 251,
+      "latest_commit": {
+        "hash": "10c5180b",
+        "message": "feat(dashboard): run-time + per-source fill-rate card",
+        "date": "2026-07-02 18:48:02 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: run-timing",
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "file_types": {
+        ".py": 128,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/company-list-export": {
+      "name": "feature/company-list-export",
+      "file_count": 230,
+      "latest_commit": {
+        "hash": "2a6b23ea",
+        "message": "feat(karz): add quarterly data collection framework for backtest",
+        "date": "2026-07-02 01:04:50 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: company-list-export",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 108,
+        ".parquet": 60,
+        ".md": 29,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/togaf-governance": {
+      "name": "feature/togaf-governance",
+      "file_count": 209,
+      "latest_commit": {
+        "hash": "78b31b1f",
+        "message": "feat: TOGAF EA alignment (principles/ADM/content) + executable governance (Phase G)",
+        "date": "2026-07-02 07:28:41 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: togaf-governance",
+      "unique_files": [],
+      "file_types": {
+        ".py": 92,
+        ".parquet": 60,
+        ".md": 19,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/dashboard-schedule": {
+      "name": "feature/dashboard-schedule",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: dashboard-schedule",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/sector-rotation": {
+      "name": "feature/sector-rotation",
+      "file_count": 199,
+      "latest_commit": {
+        "hash": "7077f87d",
+        "message": "feat: sector_map.py \u2014 sector classification + rotation leaderboard (DATA_SOURCES #3)",
+        "date": "2026-07-02 03:17:09 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: sector-rotation",
+      "unique_files": [],
+      "file_types": {
+        ".py": 83,
+        ".parquet": 60,
+        ".md": 18,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/dashboard-schedule-harden": {
+      "name": "feature/dashboard-schedule-harden",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: dashboard-schedule-harden",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "archive/single-market-scan-scripts": {
+      "name": "archive/single-market-scan-scripts",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/single-market-scan-scripts",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/f04-dvm-pledge": {
+      "name": "feature/f04-dvm-pledge",
+      "file_count": 216,
+      "latest_commit": {
+        "hash": "bba03692",
+        "message": "feat(PI): F-04 Trendlyne DVM scores + promoter pledge in the decision engine",
+        "date": "2026-07-02 07:59:11 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: f04-dvm-pledge",
+      "unique_files": [],
+      "file_types": {
+        ".py": 97,
+        ".parquet": 60,
+        ".md": 20,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/morning-mailer": {
+      "name": "feature/morning-mailer",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: morning-mailer",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/adr-18-leverage-ml": {
+      "name": "feature/adr-18-leverage-ml",
+      "file_count": 252,
+      "latest_commit": {
+        "hash": "6033e11c",
+        "message": "docs(adr): ADR-18 \u2014 leverage features in supervised model",
+        "date": "2026-07-02 21:12:20 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: adr-18-leverage-ml",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "mailer": {
+      "name": "mailer",
+      "file_count": 242,
+      "latest_commit": {
+        "hash": "fd173bcc",
+        "message": "fix(schedule): harden dashboard job \u2014 set identity, skip LFS lock-verify, retry push (#33)",
+        "date": "2026-07-02 09:42:21 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "mailer",
+      "unique_files": [
+        "repo_dashboard.py",
+        "schedule/com.screener.dashboard.plist",
+        "tests/test_repo_dashboard.py",
+        "schedule/morning_dashboard.sh"
+      ],
+      "file_types": {
+        ".py": 120,
+        ".parquet": 60,
+        ".md": 21,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "+ feature/daily-pipeline": {
+      "name": "+ feature/daily-pipeline",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: daily-pipeline",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/f12-backtest": {
+      "name": "feature/f12-backtest",
+      "file_count": 225,
+      "latest_commit": {
+        "hash": "8b1f69a8",
+        "message": "feat(PI): F-12 walk-forward backtest \u2014 quantify each screen's historical edge",
+        "date": "2026-07-02 08:41:23 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: f12-backtest",
+      "unique_files": [],
+      "file_types": {
+        ".py": 105,
+        ".parquet": 60,
+        ".md": 21,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "main": {
+      "name": "main",
+      "file_count": 238,
+      "latest_commit": {
+        "hash": "702d5472",
+        "message": "feat(mailer): default to daily-combined-report format (#30)",
+        "date": "2026-07-02 09:15:45 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "Main production branch",
+      "unique_files": [],
+      "file_types": {
+        ".py": 118,
+        ".parquet": 60,
+        ".md": 21,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/batch-c-final": {
+      "name": "feature/batch-c-final",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: batch-c-final",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/api-health-sec-ua": {
+      "name": "feature/api-health-sec-ua",
+      "file_count": 250,
+      "latest_commit": {
+        "hash": "dc76b1c2",
+        "message": "fix(api-health): SEC-compliant per-endpoint UA (no false 403)",
+        "date": "2026-07-02 14:28:02 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: api-health-sec-ua",
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "file_types": {
+        ".py": 127,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/adr-20-ltm-10y": {
+      "name": "feature/adr-20-ltm-10y",
+      "file_count": 252,
+      "latest_commit": {
+        "hash": "56f8271c",
+        "message": "docs(adr): ADR-20 \u2014 widen LTM to 10y + bulk_seed deep backfill",
+        "date": "2026-07-02 22:21:51 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: adr-20-ltm-10y",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "archive/expansion-screening": {
+      "name": "archive/expansion-screening",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/expansion-screening",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/adr-19-groww": {
+      "name": "feature/adr-19-groww",
+      "file_count": 252,
+      "latest_commit": {
+        "hash": "0ea4556f",
+        "message": "docs(adr): ADR-19 \u2014 Groww API opt-in source (auth+instruments live, OHLC gated)",
+        "date": "2026-07-02 21:54:05 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: adr-19-groww",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/safe-agile": {
+      "name": "feature/safe-agile",
+      "file_count": 213,
+      "latest_commit": {
+        "hash": "6f86b51e",
+        "message": "feat: SAFe agile operating model + executable WSJF backlog / PI planning",
+        "date": "2026-07-02 07:34:23 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: safe-agile",
+      "unique_files": [],
+      "file_types": {
+        ".py": 94,
+        ".parquet": 60,
+        ".md": 20,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/batch-b-datascreens": {
+      "name": "feature/batch-b-datascreens",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: batch-b-datascreens",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "archive/experiments": {
+      "name": "archive/experiments",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/experiments",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/vcrud-system-tracker": {
+      "name": "feature/vcrud-system-tracker",
+      "file_count": 244,
+      "latest_commit": {
+        "hash": "a5f0da9b",
+        "message": "docs: Add TEAM_README - entry point for all users",
+        "date": "2026-07-02 23:54:57 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: vcrud-system-tracker",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "vcrud_manager.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "file_types": {
+        ".py": 112,
+        ".parquet": 59,
+        ".md": 38,
+        ".txt": 15,
+        ".json": 5,
+        "no_ext": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": true,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ]
+    },
+    "archive/universe-scaling-experiments": {
+      "name": "archive/universe-scaling-experiments",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/universe-scaling-experiments",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/fix-delivery-and-backlog": {
+      "name": "feature/fix-delivery-and-backlog",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: fix-delivery-and-backlog",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/pi-brief-sector-boom": {
+      "name": "feature/pi-brief-sector-boom",
+      "file_count": 219,
+      "latest_commit": {
+        "hash": "d0fe2452",
+        "message": "feat(PI): F-16 autonomous daily brief + F-10 sector-boom gating",
+        "date": "2026-07-02 08:16:25 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: pi-brief-sector-boom",
+      "unique_files": [],
+      "file_types": {
+        ".py": 100,
+        ".parquet": 60,
+        ".md": 20,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "karz": {
+      "name": "karz",
+      "file_count": 246,
+      "latest_commit": {
+        "hash": "d5ef0dcf",
+        "message": "docs: Add guide for setting up data in new branches",
+        "date": "2026-07-03 00:11:29 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "karz",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "DATA_DEDUPLICATION_STRATEGY.md",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "file_types": {
+        ".py": 114,
+        ".parquet": 59,
+        ".md": 34,
+        ".txt": 13,
+        ".sh": 6,
+        ".json": 6,
+        "no_ext": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": true,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ]
+    },
+    "feature/daily-pipeline": {
+      "name": "feature/daily-pipeline",
+      "file_count": 245,
+      "latest_commit": {
+        "hash": "c62ce132",
+        "message": "feat(pipeline): daily orchestrated dashboard \u2014 data update, scans, code checks",
+        "date": "2026-07-02 10:24:13 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: daily-pipeline",
+      "unique_files": [
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_repo_dashboard.py",
+        "schedule/morning_dashboard.sh",
+        "tests/test_pipeline_and_news.py"
+      ],
+      "file_types": {
+        ".py": 123,
+        ".parquet": 60,
+        ".md": 21,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/ltm-year-partition": {
+      "name": "feature/ltm-year-partition",
+      "file_count": 203,
+      "latest_commit": {
+        "hash": "e7c23946",
+        "message": "feat: partition_ltm.py \u2014 year-partitioned LTM for pruned queries at scale",
+        "date": "2026-07-02 04:37:19 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: ltm-year-partition",
+      "unique_files": [],
+      "file_types": {
+        ".py": 87,
+        ".parquet": 60,
+        ".md": 18,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/pi-pe-clamp-aliases": {
+      "name": "feature/pi-pe-clamp-aliases",
+      "file_count": 215,
+      "latest_commit": {
+        "hash": "953648a2",
+        "message": "feat(PI): F-03 clamp absurd P/E + F-02 ticker aliases for delisted/renamed",
+        "date": "2026-07-02 07:40:43 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: pi-pe-clamp-aliases",
+      "unique_files": [],
+      "file_types": {
+        ".py": 96,
+        ".parquet": 60,
+        ".md": 20,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/mailer-combined-format": {
+      "name": "feature/mailer-combined-format",
+      "file_count": 0,
+      "latest_commit": {
+        "hash": "",
+        "message": "",
+        "date": "",
+        "author": ""
+      },
+      "purpose": "Feature: mailer-combined-format",
+      "unique_files": [],
+      "file_types": {},
+      "has_cache_data": false,
+      "has_code": false,
+      "has_models": false,
+      "dependencies": []
+    },
+    "feature/adr-17-yahoo-only": {
+      "name": "feature/adr-17-yahoo-only",
+      "file_count": 252,
+      "latest_commit": {
+        "hash": "0a3263ba",
+        "message": "docs(adr): ADR-17 \u2014 Yahoo-only default (supersedes ADR-16 Stooq-first)",
+        "date": "2026-07-02 21:04:59 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: adr-17-yahoo-only",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "add-company-list": {
+      "name": "add-company-list",
+      "file_count": 230,
+      "latest_commit": {
+        "hash": "2a6b23ea",
+        "message": "feat(karz): add quarterly data collection framework for backtest",
+        "date": "2026-07-02 01:04:50 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "add-company-list",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 108,
+        ".parquet": 60,
+        ".md": 29,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/fill-threshold": {
+      "name": "feature/fill-threshold",
+      "file_count": 252,
+      "latest_commit": {
+        "hash": "458734cd",
+        "message": "feat(dashboard): flag red Challenge on low OHLC fill rate",
+        "date": "2026-07-02 18:52:18 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: fill-threshold",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 10,
+        ".json": 6,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "dashboard/2026-07-02": {
+      "name": "dashboard/2026-07-02",
+      "file_count": 255,
+      "latest_commit": {
+        "hash": "b2208cd7",
+        "message": "chore(dashboard): snapshot 2026-07-02 run2 \u2014 fill 9246/9278, ~21min (data update 8.5min)",
+        "date": "2026-07-02 21:45:08 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "dashboard/2026-07-02",
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "dashboards/dashboard_2026-07-02.html",
+        "dashboards/dashboard_2026-07-02.txt"
+      ],
+      "file_types": {
+        ".py": 129,
+        ".parquet": 60,
+        ".md": 22,
+        ".txt": 11,
+        ".json": 7,
+        ".ipynb": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".sh": 3,
+        ".R": 3,
+        ".plist": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".html": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "feature/vcrud-mandatory-workflow": {
+      "name": "feature/vcrud-mandatory-workflow",
+      "file_count": 283,
+      "latest_commit": {
+        "hash": "e5d7a68d",
+        "message": "data(fundamentals): expand US coverage 45->376 (+ IN 6->18); fix NameError",
+        "date": "2026-07-03 00:12:45 +0530",
+        "author": "herrrickshaw"
+      },
+      "purpose": "Feature: vcrud-mandatory-workflow",
+      "unique_files": [
+        "vcrud_manager.py",
+        "VCRUD_MANDATORY_WORKFLOW.md",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "NEW_BRANCH_DATA_SETUP.md",
+        "deploy_expansion_screener.py"
+      ],
+      "file_types": {
+        ".py": 133,
+        ".parquet": 60,
+        ".md": 42,
+        ".txt": 15,
+        ".json": 6,
+        ".ipynb": 6,
+        ".sh": 6,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": true,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ]
+    },
+    "feature/trendlyne-fundamentals": {
+      "name": "feature/trendlyne-fundamentals",
+      "file_count": 206,
+      "latest_commit": {
+        "hash": "f29b74fa",
+        "message": "feat: Trendlyne authenticated fundamentals source for India (P/E, ROE, +more)",
+        "date": "2026-07-02 07:17:22 +0530",
+        "author": "Umashankar"
+      },
+      "purpose": "Feature: trendlyne-fundamentals",
+      "unique_files": [],
+      "file_types": {
+        ".py": 90,
+        ".parquet": 60,
+        ".md": 18,
+        ".txt": 10,
+        ".ipynb": 6,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    },
+    "archive/sentiment-and-research-experiments": {
+      "name": "archive/sentiment-and-research-experiments",
+      "file_count": 228,
+      "latest_commit": {
+        "hash": "28404d8a",
+        "message": "Downloadable master company list (all 20 markets) + repo lint/integrity cleanup (#2)",
+        "date": "2026-07-02 01:13:18 +0530",
+        "author": "Umashankar T D"
+      },
+      "purpose": "archive/sentiment-and-research-experiments",
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "file_types": {
+        ".py": 107,
+        ".parquet": 60,
+        ".md": 28,
+        ".txt": 10,
+        ".json": 5,
+        "no_ext": 3,
+        ".csv": 3,
+        ".R": 3,
+        ".sh": 2,
+        ".example": 1,
+        ".yaml": 1,
+        ".svg": 1,
+        ".sha256": 1,
+        ".ipynb": 1,
+        ".plist": 1,
+        ".toml": 1
+      },
+      "has_cache_data": false,
+      "has_code": true,
+      "has_models": false,
+      "dependencies": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ]
+    }
+  },
+  "dependencies": {
+    "archive/legacy-scanners": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "chore/consolidate-features": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "archive/expansion-screener-v3.1": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "deploy_expansion_screener.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "+ mailer": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/yfinance-fundamentals": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/duckdb-query": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "global-expansion-screener-v3.1": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "VCRUD_MANDATORY_WORKFLOW.md",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/batch-a-analytics": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/api-health": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/pre-declutter-full-snapshot": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/adr-16-ohlc-provider": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/full-snapshot-2026-07": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/decision-register": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py",
+        "DECISIONS.md"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/pi-flows-delta": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/run-timing": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/company-list-export": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/togaf-governance": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/dashboard-schedule": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/sector-rotation": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/dashboard-schedule-harden": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/single-market-scan-scripts": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/f04-dvm-pledge": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/morning-mailer": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/adr-18-leverage-ml": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "mailer": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "repo_dashboard.py",
+        "schedule/com.screener.dashboard.plist",
+        "tests/test_repo_dashboard.py",
+        "schedule/morning_dashboard.sh"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "+ feature/daily-pipeline": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/f12-backtest": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "main": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": []
+    },
+    "feature/batch-c-final": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/api-health-sec-ua": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py",
+        "tests/test_repo_dashboard.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/adr-20-ltm-10y": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/expansion-screening": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/adr-19-groww": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/safe-agile": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/batch-b-datascreens": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/experiments": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/vcrud-system-tracker": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "vcrud_manager.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/universe-scaling-experiments": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/fix-delivery-and-backlog": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/pi-brief-sector-boom": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "karz": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "full_indian_market_scan.py",
+        "DATA_DEDUPLICATION_STRATEGY.md",
+        "SGX_ALL_COMMAND_GUIDE.md"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/daily-pipeline": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_repo_dashboard.py",
+        "schedule/morning_dashboard.sh",
+        "tests/test_pipeline_and_news.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/ltm-year-partition": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/pi-pe-clamp-aliases": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/mailer-combined-format": {
+      "depends_on_data": [],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/adr-17-yahoo-only": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "add-company-list": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/fill-threshold": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "repo_dashboard.py",
+        "tests/test_decisions.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "dashboard/2026-07-02": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "tests/test_fill_threshold.py",
+        "api_health.py",
+        "news_feeds.py",
+        "dashboards/dashboard_2026-07-02.html",
+        "dashboards/dashboard_2026-07-02.txt"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    },
+    "feature/vcrud-mandatory-workflow": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data",
+        "ml_models"
+      ],
+      "unique_files": [
+        "vcrud_manager.py",
+        "VCRUD_MANDATORY_WORKFLOW.md",
+        "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md",
+        "NEW_BRANCH_DATA_SETUP.md",
+        "deploy_expansion_screener.py"
+      ],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "feature/trendlyne-fundamentals": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [],
+      "can_be_merged_to": [
+        "develop",
+        "main"
+      ]
+    },
+    "archive/sentiment-and-research-experiments": {
+      "depends_on_data": [
+        "cache_seed",
+        "fundamentals",
+        "market_data"
+      ],
+      "unique_files": [
+        "sentiment_price_link.py",
+        "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md",
+        "full_indian_market_scan.py",
+        "SGX_ALL_COMMAND_GUIDE.md",
+        "tool_registry.py"
+      ],
+      "can_be_merged_to": [
+        "main"
+      ]
+    }
+  },
+  "file_index": {
+    "sentiment_price_link.py": [
+      "archive/legacy-scanners",
+      "archive/expansion-screener-v3.1",
+      "global-expansion-screener-v3.1",
+      "archive/pre-declutter-full-snapshot",
+      "archive/full-snapshot-2026-07",
+      "feature/company-list-export",
+      "archive/single-market-scan-scripts",
+      "archive/expansion-screening",
+      "archive/experiments",
+      "feature/vcrud-system-tracker",
+      "archive/universe-scaling-experiments",
+      "karz",
+      "add-company-list",
+      "archive/sentiment-and-research-experiments"
+    ],
+    "DEBT_EXPANSION_REINVESTMENT_FRAMEWORK.md": [
+      "archive/legacy-scanners",
+      "archive/pre-declutter-full-snapshot",
+      "archive/full-snapshot-2026-07",
+      "feature/company-list-export",
+      "archive/single-market-scan-scripts",
+      "archive/expansion-screening",
+      "archive/experiments",
+      "archive/universe-scaling-experiments",
+      "add-company-list",
+      "archive/sentiment-and-research-experiments"
+    ],
+    "full_indian_market_scan.py": [
+      "archive/legacy-scanners",
+      "archive/expansion-screener-v3.1",
+      "global-expansion-screener-v3.1",
+      "archive/pre-declutter-full-snapshot",
+      "archive/full-snapshot-2026-07",
+      "feature/company-list-export",
+      "archive/single-market-scan-scripts",
+      "archive/expansion-screening",
+      "archive/experiments",
+      "feature/vcrud-system-tracker",
+      "archive/universe-scaling-experiments",
+      "karz",
+      "add-company-list",
+      "archive/sentiment-and-research-experiments"
+    ],
+    "SGX_ALL_COMMAND_GUIDE.md": [
+      "archive/legacy-scanners",
+      "archive/expansion-screener-v3.1",
+      "global-expansion-screener-v3.1",
+      "archive/pre-declutter-full-snapshot",
+      "archive/full-snapshot-2026-07",
+      "feature/company-list-export",
+      "archive/single-market-scan-scripts",
+      "archive/expansion-screening",
+      "archive/experiments",
+      "feature/vcrud-system-tracker",
+      "archive/universe-scaling-experiments",
+      "karz",
+      "add-company-list",
+      "archive/sentiment-and-research-experiments"
+    ],
+    "tool_registry.py": [
+      "archive/legacy-scanners",
+      "archive/pre-declutter-full-snapshot",
+      "archive/full-snapshot-2026-07",
+      "feature/company-list-export",
+      "archive/single-market-scan-scripts",
+      "archive/expansion-screening",
+      "archive/experiments",
+      "archive/universe-scaling-experiments",
+      "add-company-list",
+      "archive/sentiment-and-research-experiments"
+    ],
+    "EXPANSION_SCREENING_DEPLOYMENT_SUMMARY.md": [
+      "archive/expansion-screener-v3.1",
+      "global-expansion-screener-v3.1",
+      "feature/vcrud-system-tracker",
+      "karz",
+      "feature/vcrud-mandatory-workflow"
+    ],
+    "deploy_expansion_screener.py": [
+      "archive/expansion-screener-v3.1",
+      "feature/vcrud-mandatory-workflow"
+    ],
+    "VCRUD_MANDATORY_WORKFLOW.md": [
+      "global-expansion-screener-v3.1",
+      "feature/vcrud-mandatory-workflow"
+    ],
+    "api_health.py": [
+      "feature/api-health",
+      "feature/adr-16-ohlc-provider",
+      "feature/run-timing",
+      "feature/adr-18-leverage-ml",
+      "feature/api-health-sec-ua",
+      "feature/adr-20-ltm-10y",
+      "feature/adr-19-groww",
+      "feature/adr-17-yahoo-only",
+      "feature/fill-threshold",
+      "dashboard/2026-07-02"
+    ],
+    "news_feeds.py": [
+      "feature/api-health",
+      "feature/adr-16-ohlc-provider",
+      "feature/decision-register",
+      "feature/run-timing",
+      "feature/adr-18-leverage-ml",
+      "feature/api-health-sec-ua",
+      "feature/adr-20-ltm-10y",
+      "feature/adr-19-groww",
+      "feature/daily-pipeline",
+      "feature/adr-17-yahoo-only",
+      "feature/fill-threshold",
+      "dashboard/2026-07-02"
+    ],
+    "repo_dashboard.py": [
+      "feature/api-health",
+      "feature/adr-16-ohlc-provider",
+      "feature/decision-register",
+      "feature/run-timing",
+      "feature/adr-18-leverage-ml",
+      "mailer",
+      "feature/api-health-sec-ua",
+      "feature/adr-20-ltm-10y",
+      "feature/adr-19-groww",
+      "feature/daily-pipeline",
+      "feature/adr-17-yahoo-only",
+      "feature/fill-threshold"
+    ],
+    "tests/test_decisions.py": [
+      "feature/api-health",
+      "feature/adr-16-ohlc-provider",
+      "feature/decision-register",
+      "feature/run-timing",
+      "feature/adr-18-leverage-ml",
+      "feature/api-health-sec-ua",
+      "feature/adr-20-ltm-10y",
+      "feature/adr-19-groww",
+      "feature/adr-17-yahoo-only",
+      "feature/fill-threshold"
+    ],
+    "tests/test_repo_dashboard.py": [
+      "feature/api-health",
+      "feature/adr-16-ohlc-provider",
+      "feature/decision-register",
+      "feature/run-timing",
+      "mailer",
+      "feature/api-health-sec-ua",
+      "feature/daily-pipeline"
+    ],
+    "DECISIONS.md": [
+      "feature/decision-register"
+    ],
+    "tests/test_fill_threshold.py": [
+      "feature/adr-18-leverage-ml",
+      "feature/adr-20-ltm-10y",
+      "feature/adr-19-groww",
+      "feature/adr-17-yahoo-only",
+      "feature/fill-threshold",
+      "dashboard/2026-07-02"
+    ],
+    "schedule/com.screener.dashboard.plist": [
+      "mailer"
+    ],
+    "schedule/morning_dashboard.sh": [
+      "mailer",
+      "feature/daily-pipeline"
+    ],
+    "vcrud_manager.py": [
+      "feature/vcrud-system-tracker",
+      "feature/vcrud-mandatory-workflow"
+    ],
+    "DATA_DEDUPLICATION_STRATEGY.md": [
+      "karz"
+    ],
+    "tests/test_pipeline_and_news.py": [
+      "feature/daily-pipeline"
+    ],
+    "dashboards/dashboard_2026-07-02.html": [
+      "dashboard/2026-07-02"
+    ],
+    "dashboards/dashboard_2026-07-02.txt": [
+      "dashboard/2026-07-02"
+    ],
+    "NEW_BRANCH_DATA_SETUP.md": [
+      "feature/vcrud-mandatory-workflow"
+    ]
+  },
+  "feature_matrix": {
+    "global": [
+      "archive/expansion-screener-v3.1"
+    ],
+    "yfinance-fundamentals": [
+      "feature/yfinance-fundamentals"
+    ],
+    "duckdb-query": [
+      "feature/duckdb-query"
+    ],
+    "batch-a-analytics": [
+      "feature/batch-a-analytics"
+    ],
+    "api-health": [
+      "feature/api-health"
+    ],
+    "adr-16-ohlc-provider": [
+      "feature/adr-16-ohlc-provider"
+    ],
+    "decision-register": [
+      "feature/decision-register"
+    ],
+    "pi-flows-delta": [
+      "feature/pi-flows-delta"
+    ],
+    "run-timing": [
+      "feature/run-timing"
+    ],
+    "company-list-export": [
+      "feature/company-list-export"
+    ],
+    "togaf-governance": [
+      "feature/togaf-governance"
+    ],
+    "dashboard-schedule": [
+      "feature/dashboard-schedule"
+    ],
+    "sector-rotation": [
+      "feature/sector-rotation"
+    ],
+    "dashboard-schedule-harden": [
+      "feature/dashboard-schedule-harden"
+    ],
+    "f04-dvm-pledge": [
+      "feature/f04-dvm-pledge"
+    ],
+    "morning-mailer": [
+      "feature/morning-mailer"
+    ],
+    "adr-18-leverage-ml": [
+      "feature/adr-18-leverage-ml"
+    ],
+    "daily-pipeline": [
+      "+ feature/daily-pipeline",
+      "feature/daily-pipeline"
+    ],
+    "f12-backtest": [
+      "feature/f12-backtest"
+    ],
+    "batch-c-final": [
+      "feature/batch-c-final"
+    ],
+    "api-health-sec-ua": [
+      "feature/api-health-sec-ua"
+    ],
+    "adr-20-ltm-10y": [
+      "feature/adr-20-ltm-10y"
+    ],
+    "adr-19-groww": [
+      "feature/adr-19-groww"
+    ],
+    "safe-agile": [
+      "feature/safe-agile"
+    ],
+    "batch-b-datascreens": [
+      "feature/batch-b-datascreens"
+    ],
+    "vcrud-system-tracker": [
+      "feature/vcrud-system-tracker"
+    ],
+    "fix-delivery-and-backlog": [
+      "feature/fix-delivery-and-backlog"
+    ],
+    "pi-brief-sector-boom": [
+      "feature/pi-brief-sector-boom"
+    ],
+    "ltm-year-partition": [
+      "feature/ltm-year-partition"
+    ],
+    "pi-pe-clamp-aliases": [
+      "feature/pi-pe-clamp-aliases"
+    ],
+    "mailer-combined-format": [
+      "feature/mailer-combined-format"
+    ],
+    "adr-17-yahoo-only": [
+      "feature/adr-17-yahoo-only"
+    ],
+    "fill-threshold": [
+      "feature/fill-threshold"
+    ],
+    "vcrud-mandatory-workflow": [
+      "feature/vcrud-mandatory-workflow"
+    ],
+    "trendlyne-fundamentals": [
+      "feature/trendlyne-fundamentals"
+    ]
+  }
+}

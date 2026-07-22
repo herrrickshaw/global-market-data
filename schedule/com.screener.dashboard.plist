@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- launchd agent: run the repo dashboard mailer every day at 08:30 local time.
+     Install:
+       cp schedule/com.screener.dashboard.plist ~/Library/LaunchAgents/
+       launchctl load  ~/Library/LaunchAgents/com.screener.dashboard.plist
+     Remove:
+       launchctl unload ~/Library/LaunchAgents/com.screener.dashboard.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.screener.dashboard</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/umashankar/Downloads/code/python_files/schedule/morning_dashboard.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/umashankar/dashboard-mailer.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/umashankar/dashboard-mailer.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

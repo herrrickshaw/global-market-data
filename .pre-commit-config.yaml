@@ -1,0 +1,22 @@
+# Auto-format & lint on every commit:  pip install pre-commit && pre-commit install
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/psf/black
+    rev: 25.11.0
+    hooks:
+      - id: black
+  # tamper-evidence: regenerate the SHA-256 manifest so committed files always carry
+  # matching checksums (CI then verifies no post-commit drift)
+  - repo: local
+    hooks:
+      - id: integrity-checksums
+        name: regenerate integrity checksums
+        entry: python integrity.py --generate
+        language: system
+        pass_filenames: false
+        always_run: true

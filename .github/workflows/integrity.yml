@@ -1,0 +1,24 @@
+name: integrity
+
+# Tamper-evidence gate: on every push / PR, verify that every tracked file still
+# matches its recorded SHA-256 in cache_seed/CHECKSUMS.sha256. Any drift fails CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-checksums:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify repository integrity (SHA-256 manifest)
+        run: python integrity.py --verify

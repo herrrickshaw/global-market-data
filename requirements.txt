@@ -1,0 +1,40 @@
+# Multi-market screener toolkit — dependencies
+# Install:  pip install -r requirements.txt
+# (Google Colab already ships pandas/numpy/pyarrow/requests/openpyxl; the rest
+#  are the niche ones — see colab_quickstart.ipynb for the exact Colab cell.)
+
+# core data
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0
+requests>=2.31
+
+# fast NoSQL OHLCV store + reference-data readers
+lmdb>=1.4
+xlrd>=2.0            # read Damodaran .xls industry datasets
+openpyxl>=3.1        # read/write .xlsx scan outputs
+
+# market data sources
+yfinance>=0.2.40     # global OHLC (with stooq fallback in data_sources.py)
+nsepython>=2.9       # NSE live + holiday calendar
+bseindia>=1.1        # BSE symbols
+nse>=3.0             # NSE/BSE bhavcopy EOD files
+
+# news sentiment (local lexicon — NOT an LLM)
+feedparser>=6.0      # RSS feeds (Moneycontrol/ET/CNBC/...)
+vaderSentiment>=3.3  # sentiment scoring
+
+# European universe discovery (Investing.com lists; price API blocked)
+investpy>=1.0.8
+
+# analytics & progress (Colab ships scipy/matplotlib; tqdm used by some scanners)
+scipy>=1.10
+matplotlib>=3.7
+tqdm>=4.65
+# note: deoldify.py (image experiment) needs torch/fastai — install separately if used.
+
+# tests (dev):  pip install pytest  &&  pytest -q
+pytest>=8.0
+# linting/formatting (dev):  ruff check .  &&  black .
+ruff>=0.6
+black>=24.0

@@ -1,0 +1,55 @@
+{
+  "title": "Seasonal Toll Analysis",
+  "source": "NIIF Research 2405 - HeatMaps Toll Roads",
+  "data_period": "2023-2024",
+  "niif_metrics": {
+    "march_2024_collections": "49.3 INR Billion",
+    "march_2024_volume": "272.5 Million vehicles",
+    "toll_plazas_tracked": 946,
+    "states_covered": 28,
+    "value_growth_fy24": "11.9%",
+    "volume_growth_fy24": "6.8%"
+  },
+  "seasonal_patterns": {
+    "January": 1.08,
+    "February": 1.15,
+    "March": 1.12,
+    "April": 0.95,
+    "May": 0.93,
+    "June": 0.87,
+    "July": 0.85,
+    "August": 0.88,
+    "September": 0.92,
+    "October": 1.1,
+    "November": 1.13,
+    "December": 1.05
+  },
+  "top_states": [
+    {
+      "amount": 1235195.181801726,
+      "vehicle_count": 68091971,
+      "amount_billions": 12.35195181801726
+    },
+    {
+      "amount": 1071116.9522987097,
+      "vehicle_count": 58889497,
+      "amount_billions": 10.711169522987097
+    },
+    {
+      "amount": 999447.4924606519,
+      "vehicle_count": 55654410,
+      "amount_billions": 9.99447492460652
+    },
+    {
+      "amount": 936298.6747065561,
+      "vehicle_count": 51567495,
+      "amount_billions": 9.36298674706556
+    },
+    {
+      "amount": 893950.0791749285,
+      "vehicle_count": 49306621,
+      "amount_billions": 8.939500791749285
+    }
+  ],
+  "generated_at": "2026-06-23T12:13:37.452051"
+}

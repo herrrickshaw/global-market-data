@@ -1,0 +1,9 @@
+# keep the build context small — only code + cache_seed are needed
+__pycache__/
+*.pyc
+*.log
+indian_full_scan/
+us_full_scan/
+combined_report_results/
+*.xlsx
+# local bulk cache is NOT shipped; cache_seed/ holds the compact committed cache

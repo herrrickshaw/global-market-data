@@ -1,0 +1,6 @@
+# small non-OHLCV domains: regular git objects, NOT LFS (account budget exhausted;
+# new LFS objects would be unreachable to cloners). See warehouse_etl_extras.py.
+warehouse/cgd/*.parquet -filter binary
+warehouse/energy/*.parquet -filter binary
+warehouse/audit/*.parquet -filter binary
+warehouse/bhavcopy/*.parquet -filter binary

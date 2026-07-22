@@ -1,0 +1,591 @@
+{
+  "timestamp": "2026-07-03T00:02:32.767734",
+  "repository": "/Users/umashankar/Downloads/code/python_files",
+  "summary": {
+    "total_files": 407,
+    "total_size_mb": 852.6823720932007,
+    "duplicate_files": 15,
+    "duplicate_size_mb": 67.00371170043945,
+    "potential_savings_mb": 67.00371170043945
+  },
+  "by_file_type": {
+    ".txt": {
+      "count": 13,
+      "size_mb": 0.0891275405883789,
+      "avg_size_kb": 7.0205078125
+    },
+    ".py": {
+      "count": 115,
+      "size_mb": 1.5001544952392578,
+      "avg_size_kb": 13.357897418478261
+    },
+    ".md": {
+      "count": 33,
+      "size_mb": 0.2489643096923828,
+      "avg_size_kb": 7.725437973484849
+    },
+    ".csv": {
+      "count": 10,
+      "size_mb": 0.5733633041381836,
+      "avg_size_kb": 58.71240234375
+    },
+    ".json": {
+      "count": 30,
+      "size_mb": 3.637727737426758,
+      "avg_size_kb": 124.1677734375
+    },
+    ".yaml": {
+      "count": 1,
+      "size_mb": 0.0006685256958007812,
+      "avg_size_kb": 0.6845703125
+    },
+    "no_extension": {
+      "count": 28,
+      "size_mb": 0.025693893432617188,
+      "avg_size_kb": 0.9396623883928571
+    },
+    ".R": {
+      "count": 3,
+      "size_mb": 0.08345985412597656,
+      "avg_size_kb": 28.487630208333332
+    },
+    ".html": {
+      "count": 14,
+      "size_mb": 0.0637054443359375,
+      "avg_size_kb": 4.659598214285714
+    },
+    ".sh": {
+      "count": 4,
+      "size_mb": 0.007245063781738281,
+      "avg_size_kb": 1.854736328125
+    },
+    ".toml": {
+      "count": 1,
+      "size_mb": 0.000888824462890625,
+      "avg_size_kb": 0.91015625
+    },
+    ".log": {
+      "count": 13,
+      "size_mb": 0.4708395004272461,
+      "avg_size_kb": 37.08766526442308
+    },
+    ".svg": {
+      "count": 1,
+      "size_mb": 0.006427764892578125,
+      "avg_size_kb": 6.58203125
+    },
+    ".xlsx": {
+      "count": 9,
+      "size_mb": 8.08700942993164,
+      "avg_size_kb": 920.1219618055555
+    },
+    ".ipynb": {
+      "count": 1,
+      "size_mb": 0.00638580322265625,
+      "avg_size_kb": 6.5390625
+    },
+    ".plist": {
+      "count": 2,
+      "size_mb": 0.00264739990234375,
+      "avg_size_kb": 1.35546875
+    },
+    ".example": {
+      "count": 1,
+      "size_mb": 0.000514984130859375,
+      "avg_size_kb": 0.52734375
+    },
+    ".TAG": {
+      "count": 2,
+      "size_mb": 0.0002231597900390625,
+      "avg_size_kb": 0.1142578125
+    },
+    ".parquet": {
+      "count": 119,
+      "size_mb": 835.8725032806396,
+      "avg_size_kb": 7192.71801142332
+    },
+    ".sha256": {
+      "count": 1,
+      "size_mb": 0.01896190643310547,
+      "avg_size_kb": 19.4169921875
+    },
+    ".pkl": {
+      "count": 3,
+      "size_mb": 1.9830608367919922,
+      "avg_size_kb": 676.884765625
+    },
+    ".yml": {
+      "count": 3,
+      "size_mb": 0.0027990341186523438,
+      "avg_size_kb": 0.9554036458333334
+    }
+  },
+  "duplicates": [
+    {
+      "hash": "46b05199...",
+      "copies": 2,
+      "size_per_copy_mb": 6.818356513977051,
+      "total_wasted_mb": 6.818356513977051,
+      "paths": [
+        "cache_seed/cleaned_long_TW.parquet",
+        "cache_seed/ltm/TW.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "a94e828e...",
+      "copies": 2,
+      "size_per_copy_mb": 3.8300342559814453,
+      "total_wasted_mb": 3.8300342559814453,
+      "paths": [
+        "cache_seed/cleaned_long_EU.parquet",
+        "cache_seed/ltm/EU.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "d5905409...",
+      "copies": 2,
+      "size_per_copy_mb": 3.7922067642211914,
+      "total_wasted_mb": 3.7922067642211914,
+      "paths": [
+        "cache_seed/cleaned_long_CA.parquet",
+        "cache_seed/ltm/CA.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "522cda2e...",
+      "copies": 2,
+      "size_per_copy_mb": 3.3941259384155273,
+      "total_wasted_mb": 3.3941259384155273,
+      "paths": [
+        "cache_seed/cleaned_long_AU.parquet",
+        "cache_seed/ltm/AU.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "e76e3d8f...",
+      "copies": 2,
+      "size_per_copy_mb": 3.1785192489624023,
+      "total_wasted_mb": 3.1785192489624023,
+      "paths": [
+        "cache_seed/cleaned_long_UK.parquet",
+        "cache_seed/ltm/UK.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "8756088d...",
+      "copies": 2,
+      "size_per_copy_mb": 2.684864044189453,
+      "total_wasted_mb": 2.684864044189453,
+      "paths": [
+        "cache_seed/cleaned_long_HK.parquet",
+        "cache_seed/ltm/HK.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "abb72e68...",
+      "copies": 2,
+      "size_per_copy_mb": 1.9503374099731445,
+      "total_wasted_mb": 1.9503374099731445,
+      "paths": [
+        "cache_seed/cleaned_long_SE.parquet",
+        "cache_seed/ltm/SE.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "5ff962a4...",
+      "copies": 2,
+      "size_per_copy_mb": 1.470932960510254,
+      "total_wasted_mb": 1.470932960510254,
+      "paths": [
+        "cache_seed/cleaned_long_SA.parquet",
+        "cache_seed/ltm/SA.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "ef30735c...",
+      "copies": 2,
+      "size_per_copy_mb": 1.4084148406982422,
+      "total_wasted_mb": 1.4084148406982422,
+      "paths": [
+        "cache_seed/cleaned_long_DE.parquet",
+        "cache_seed/ltm/DE.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "b0cab53c...",
+      "copies": 2,
+      "size_per_copy_mb": 1.1981382369995117,
+      "total_wasted_mb": 1.1981382369995117,
+      "paths": [
+        "cache_seed/cleaned_long_SG.parquet",
+        "cache_seed/ltm/SG.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "23ee81c9...",
+      "copies": 2,
+      "size_per_copy_mb": 1.0359601974487305,
+      "total_wasted_mb": 1.0359601974487305,
+      "paths": [
+        "cache_seed/cleaned_long_BR.parquet",
+        "cache_seed/ltm/BR.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "faa92087...",
+      "copies": 2,
+      "size_per_copy_mb": 0.836543083190918,
+      "total_wasted_mb": 0.836543083190918,
+      "paths": [
+        "cache_seed/cleaned_long_ZA.parquet",
+        "cache_seed/ltm/ZA.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "b1340571...",
+      "copies": 2,
+      "size_per_copy_mb": 0.8321514129638672,
+      "total_wasted_mb": 0.8321514129638672,
+      "paths": [
+        "cache_seed/cleaned_long_CH.parquet",
+        "cache_seed/ltm/CH.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "a88f5776...",
+      "copies": 2,
+      "size_per_copy_mb": 0.6832551956176758,
+      "total_wasted_mb": 0.6832551956176758,
+      "paths": [
+        "cache_seed/cleaned_long_FI.parquet",
+        "cache_seed/ltm/FI.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    },
+    {
+      "hash": "bc1acded...",
+      "copies": 2,
+      "size_per_copy_mb": 0.3880157470703125,
+      "total_wasted_mb": 0.3880157470703125,
+      "paths": [
+        "cache_seed/cleaned_long_DK.parquet",
+        "cache_seed/ltm/DK.parquet"
+      ],
+      "recommendation": "Keep in cache_seed/, symlink from other branches"
+    }
+  ],
+  "data_categories": {
+    "cache_data": {
+      "count": 0,
+      "size_mb": 0.0,
+      "files": []
+    },
+    "parquet_files": {
+      "count": 119,
+      "size_mb": 835.8725032806396,
+      "files": [
+        {
+          "path": "cache_seed/cleaned_long_AU.parquet",
+          "size": 3558999,
+          "hash": "522cda2e5adbd39eba22261dc0199731187d4f0f134aa773ff6bf656740c431f"
+        },
+        {
+          "path": "cache_seed/cleaned_long_CN.parquet",
+          "size": 22260641,
+          "hash": "0aa6eac04dfb5feb78f8a4175737d4e1df69b265b5145b127156ff61af92cc03"
+        },
+        {
+          "path": "cache_seed/cleaned_long_BR.parquet",
+          "size": 1086283,
+          "hash": "23ee81c92d4283a7fb3cc29cda71067ff7cb05b29d9ebb859a5576b0ffad99b5"
+        },
+        {
+          "path": "cache_seed/cleaned_long_DE.parquet",
+          "size": 1476830,
+          "hash": "ef30735c989326fe49a6a65f75d4371041a02f9a01af2554b62405bf0d444dfd"
+        },
+        {
+          "path": "cache_seed/cleaned_long_UK.parquet",
+          "size": 3332919,
+          "hash": "e76e3d8fba8b29381e1529aae771f87af66d7a07841e1d87c3f2140fa5a5b55c"
+        }
+      ]
+    },
+    "csv_data": {
+      "count": 10,
+      "size_mb": 0.5733633041381836,
+      "files": [
+        {
+          "path": "screening_Netherlands_20260702_013103.csv",
+          "size": 40327,
+          "hash": "9347397a448cd31c2e1ccd895be9072da10794ed710fa3956ec8905e1805440d"
+        },
+        {
+          "path": "results_top150_global.csv",
+          "size": 7956,
+          "hash": "fa9a39d80cd0668914169435f71f17afa86ac945aecf432bf30cc485a54f33ea"
+        },
+        {
+          "path": "screening_UK_20260702_013103.csv",
+          "size": 79181,
+          "hash": "9076261d46654ec4afbd3365f2ff6c38b0383e6919be400043416c77adda60e4"
+        },
+        {
+          "path": "screening_Sweden_20260702_013103.csv",
+          "size": 22070,
+          "hash": "b66ca6117a7a6a36f77bd3f409dae64e701f417d0439316af33cfae8bd471f33"
+        },
+        {
+          "path": "screening_Spain_20260702_013103.csv",
+          "size": 32797,
+          "hash": "e90e83161d6bc97b11bbbf5f6eb30967bedcba9ddfb9cada2177625692260936"
+        }
+      ]
+    },
+    "json_config": {
+      "count": 34,
+      "size_mb": 3.641195297241211,
+      "files": [
+        {
+          "path": "seasonal_analysis_summary.json",
+          "size": 1336,
+          "hash": "67f868ddfa4d7764fb0b9e6409c9ee1cd9a3bcd9c83907610bad3c07a145ed0d"
+        },
+        {
+          "path": "extract attachment agent.json",
+          "size": 10260,
+          "hash": "c22eaa25fe35ca855306ddee6982ba413bc715911eef0aef9b1d303c58192273"
+        },
+        {
+          "path": "duplicates_report.json",
+          "size": 3593,
+          "hash": "eb30c4f6c8bf2ab5d70ad3e72d7c16209f105d7cfc3d8d1ed05cb70a3be75b20"
+        },
+        {
+          "path": "toll_metrics.json",
+          "size": 9673,
+          "hash": "f820ad42c9fe4aefac19d9af667b0e64187df773cf66504ce90d908b5b4c41e0"
+        },
+        {
+          "path": "combined_report_results/combined_US_20260702_2001.json",
+          "size": 458792,
+          "hash": "20aa5c0434424f9a950ecb3614ead022ea66cfa49bd197f8702102bb5e84c2a8"
+        }
+      ]
+    },
+    "code_files": {
+      "count": 119,
+      "size_mb": 1.507399559020996,
+      "files": [
+        {
+          "path": "liquidity.py",
+          "size": 6745,
+          "hash": "c09d6156bf20791157dc5a3d433ce96c33a2f0279d48be8a5b6e8a0efe915cd5"
+        },
+        {
+          "path": "full_us_market_scan.py",
+          "size": 46434,
+          "hash": "0095611bfbfc8c09a65ddd11f57b544df4a04ffb0f8094d738e7e8575f97e96e"
+        },
+        {
+          "path": "sg_stock_daily_report.py",
+          "size": 42452,
+          "hash": "c611569452587f4c936de97bb8ac32b6731bca951786f5e262512531aaa79bf0"
+        },
+        {
+          "path": "sentiment_pipeline.py",
+          "size": 32196,
+          "hash": "932fdef461b52bc9f31af9569129cfaf155b735608b85e69e9234a79421713a2"
+        },
+        {
+          "path": "us_stocks_colab.py",
+          "size": 71985,
+          "hash": "3d524b30f6d3d8c9e44a89c94c969e04bf6a2c54144b0d7e502905dd8b4fc33e"
+        }
+      ]
+    },
+    "documentation": {
+      "count": 46,
+      "size_mb": 0.3380918502807617,
+      "files": [
+        {
+          "path": "DEPLOYMENT_COMPLETE.txt",
+          "size": 11322,
+          "hash": "f449ef57cd8fb4a9eca5efd3a71d73c173ab3ec04a9c03baffd8b07e12372c5f"
+        },
+        {
+          "path": "GLOBAL_20COUNTRY_DEPLOYMENT_SUMMARY.txt",
+          "size": 14956,
+          "hash": "070310d64b1dd1205f3e8c4e9c71a25022963a3290b9d8fac9b89a25008f6ba3"
+        },
+        {
+          "path": "daily_scan_report_20260626.txt",
+          "size": 3112,
+          "hash": "e57ca346be8f1f9a47b6173b5c438aa8ec8aa754a17fa81bf859f6801959be73"
+        },
+        {
+          "path": "requirements.txt",
+          "size": 1318,
+          "hash": "877ed911f47a709be6ba6e64627daf646dc0f072c402633bcf92f02adf0c2988"
+        },
+        {
+          "path": "daily_scan_report_20260624.txt",
+          "size": 4029,
+          "hash": "a93e2105705a66d801efc6dd07186dbf842a7c975b9c08842859e4d7c8f0b6e7"
+        }
+      ]
+    },
+    "binary_data": {
+      "count": 3,
+      "size_mb": 1.9830608367919922,
+      "files": [
+        {
+          "path": "cache_seed/models/US.pkl",
+          "size": 1367759,
+          "hash": "a3327ca688051382d9c380d9132387215cacbcd158af083309289c9828d03ee6"
+        },
+        {
+          "path": "cache_seed/models/IN.pkl",
+          "size": 657823,
+          "hash": "1f7bdd0c9b52086caacebb097761c4d90f737b7c02acd67f2bf005f8c74649ab"
+        },
+        {
+          "path": "cache_seed/models/IN_rl.pkl",
+          "size": 53808,
+          "hash": "f74ce03d470d7fc37931390402452f8bda9d13fb62396a7b310ff9a13968a66f"
+        }
+      ]
+    },
+    "other": {
+      "count": 76,
+      "size_mb": 8.76675796508789,
+      "files": [
+        {
+          "path": "Dockerfile",
+          "size": 1811,
+          "hash": "c9f46ee9d09e4f05b0ff26f94c91f71b57640c10eb89aecad9f9754fd01a1e6d"
+        },
+        {
+          "path": ".dockerignore",
+          "size": 239,
+          "hash": "af34c0047c14a9e8d41c21f835cc6bf3e5a70c89cf79b54d1032a215b4389f46"
+        },
+        {
+          "path": ".gitignore",
+          "size": 1411,
+          "hash": "150ecb91972d23707d8ce085142a031f6c3df9628667abc9d9a1cb873afc1fcb"
+        },
+        {
+          "path": "VERSION",
+          "size": 6,
+          "hash": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03"
+        },
+        {
+          "path": ".env",
+          "size": 1688,
+          "hash": "1679ac64bdcf9b2aa70de39db54184881a2041f17edd47850ea48202b5785ee9"
+        }
+      ]
+    }
+  },
+  "redundant_data": [
+    {
+      "type": "Cache Data",
+      "count": 157,
+      "size_mb": 836.9636278152466,
+      "recommendation": "Centralize in cache_seed/ directory, symlink from branches",
+      "priority": "HIGH"
+    },
+    {
+      "type": "Parquet Data",
+      "count": 119,
+      "size_mb": 835.8725032806396,
+      "recommendation": "Move to Git LFS, keep single copy, reference from branches",
+      "priority": "HIGH"
+    },
+    {
+      "type": "Screening Results",
+      "count": 8,
+      "size_mb": 0.5654764175415039,
+      "recommendation": "Archive to results/ directory, reference by timestamp",
+      "priority": "MEDIUM"
+    }
+  ],
+  "deduplication_strategy": {
+    "approach": "Single Source of Truth with Symlinks",
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Inventory & Analysis",
+        "status": "COMPLETE",
+        "tasks": [
+          "Scan all branches for duplicate files",
+          "Identify data hotspots (cache, parquet)",
+          "Calculate redundancy percentages"
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Centralization",
+        "status": "READY",
+        "tasks": [
+          "Create shared_data/ directory for centralized data",
+          "Move cache_seed/ files to shared_data/cache_seed/",
+          "Move parquet files to shared_data/data/",
+          "Create .gitignore rules for shared data"
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Symlink Setup",
+        "status": "READY",
+        "tasks": [
+          "Create symlinks from branches to shared_data/",
+          "Update .gitignore to exclude symlink targets",
+          "Test symlinks work across all branches",
+          "Verify functionality with scripts"
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Git LFS Migration",
+        "status": "READY",
+        "tasks": [
+          "Configure Git LFS for .parquet files",
+          "Configure Git LFS for large CSV/JSON",
+          "Migrate existing large files to LFS",
+          "Update .gitattributes"
+        ]
+      },
+      {
+        "phase": 5,
+        "name": "Documentation & Automation",
+        "status": "READY",
+        "tasks": [
+          "Document shared data structure",
+          "Create setup script for new clones",
+          "Add validation to vCRUD workflow",
+          "Brief team on new structure"
+        ]
+      }
+    ],
+    "expected_savings": {
+      "redundant_data_mb": 67.00371170043945,
+      "git_repo_reduction_percent": 7.857991896320773,
+      "clone_time_reduction": "50-70% faster"
+    }
+  }
+}
