@@ -63,11 +63,10 @@ claims:
     statement: "After a bonus/split board-meeting intimation becomes public, buying at intimation+2td and holding to ex-1 captured +10.4% (bonus, n=295, 75% hit) / +16.5% (split, n=258, 83% hit) abnormal-vs-market-median over 35-50 trading days; post-ex there is NO drift (47% hit)"
     repo: market-pipeline (home)
     code: [pit_event_studies.py, collect_board_meetings.py]
-    status: provisional
-    evidence: "reports/PIT_EVENT_STUDIES.md 2026-07-23; anchor = bm_timestamp (NSE caBroadcastDate is null everywhere); adjusted prices, PIT broadcast timing"
+    status: validated  # SPLIT leg only; bonus leg remains provisional
+    evidence: "reports/PIT_EVENT_STUDIES.md + INTIMATION_VALIDATION.md 2026-07-23; anchor = bm_timestamp; adjusted prices, PIT broadcast timing. MATCHED BENCHMARK (same-month same-turnover-decile controls, median 186/event): split excess +8.47%, quarter-clustered t=5.82, p=9.3e-07 — SURVIVES family-wide BH-FDR at q=0.05 (18 hypotheses incl. the 12-combo grid) — the platform's first FDR survivor. Bonus excess +5.13% (t=2.26, p=0.029) does NOT clear family FDR -> provisional. Same pass formally kills PEAD Q5-Q1 (p=0.18) and both post-ex drifts."
     staleness_triggers:
-      - "universe-level bias: filing-universe baseline hit is ~70-75%, not 50% — needs matched-window benchmark before validated"
-      - "no FDR pass; single 10y sample, no subperiod split"
+      - "single 10y sample — re-test on subperiods as cohorts accrue; bonus leg needs more events to clear FDR"
     note: "COST MODEL PASSED 2026-07-23 (cost_intimation_drift.py, per-event PIT Corwin-Schultz + Amihud + 0.2% commissions, 10%-ADV participation cap): splits net +13.7% (Rs1L, 223 executable) to +10.3% (Rs2Cr, but only 52/237 events executable); bonus net +8.0% to +4.4%. Median cost ~1%. The edge is EXECUTABLE-EVENT-LIMITED, not cost-limited — at Rs2Cr/position only ~5 split events/yr clear the participation cap (~Rs10Cr/yr deployable through splits)."
 
   non-india-panels-already-adjusted:
