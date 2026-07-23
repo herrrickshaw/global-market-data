@@ -68,7 +68,7 @@ claims:
     staleness_triggers:
       - "universe-level bias: filing-universe baseline hit is ~70-75%, not 50% — needs matched-window benchmark before validated"
       - "no FDR pass; single 10y sample, no subperiod split"
-      - "no cost model applied (small-cap names — Corwin-Schultz spread check required)"
+    note: "COST MODEL PASSED 2026-07-23 (cost_intimation_drift.py, per-event PIT Corwin-Schultz + Amihud + 0.2% commissions, 10%-ADV participation cap): splits net +13.7% (Rs1L, 223 executable) to +10.3% (Rs2Cr, but only 52/237 events executable); bonus net +8.0% to +4.4%. Median cost ~1%. The edge is EXECUTABLE-EVENT-LIMITED, not cost-limited — at Rs2Cr/position only ~5 split events/yr clear the participation cap (~Rs10Cr/yr deployable through splits)."
 
   non-india-panels-already-adjusted:
     statement: "JP/KR/CN/US warehouse panels are yfinance split-adjusted at collection; only post-assembly residual breaks (8 confirmed across 3 markets) needed fixing — the account-wide 'raw Close' risk flag was overbroad, applying fully only to India bhavcopy data"
