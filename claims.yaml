@@ -57,7 +57,17 @@ claims:
     repo: global-market-data
     status: validated
     evidence: "GOLDBEES/SETFGOLD 1:100 unit splits, KAUSHALYA reverse split; backtest_liquidity_forward.py filter"
-    note: "Root cause now properly fixed for IN via warehouse/ohlcv_adj + adjustment_factors (23,480 CAs). JP/KR/CN/EU/US still raw Close — every momentum/breakout/illiquidity conclusion there inherits this risk."
+    note: "Root cause now properly fixed for IN via warehouse/ohlcv_adj + adjustment_factors (23,480 CAs). CORRECTION 2026-07-23: JP/KR/CN/US panels are NOT raw — they are yfinance-adjusted as of collection (verified: NTT 25:1, Samsung 50:1, NVDA 10:1, TSLA 3:1 all pre-adjusted in-panel). The residual defect is POST-ASSEMBLY breaks only — splits after each panel's last full re-download appear as raw jumps. Fixed via price_adjuster_global.py: 86 candidates detected (integer-ratio + calm-day + turnover gates), 8 confirmed against the yfinance split calendar, sparse overlays written to warehouse/ohlcv_adj/{JP,KR,US}/corrected_symbols.parquet (overlay-first read rule; CN/EU had zero confirmed residuals). 78 unconfirmed candidates retained in adjustment_factors_heuristic.parquet as audit trail."
+
+  non-india-panels-already-adjusted:
+    statement: "JP/KR/CN/US warehouse panels are yfinance split-adjusted at collection; only post-assembly residual breaks (8 confirmed across 3 markets) needed fixing — the account-wide 'raw Close' risk flag was overbroad, applying fully only to India bhavcopy data"
+    repo: global-market-data
+    code: [price_adjuster_global.py]
+    status: validated
+    evidence: "NTT 9432.T trades ¥147-155 pre-25:1 (real ~¥4,100); Samsung 005930.KS ₩41-43k pre-50:1 (real ~₩2.65M); NVDA $120-131 through 10:1; fractional closes + back-scaled volume throughout = auto_adjust output. Residuals: 7946.T ¥3,673→¥733 5:1, 8227.T 3:1, 3 KR, 3 US — all calendar-confirmed and overlay-corrected 2026-07-23"
+    staleness_triggers:
+      - "each panel re-assembly resets the residual set — re-run price_adjuster_global.py after any full re-download or major incremental append"
+    note: "yfinance BUG found during validation: .history(auto_adjust=True) serves UNADJUSTED prices for recent JP/KR splits even when .splits knows the event (8227.T window shows raw ¥10,663→¥3,433). Validate corrections by series continuity + split calendar, never by yf windowed returns for JP/KR."
 
   roace-via-statements-not-ratios:
     statement: "ROACE is computable for India via yfinance income_stmt+balance_sheet (RELIANCE 9.0%, TCS 54.9% verified); reconstructing capital employed from ratios FAILS"

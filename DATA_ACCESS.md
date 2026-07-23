@@ -13,7 +13,24 @@
 
 ## Where the data actually comes from
 
-**Rescue-first repo — partly irreplaceable.** 10.5y point-in-time OHLCV including 964 delisted names. Primary local copy: `~/repos/global-market-data/cache_seed/ltm/*.parquet` — verify completeness before trusting. Re-collection covers only listed names (NSE Bhavcopy archive); delisted history cannot be re-collected. Raw Close not Adj Close — splits fake illiquid premiums.
+**Rescue-first repo — partly irreplaceable.** 10.5y point-in-time OHLCV including 964 delisted names. Primary local copy: `~/repos/global-market-data/cache_seed/ltm/*.parquet` — verify completeness before trusting. Re-collection covers only listed names (NSE Bhavcopy archive); delisted history cannot be re-collected.
+
+## Price adjustment status (2026-07-23)
+
+| Market | Panel state | Adjusted read path |
+|---|---|---|
+| IN | RAW bhavcopy (true raw) | `warehouse/ohlcv_adj/IN/` (full copy; 789 CA factors) |
+| JP, KR, US | yfinance-adjusted at collection + residual post-assembly breaks | **overlay-first**: `warehouse/ohlcv_adj/<MKT>/corrected_symbols.parquet` supersedes those symbols' `warehouse/ohlcv/<MKT>` rows |
+| CN, EU | yfinance-adjusted at collection, zero confirmed residuals | `warehouse/ohlcv/<MKT>` directly |
+
+Residual breaks are detected + calendar-confirmed by
+`~/market-pipeline/code/python_files/price_adjuster_global.py` — re-run it after
+any full panel re-download. All candidates (confirmed or not) are audited in
+`warehouse/adjustment_factors_heuristic.parquet`.
+
+⚠️ yfinance bug found 2026-07-23: `history(auto_adjust=True)` can serve
+UNADJUSTED prices for recent JP/KR splits even when `.splits` knows the event —
+validate adjustments by series continuity, not yf windowed returns.
 
 ## Account-wide context
 
