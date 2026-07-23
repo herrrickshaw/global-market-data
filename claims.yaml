@@ -59,6 +59,17 @@ claims:
     evidence: "GOLDBEES/SETFGOLD 1:100 unit splits, KAUSHALYA reverse split; backtest_liquidity_forward.py filter"
     note: "Root cause now properly fixed for IN via warehouse/ohlcv_adj + adjustment_factors (23,480 CAs). CORRECTION 2026-07-23: JP/KR/CN/US panels are NOT raw — they are yfinance-adjusted as of collection (verified: NTT 25:1, Samsung 50:1, NVDA 10:1, TSLA 3:1 all pre-adjusted in-panel). The residual defect is POST-ASSEMBLY breaks only — splits after each panel's last full re-download appear as raw jumps. Fixed via price_adjuster_global.py: 86 candidates detected (integer-ratio + calm-day + turnover gates), 8 confirmed against the yfinance split calendar, sparse overlays written to warehouse/ohlcv_adj/{JP,KR,US}/corrected_symbols.parquet (overlay-first read rule; CN/EU had zero confirmed residuals). 78 unconfirmed candidates retained in adjustment_factors_heuristic.parquet as audit trail."
 
+  india-ca-intimation-drift:
+    statement: "After a bonus/split board-meeting intimation becomes public, buying at intimation+2td and holding to ex-1 captured +10.4% (bonus, n=295, 75% hit) / +16.5% (split, n=258, 83% hit) abnormal-vs-market-median over 35-50 trading days; post-ex there is NO drift (47% hit)"
+    repo: market-pipeline (home)
+    code: [pit_event_studies.py, collect_board_meetings.py]
+    status: provisional
+    evidence: "reports/PIT_EVENT_STUDIES.md 2026-07-23; anchor = bm_timestamp (NSE caBroadcastDate is null everywhere); adjusted prices, PIT broadcast timing"
+    staleness_triggers:
+      - "universe-level bias: filing-universe baseline hit is ~70-75%, not 50% — needs matched-window benchmark before validated"
+      - "no FDR pass; single 10y sample, no subperiod split"
+      - "no cost model applied (small-cap names — Corwin-Schultz spread check required)"
+
   non-india-panels-already-adjusted:
     statement: "JP/KR/CN/US warehouse panels are yfinance split-adjusted at collection; only post-assembly residual breaks (8 confirmed across 3 markets) needed fixing — the account-wide 'raw Close' risk flag was overbroad, applying fully only to India bhavcopy data"
     repo: global-market-data
