@@ -4,3 +4,4 @@ warehouse/cgd/*.parquet -filter binary
 warehouse/energy/*.parquet -filter binary
 warehouse/audit/*.parquet -filter binary
 warehouse/bhavcopy/*.parquet -filter binary
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
