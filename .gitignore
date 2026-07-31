@@ -63,3 +63,6 @@ cache_seed/ltm/CN.parquet
 cache_seed/ltm/IN.parquet
 *.bak
 warehouse/etl_registry.sqlite
+
+# Pre-write backups from warehouse_update.py — local safety copies, never versioned
+warehouse/_backup/
