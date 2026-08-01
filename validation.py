@@ -26,9 +26,8 @@ from __future__ import annotations
 
 import argparse
 import warnings
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List
 
-import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
@@ -47,21 +46,21 @@ def _P(df):  # convenience
 
 LOCAL_SCREENS: Dict[str, Callable[[pd.DataFrame], pd.Series]] = {
     # curated "popular" list -----------------------------------------------------
-    "golden_crossover":        lambda d: d["GoldenCross"],                       # 50DMA>200DMA
-    "bearish_crossover":       lambda d: ~d["GoldenCross"],                      # 50DMA<200DMA
-    "companies_creating_new_high": lambda d: d["PctFromHigh"] >= -1,             # at/near 52w high
-    "darvas_scan":             lambda d: (d["PctFromHigh"] >= -3) & d["Above200DMA"],
-    "rsi_oversold":            lambda d: d["RSI14"] < 30,
-    "stocks_near_200dma":      lambda d: (d["Close"] / d["SMA200"] - 1).abs() <= 0.03,
+    "golden_crossover": lambda d: d["GoldenCross"],  # 50DMA>200DMA
+    "bearish_crossover": lambda d: ~d["GoldenCross"],  # 50DMA<200DMA
+    "companies_creating_new_high": lambda d: d["PctFromHigh"] >= -1,  # at/near 52w high
+    "darvas_scan": lambda d: (d["PctFromHigh"] >= -3) & d["Above200DMA"],
+    "rsi_oversold": lambda d: d["RSI14"] < 30,
+    "stocks_near_200dma": lambda d: (d["Close"] / d["SMA200"] - 1).abs() <= 0.03,
     # community / technical ------------------------------------------------------
-    "52w_high_breakout":       lambda d: d["PctFromHigh"] >= 0,
-    "all_time_high":           lambda d: d["PctFromHigh"] >= 0,                  # 52w proxy
-    "52w_low_contrarian":      lambda d: d["PctFromLow"] <= 5,
-    "midcap_momentum":         lambda d: (d["Ret126"] > 20) & d["Above200DMA"],
-    "value_plus_momentum":     lambda d: (d["Ret126"] > 15) & (d["PctFromHigh"] > -10),
-    "quality_plus_momentum":   lambda d: d["Above200DMA"] & d["GoldenCross"] & (d["Ret252"] > 15),
-    "multibagger_momentum":    lambda d: d["Ret252"] > 100,
-    "steady_uptrend":          lambda d: d["Above200DMA"] & (d["RSI14"].between(45, 70)),
+    "52w_high_breakout": lambda d: d["PctFromHigh"] >= 0,
+    "all_time_high": lambda d: d["PctFromHigh"] >= 0,  # 52w proxy
+    "52w_low_contrarian": lambda d: d["PctFromLow"] <= 5,
+    "midcap_momentum": lambda d: (d["Ret126"] > 20) & d["Above200DMA"],
+    "value_plus_momentum": lambda d: (d["Ret126"] > 15) & (d["PctFromHigh"] > -10),
+    "quality_plus_momentum": lambda d: d["Above200DMA"] & d["GoldenCross"] & (d["Ret252"] > 15),
+    "multibagger_momentum": lambda d: d["Ret252"] > 100,
+    "steady_uptrend": lambda d: d["Above200DMA"] & (d["RSI14"].between(45, 70)),
 }
 
 # fundamental-only popular screens — need Screener.in / fundamentals (registered
@@ -98,12 +97,19 @@ FUNDAMENTAL_SCREENS: Dict[str, str] = {
     "high_fcf": "high free cash flow",
     "buyback_candidates": "buyback",
     # sector/theme screens
-    "banking": "NIM/GNPA/CASA", "nbfc": "NIM/ROA/GNPA", "it_services": "margin/growth",
-    "pharma": "R&D/margin/USFDA", "fmcg_compounders": "quality FMCG",
-    "specialty_chemicals": "chemicals growth", "auto_components": "auto recovery",
-    "capital_goods_defence": "order book", "green_energy": "renewables",
-    "ev_supply_chain": "EV theme", "textiles_pli": "PLI beneficiaries",
-    "psu_undervalued": "cheap PSU", "metals_cement_cyclical": "cyclical bottom",
+    "banking": "NIM/GNPA/CASA",
+    "nbfc": "NIM/ROA/GNPA",
+    "it_services": "margin/growth",
+    "pharma": "R&D/margin/USFDA",
+    "fmcg_compounders": "quality FMCG",
+    "specialty_chemicals": "chemicals growth",
+    "auto_components": "auto recovery",
+    "capital_goods_defence": "order book",
+    "green_energy": "renewables",
+    "ev_supply_chain": "EV theme",
+    "textiles_pli": "PLI beneficiaries",
+    "psu_undervalued": "cheap PSU",
+    "metals_cement_cyclical": "cyclical bottom",
 }
 
 
@@ -161,7 +167,7 @@ def validate(picks: List[str], market: str) -> dict:
     per_screen = dict(sorted(per_screen.items(), key=lambda kv: -kv[1]))
     return {
         "n": len(picks_set),
-        "grounded_pct": round(len(grounded) / len(picks_set), 3),   # in ≥1 popular screen
+        "grounded_pct": round(len(grounded) / len(picks_set), 3),  # in ≥1 popular screen
         "novel_pct": round(1 - len(grounded) / len(picks_set), 3),  # in none (new pattern)
         "per_screen": per_screen,
     }
@@ -180,14 +186,18 @@ def report(market: str, verbose: bool = True) -> dict:
 
     if verbose:
         print(f"\n=== validation vs Screener.in popular screens — {market} ===")
-        print(f"  local popular screens computed: {len(scr)} "
-              f"(+{len(FUNDAMENTAL_SCREENS)} fundamental registered for live fetch)")
+        print(
+            f"  local popular screens computed: {len(scr)} "
+            f"(+{len(FUNDAMENTAL_SCREENS)} fundamental registered for live fetch)"
+        )
         for name, syms in sorted(scr.items(), key=lambda kv: -len(kv[1])):
             print(f"    {name:26} {len(syms):>5} names")
         if rec is not None and "error" not in val:
             print(f"\n  auto-screener recommendation ({len(rec['picks'])} picks):")
-            print(f"    grounded in popular screens: {val['grounded_pct']:.0%}"
-                  f"   novel (new pattern): {val['novel_pct']:.0%}")
+            print(
+                f"    grounded in popular screens: {val['grounded_pct']:.0%}"
+                f"   novel (new pattern): {val['novel_pct']:.0%}"
+            )
             if val["per_screen"]:
                 top = list(val["per_screen"].items())[:6]
                 print("    overlaps: " + ", ".join(f"{k} {v:.0%}" for k, v in top))

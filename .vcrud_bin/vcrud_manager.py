@@ -3,11 +3,12 @@ Versioned CRUD Manager - Unified interface for Git-backed file tracking
 Handles Create, Read, Update, Delete operations with full version history
 """
 
-from db_handler import DatabaseHandler, FileRecord, CompressionManager, GitBranchScanner
-from pathlib import Path
-from datetime import datetime
-from typing import Optional, List, Dict
 import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from db_handler import CompressionManager, DatabaseHandler, FileRecord, GitBranchScanner
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,12 +26,12 @@ class LocalFileIndexer:
         patterns: list of glob patterns to include (default: all non-.git files)
         """
         if patterns is None:
-            patterns = ['**/*']
+            patterns = ["**/*"]
 
         records = []
         for pattern in patterns:
             for file_path in self.base_path.glob(pattern):
-                if file_path.is_file() and '.git' not in file_path.parts:
+                if file_path.is_file() and ".git" not in file_path.parts:
                     try:
                         size = file_path.stat().st_size
                         checksum = CompressionManager.compute_checksum(str(file_path))
@@ -47,7 +48,7 @@ class LocalFileIndexer:
                             branch=branch,
                             last_modified=datetime.fromtimestamp(file_path.stat().st_mtime),
                             compressed_size=compressed_size,
-                            compression_ratio=ratio
+                            compression_ratio=ratio,
                         )
                         records.append(record)
                     except Exception as e:
@@ -120,11 +121,13 @@ class VersionedCRUDManager:
             last_modified=datetime.fromtimestamp(full_path.stat().st_mtime),
             git_commit=git_commit,
             compressed_size=compressed_size,
-            compression_ratio=ratio
+            compression_ratio=ratio,
         )
 
         file_id = self.db.create_file(record)
-        logger.info(f"✓ Created: {file_path} ({size:,} bytes → {compressed_size:,} bytes, ratio: {ratio:.2%})")
+        logger.info(
+            f"✓ Created: {file_path} ({size:,} bytes → {compressed_size:,} bytes, ratio: {ratio:.2%})"
+        )
         return file_id
 
     def create_many(self, branch: str, file_paths: List[str], git_commit: Optional[str] = None):
@@ -138,7 +141,9 @@ class VersionedCRUDManager:
                 logger.error(f"✗ Failed to create {file_path}: {e}")
                 results.append((file_path, -1, str(e)))
 
-        logger.info(f"✓ Batch CREATE: {len([r for r in results if r[2] == '✓'])}/{len(results)} successful")
+        logger.info(
+            f"✓ Batch CREATE: {len([r for r in results if r[2] == '✓'])}/{len(results)} successful"
+        )
         return results
 
     # ========== READ ==========
@@ -163,10 +168,10 @@ class VersionedCRUDManager:
         top_files = self.db.get_top_retrieval_files(branch, limit=10)
 
         return {
-            'branch': branch,
-            'stats': stats,
-            'top_retrieval_candidates': top_files,
-            'recommendation': self._get_retrieval_recommendation(top_files, stats)
+            "branch": branch,
+            "stats": stats,
+            "top_retrieval_candidates": top_files,
+            "recommendation": self._get_retrieval_recommendation(top_files, stats),
         }
 
     def _get_retrieval_recommendation(self, top_files: List[Dict], stats: Dict) -> str:
@@ -175,8 +180,10 @@ class VersionedCRUDManager:
             return "No retrieval history yet. Start tracking file accesses."
 
         top_file = top_files[0]
-        access_pct = (top_file['retrieval_count'] / sum(f['retrieval_count'] for f in top_files)) * 100
-        size_mb = top_file['size_bytes'] / (1024**2)
+        access_pct = (
+            top_file["retrieval_count"] / sum(f["retrieval_count"] for f in top_files)
+        ) * 100
+        size_mb = top_file["size_bytes"] / (1024**2)
 
         return (
             f"Pre-cache '{top_file['file_path']}' ({size_mb:.1f} MB, "
@@ -209,7 +216,7 @@ class VersionedCRUDManager:
             last_modified=datetime.fromtimestamp(full_path.stat().st_mtime),
             git_commit=git_commit,
             compressed_size=compressed_size,
-            compression_ratio=ratio
+            compression_ratio=ratio,
         )
 
         success = self.db.update_file(record)
@@ -242,32 +249,28 @@ class VersionedCRUDManager:
             try:
                 record = FileRecord(
                     path=file_path,
-                    size_bytes=metadata['size'],
-                    checksum=metadata['checksum'],
+                    size_bytes=metadata["size"],
+                    checksum=metadata["checksum"],
                     branch=branch,
                     last_modified=datetime.now(),
-                    git_commit=metadata['git_commit']
+                    git_commit=metadata["git_commit"],
                 )
 
                 # Compute compression
-                full_path = metadata['path_obj']
+                full_path = metadata["path_obj"]
                 if full_path.stat().st_size < 100 * 1024 * 1024:  # Only compress files < 100MB
                     compressed_data, ratio = self.compression.compress_file(str(full_path))
                     record.compressed_size = len(compressed_data)
                     record.compression_ratio = ratio
 
                 file_id = self.db.create_file(record)
-                results.append({'file': file_path, 'id': file_id, 'size': metadata['size']})
+                results.append({"file": file_path, "id": file_id, "size": metadata["size"]})
             except Exception as e:
                 logger.warning(f"Skipped {file_path}: {e}")
 
         logger.info(f"✓ Indexed {len(results)} files on {branch}")
         stats = self.db.get_branch_stats(branch)
-        return {
-            'branch': branch,
-            'files_indexed': len(results),
-            'stats': stats
-        }
+        return {"branch": branch, "files_indexed": len(results), "stats": stats}
 
     def find_duplicates_across_branches(self) -> List[Dict]:
         """Find and report identical files across branches"""
@@ -275,7 +278,7 @@ class VersionedCRUDManager:
 
         logger.info(f"Found {len(duplicates)} unique files with duplicates")
         for dup in duplicates:
-            wasted = dup['total_wasted'] / (1024**2)
+            wasted = dup["total_wasted"] / (1024**2)
             logger.info(
                 f"  Checksum {dup['checksum'][:8]}...: "
                 f"{dup['duplicate_count']}x, {wasted:.1f} MB wasted, "
@@ -306,21 +309,21 @@ class VersionedCRUDManager:
         top_files = self.db.get_top_retrieval_files(branch, limit=20)
 
         return {
-            'branch': branch,
-            'timestamp': datetime.now().isoformat(),
-            'statistics': stats,
-            'total_files': len(files),
-            'top_accessed_files': top_files,
-            'all_files': [
+            "branch": branch,
+            "timestamp": datetime.now().isoformat(),
+            "statistics": stats,
+            "total_files": len(files),
+            "top_accessed_files": top_files,
+            "all_files": [
                 {
-                    'path': f.path,
-                    'size_mb': f.size_bytes / (1024**2),
-                    'compression_ratio': f.compression_ratio,
-                    'checksum': f.checksum,
-                    'retrieval_count': f.retrieval_count
+                    "path": f.path,
+                    "size_mb": f.size_bytes / (1024**2),
+                    "compression_ratio": f.compression_ratio,
+                    "checksum": f.checksum,
+                    "retrieval_count": f.retrieval_count,
                 }
                 for f in files
-            ]
+            ],
         }
 
     def optimize_storage(self, branch: str, min_compression_ratio: float = 0.85) -> Dict:
@@ -331,31 +334,30 @@ class VersionedCRUDManager:
         files = self.db.list_files_by_branch(branch)
 
         poor_compression = [
-            f for f in files
-            if f.compression_ratio and f.compression_ratio > min_compression_ratio
+            f for f in files if f.compression_ratio and f.compression_ratio > min_compression_ratio
         ]
 
         duplicates = self.db.find_duplicates()
-        total_duplicate_waste = sum(d['total_wasted'] or 0 for d in duplicates)
+        total_duplicate_waste = sum(d["total_wasted"] or 0 for d in duplicates)
 
         return {
-            'branch': branch,
-            'poor_compression_candidates': [
+            "branch": branch,
+            "poor_compression_candidates": [
                 {
-                    'path': f.path,
-                    'size_mb': f.size_bytes / (1024**2),
-                    'ratio': f.compression_ratio,
-                    'note': 'Consider alternative compression or storage'
+                    "path": f.path,
+                    "size_mb": f.size_bytes / (1024**2),
+                    "ratio": f.compression_ratio,
+                    "note": "Consider alternative compression or storage",
                 }
                 for f in poor_compression[:10]
             ],
-            'total_duplicate_waste_mb': total_duplicate_waste / (1024**2),
-            'optimization_potential': {
-                'poor_compression_files': len(poor_compression),
-                'total_duplicate_files': len(duplicates),
-                'estimated_savings_mb': (
-                    (sum(f.size_bytes for f in poor_compression) / (1024**2)) +
-                    (total_duplicate_waste / (1024**2))
-                )
-            }
+            "total_duplicate_waste_mb": total_duplicate_waste / (1024**2),
+            "optimization_potential": {
+                "poor_compression_files": len(poor_compression),
+                "total_duplicate_files": len(duplicates),
+                "estimated_savings_mb": (
+                    (sum(f.size_bytes for f in poor_compression) / (1024**2))
+                    + (total_duplicate_waste / (1024**2))
+                ),
+            },
         }

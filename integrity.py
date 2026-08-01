@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import subprocess
-import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -29,14 +28,19 @@ MANIFEST = HERE / "cache_seed" / "CHECKSUMS.sha256"
 DATA_PREFIXES = ("cache_seed/", "reference_seed/")
 # volatile derived/ignored files never belong in the manifest
 SKIP = {"cache_seed/CHECKSUMS.sha256"}
-SKIP_DIRS = ("cache_seed/serving/", "cache_seed/cdc/", "cache_seed/models/",
-             "cache_seed/discovered_screens/")
+SKIP_DIRS = (
+    "cache_seed/serving/",
+    "cache_seed/cdc/",
+    "cache_seed/models/",
+    "cache_seed/discovered_screens/",
+)
 
 
 def _tracked_files(data_only: bool = False) -> List[str]:
     """Git-tracked files, optionally restricted to the data dirs."""
-    out = subprocess.run(["git", "-C", str(HERE), "ls-files"],
-                         capture_output=True, text=True, check=True).stdout.splitlines()
+    out = subprocess.run(
+        ["git", "-C", str(HERE), "ls-files"], capture_output=True, text=True, check=True
+    ).stdout.splitlines()
     files = []
     for f in out:
         if f in SKIP or any(f.startswith(d) for d in SKIP_DIRS):
@@ -99,8 +103,7 @@ def verify(data_only: bool = False, verbose: bool = True) -> int:
 
     ok = not (mismatched or missing or added)
     if verbose:
-        print(f"  verified {len(recorded)} files: "
-              f"{'OK ✓' if ok else 'DRIFT DETECTED ✗'}")
+        print(f"  verified {len(recorded)} files: " f"{'OK ✓' if ok else 'DRIFT DETECTED ✗'}")
         for p in mismatched:
             print(f"    MISMATCH  {p}")
         for p in missing:
@@ -114,7 +117,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Repository tamper-evidence (SHA-256 manifest)")
     ap.add_argument("--generate", action="store_true", help="(re)write the checksum manifest")
     ap.add_argument("--verify", action="store_true", help="verify files against the manifest")
-    ap.add_argument("--data-only", action="store_true", help="restrict to cache_seed/ + reference_seed/")
+    ap.add_argument(
+        "--data-only", action="store_true", help="restrict to cache_seed/ + reference_seed/"
+    )
     args = ap.parse_args()
 
     if args.generate:

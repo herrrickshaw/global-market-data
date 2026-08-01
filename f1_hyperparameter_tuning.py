@@ -14,11 +14,11 @@ Process:
 6. Validate on holdout test set
 """
 
-import pandas as pd
+from typing import Dict, List, Tuple
+
 import numpy as np
-from itertools import product
-from typing import Dict, Tuple, List
-from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+import pandas as pd
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
 
 
 class F1HyperparameterTuner:
@@ -26,14 +26,14 @@ class F1HyperparameterTuner:
 
     # 8 dimensions to tune
     DIMENSIONS = [
-        'debt_expansion',
-        'capex_acceleration',
-        'profit_reinvestment',
-        'profitability_quality',
-        'sustainability',
-        'timing_alignment',
-        'leverage_health',
-        'fcf_generation',
+        "debt_expansion",
+        "capex_acceleration",
+        "profit_reinvestment",
+        "profitability_quality",
+        "sustainability",
+        "timing_alignment",
+        "leverage_health",
+        "fcf_generation",
     ]
 
     def __init__(self, data_df: pd.DataFrame, train_size: float = 0.7):
@@ -47,21 +47,23 @@ class F1HyperparameterTuner:
         self.data = data_df.copy()
 
         # Split train/test
-        train_idx = np.random.choice(len(self.data), size=int(len(self.data) * train_size), replace=False)
+        train_idx = np.random.choice(
+            len(self.data), size=int(len(self.data) * train_size), replace=False
+        )
         test_idx = np.setdiff1d(np.arange(len(self.data)), train_idx)
 
         self.train = self.data.iloc[train_idx].reset_index(drop=True)
         self.test = self.data.iloc[test_idx].reset_index(drop=True)
 
         # Define target: binary classification (outperform vs underperform)
-        train_median = self.train['stock_return_12m'].median()
-        test_median = self.test['stock_return_12m'].median()
+        train_median = self.train["stock_return_12m"].median()
+        test_median = self.test["stock_return_12m"].median()
 
-        self.train['outperform'] = (self.train['stock_return_12m'] > train_median).astype(int)
-        self.test['outperform'] = (self.test['stock_return_12m'] > test_median).astype(int)
+        self.train["outperform"] = (self.train["stock_return_12m"] > train_median).astype(int)
+        self.test["outperform"] = (self.test["stock_return_12m"] > test_median).astype(int)
 
         self.results = []
-        print(f"\n📊 Train/Test Split")
+        print("\n📊 Train/Test Split")
         print(f"   Train: {len(self.train):,} samples ({len(self.train)/len(self.data)*100:.1f}%)")
         print(f"   Test:  {len(self.test):,} samples ({len(self.test)/len(self.data)*100:.1f}%)")
         print(f"   Outperform threshold (train): {train_median:.2f}%")
@@ -78,14 +80,13 @@ class F1HyperparameterTuner:
         for dim in self.DIMENSIONS:
             if dim in df.columns:
                 # Assume column is named like 'capex_acceleration_score'
-                col_name = f'{dim}_score' if f'{dim}_score' in df.columns else dim
+                col_name = f"{dim}_score" if f"{dim}_score" in df.columns else dim
                 if col_name in df.columns:
                     scores += df[col_name].values * weights.get(dim, 0)
 
         return scores
 
-    def random_search_weights(self, n_iterations: int = 500,
-                             top_k: int = 100) -> List[Dict]:
+    def random_search_weights(self, n_iterations: int = 500, top_k: int = 100) -> List[Dict]:
         """
         Random search over weight combinations (faster than grid search).
 
@@ -97,7 +98,7 @@ class F1HyperparameterTuner:
             List of top K weight combinations with F1 scores
         """
 
-        print(f"\n🔍 RANDOM SEARCH OVER WEIGHT COMBINATIONS")
+        print("\n🔍 RANDOM SEARCH OVER WEIGHT COMBINATIONS")
         print(f"   Dimensions: {len(self.DIMENSIONS)}")
         print(f"   Iterations: {n_iterations:,}")
 
@@ -122,10 +123,12 @@ class F1HyperparameterTuner:
 
             # Calculate F1 on training set
             try:
-                train_f1 = f1_score(self.train['outperform'], predictions, zero_division=0)
-                train_precision = precision_score(self.train['outperform'], predictions, zero_division=0)
-                train_recall = recall_score(self.train['outperform'], predictions, zero_division=0)
-            except:
+                train_f1 = f1_score(self.train["outperform"], predictions, zero_division=0)
+                train_precision = precision_score(
+                    self.train["outperform"], predictions, zero_division=0
+                )
+                train_recall = recall_score(self.train["outperform"], predictions, zero_division=0)
+            except Exception:
                 train_f1 = 0
                 train_precision = 0
                 train_recall = 0
@@ -137,39 +140,45 @@ class F1HyperparameterTuner:
 
             # Calculate F1 on test set
             try:
-                test_f1 = f1_score(self.test['outperform'], test_predictions, zero_division=0)
-                test_precision = precision_score(self.test['outperform'], test_predictions, zero_division=0)
-                test_recall = recall_score(self.test['outperform'], test_predictions, zero_division=0)
-            except:
+                test_f1 = f1_score(self.test["outperform"], test_predictions, zero_division=0)
+                test_precision = precision_score(
+                    self.test["outperform"], test_predictions, zero_division=0
+                )
+                test_recall = recall_score(
+                    self.test["outperform"], test_predictions, zero_division=0
+                )
+            except Exception:
                 test_f1 = 0
                 test_precision = 0
                 test_recall = 0
 
-            results.append({
-                'weights': weights.copy(),
-                'train_f1': train_f1,
-                'train_precision': train_precision,
-                'train_recall': train_recall,
-                'test_f1': test_f1,
-                'test_precision': test_precision,
-                'test_recall': test_recall,
-                'overfitting_gap': abs(train_f1 - test_f1),
-            })
+            results.append(
+                {
+                    "weights": weights.copy(),
+                    "train_f1": train_f1,
+                    "train_precision": train_precision,
+                    "train_recall": train_recall,
+                    "test_f1": test_f1,
+                    "test_precision": test_precision,
+                    "test_recall": test_recall,
+                    "overfitting_gap": abs(train_f1 - test_f1),
+                }
+            )
 
             if (iteration + 1) % max(1, n_iterations // 10) == 0:
-                print(f"   Iteration {iteration + 1:,}/{n_iterations:,}...", end='\r')
+                print(f"   Iteration {iteration + 1:,}/{n_iterations:,}...", end="\r")
 
         print(f"   ✅ Tested {n_iterations:,} random combinations")
 
         # Sort by test F1 (avoid overfitting by using test set)
-        results.sort(key=lambda x: x['test_f1'], reverse=True)
+        results.sort(key=lambda x: x["test_f1"], reverse=True)
 
         return results[:top_k]
 
     def recommend_weights(self, top_results: List[Dict]) -> Dict:
         """Extract best weight combination"""
         best = top_results[0]
-        return best['weights']
+        return best["weights"]
 
     def run_tuning(self, n_iterations: int = 500) -> Tuple[Dict, pd.DataFrame]:
         """
@@ -195,31 +204,31 @@ class F1HyperparameterTuner:
 
         best = top_results[0]
 
-        print(f"\n" + "="*80)
-        print(f"F1-BASED HYPERPARAMETER TUNING RESULTS")
-        print(f"="*80)
+        print("\n" + "=" * 80)
+        print("F1-BASED HYPERPARAMETER TUNING RESULTS")
+        print("=" * 80)
 
-        print(f"\n🏆 BEST WEIGHT COMBINATION (Maximized Test F1)")
+        print("\n🏆 BEST WEIGHT COMBINATION (Maximized Test F1)")
         print(f"   Test F1 Score:    {best['test_f1']:.4f}")
         print(f"   Test Precision:   {best['test_precision']:.4f}")
         print(f"   Test Recall:      {best['test_recall']:.4f}")
         print(f"   Train F1 Score:   {best['train_f1']:.4f}")
         print(f"   Overfitting Gap:  {best['overfitting_gap']:.4f} (lower is better)")
 
-        print(f"\n📊 OPTIMAL WEIGHTS")
+        print("\n📊 OPTIMAL WEIGHTS")
         print(f"   {'Dimension':<30s} {'Weight':>10s} {'Current':>10s} {'Change':>10s}")
-        print("   " + "-"*70)
+        print("   " + "-" * 70)
 
         # Current baseline weights
         current_weights = {
-            'debt_expansion': 20,
-            'capex_acceleration': 20,
-            'profit_reinvestment': 15,
-            'profitability_quality': 15,
-            'sustainability': 15,
-            'timing_alignment': 10,
-            'leverage_health': 5,
-            'fcf_generation': 0,
+            "debt_expansion": 20,
+            "capex_acceleration": 20,
+            "profit_reinvestment": 15,
+            "profitability_quality": 15,
+            "sustainability": 15,
+            "timing_alignment": 10,
+            "leverage_health": 5,
+            "fcf_generation": 0,
         }
 
         for dim in self.DIMENSIONS:
@@ -233,9 +242,11 @@ class F1HyperparameterTuner:
         total = sum(best_weights.values())
         print(f"\n   TOTAL: {total:.1f}")
 
-        print(f"\n📈 TOP 10 WEIGHT COMBINATIONS")
-        print(f"   {'Rank':>4s} {'Test F1':>10s} {'Precision':>10s} {'Recall':>10s} {'Train F1':>10s} {'Overfit':>10s}")
-        print("   " + "-"*70)
+        print("\n📈 TOP 10 WEIGHT COMBINATIONS")
+        print(
+            f"   {'Rank':>4s} {'Test F1':>10s} {'Precision':>10s} {'Recall':>10s} {'Train F1':>10s} {'Overfit':>10s}"
+        )
+        print("   " + "-" * 70)
 
         for rank, result in enumerate(top_results[:10], 1):
             print(
@@ -244,53 +255,55 @@ class F1HyperparameterTuner:
                 f"{result['train_f1']:>10.4f} {result['overfitting_gap']:>10.4f}"
             )
 
-        print(f"\n💡 KEY METRICS")
+        print("\n💡 KEY METRICS")
         print(f"   Precision:  {best['test_precision']:.1%}")
-        print(f"   └─ Of companies we recommend as BUY, {best['test_precision']:.1%} actually outperform")
+        print(
+            f"   └─ Of companies we recommend as BUY, {best['test_precision']:.1%} actually outperform"
+        )
         print(f"   Recall:     {best['test_recall']:.1%}")
         print(f"   └─ We identify {best['test_recall']:.1%} of actual outperformers")
         print(f"   F1 Score:   {best['test_f1']:.4f}")
-        print(f"   └─ Harmonic mean of precision & recall (0-1 scale)")
+        print("   └─ Harmonic mean of precision & recall (0-1 scale)")
 
-        print(f"\n⚖️  PRECISION-RECALL TRADEOFF")
-        print(f"   High Precision (>80%): Be selective, only recommend sure winners")
-        print(f"   High Recall (>80%):    Catch most outperformers, accept false positives")
+        print("\n⚖️  PRECISION-RECALL TRADEOFF")
+        print("   High Precision (>80%): Be selective, only recommend sure winners")
+        print("   High Recall (>80%):    Catch most outperformers, accept false positives")
         print(f"   F1 Optimal ({best['test_f1']:.1%}):     Balance both objectives")
 
-        print(f"\n⚠️  OVERFITTING ANALYSIS")
+        print("\n⚠️  OVERFITTING ANALYSIS")
         print(f"   Overfitting Gap: {best['overfitting_gap']:.4f}")
-        if best['overfitting_gap'] < 0.05:
-            print(f"   ✅ LOW OVERFITTING - Model generalizes well")
-        elif best['overfitting_gap'] < 0.15:
-            print(f"   ⚠️  MODERATE OVERFITTING - May need regularization")
+        if best["overfitting_gap"] < 0.05:
+            print("   ✅ LOW OVERFITTING - Model generalizes well")
+        elif best["overfitting_gap"] < 0.15:
+            print("   ⚠️  MODERATE OVERFITTING - May need regularization")
         else:
-            print(f"   ❌ HIGH OVERFITTING - Model doesn't generalize")
+            print("   ❌ HIGH OVERFITTING - Model doesn't generalize")
 
-        print(f"\n🎯 INTERPRETATION")
+        print("\n🎯 INTERPRETATION")
         print(f"   This weight combination was tuned on {len(self.train):,} training samples")
         print(f"   And validated on {len(self.test):,} held-out test samples")
         print(f"   Expected real-world F1 score: ~{best['test_f1']:.3f} (±0.02)")
         print(f"   Recommendation confidence: {best['test_precision']:.0%}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     def compare_with_baseline(self, best_weights: Dict, baseline_weights: Dict) -> None:
         """Compare F1 score of new weights vs baseline"""
 
-        print(f"\n" + "="*80)
-        print(f"COMPARISON: OPTIMIZED vs BASELINE WEIGHTS")
-        print(f"="*80)
+        print("\n" + "=" * 80)
+        print("COMPARISON: OPTIMIZED vs BASELINE WEIGHTS")
+        print("=" * 80)
 
         for weights, label in [(best_weights, "OPTIMIZED"), (baseline_weights, "BASELINE")]:
             scores = self.generate_8d_scores(self.test, weights)
             median_score = np.median(scores)
             predictions = (scores > median_score).astype(int)
 
-            f1 = f1_score(self.test['outperform'], predictions)
-            precision = precision_score(self.test['outperform'], predictions)
-            recall = recall_score(self.test['outperform'], predictions)
+            f1 = f1_score(self.test["outperform"], predictions)
+            precision = precision_score(self.test["outperform"], predictions)
+            recall = recall_score(self.test["outperform"], predictions)
 
-            tn, fp, fn, tp = confusion_matrix(self.test['outperform'], predictions).ravel()
+            tn, fp, fn, tp = confusion_matrix(self.test["outperform"], predictions).ravel()
             accuracy = (tp + tn) / (tp + tn + fp + fn)
 
             print(f"\n{label} WEIGHTS")
@@ -307,24 +320,26 @@ class F1HyperparameterTuner:
         baseline_scores = self.generate_8d_scores(self.test, baseline_weights)
         baseline_median = np.median(baseline_scores)
         baseline_pred = (baseline_scores > baseline_median).astype(int)
-        baseline_f1 = f1_score(self.test['outperform'], baseline_pred)
+        baseline_f1 = f1_score(self.test["outperform"], baseline_pred)
 
         opt_scores = self.generate_8d_scores(self.test, best_weights)
         opt_median = np.median(opt_scores)
         opt_pred = (opt_scores > opt_median).astype(int)
-        opt_f1 = f1_score(self.test['outperform'], opt_pred)
+        opt_f1 = f1_score(self.test["outperform"], opt_pred)
 
         improvement = (opt_f1 - baseline_f1) / baseline_f1 * 100 if baseline_f1 > 0 else 0
 
-        print(f"\n📈 IMPROVEMENT")
+        print("\n📈 IMPROVEMENT")
         print(f"   F1 Score: {baseline_f1:.4f} → {opt_f1:.4f}")
         print(f"   Improvement: {improvement:+.1f}%")
-        print(f"   Recommendation: {'✅ Use optimized weights' if improvement > 0 else '❌ Stick with baseline'}")
+        print(
+            f"   Recommendation: {'✅ Use optimized weights' if improvement > 0 else '❌ Stick with baseline'}"
+        )
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
 
 if __name__ == "__main__":
-    print("\n" + "🎯 "*40)
+    print("\n" + "🎯 " * 40)
     print("F1-BASED HYPERPARAMETER TUNING FOR WEIGHT OPTIMIZATION")
-    print("🎯 "*40)
+    print("🎯 " * 40)

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -29,6 +29,7 @@ import correlation_analysis as ca
 # Import data configuration for proper train/test splits
 try:
     from data_config import DataConfig, filter_data_by_split
+
     HAS_DATA_CONFIG = True
 except ImportError:
     HAS_DATA_CONFIG = False
@@ -84,22 +85,22 @@ def validate(market: str, target: str = "cagr", q: int = 5, use_test_split: bool
     if use_test_split and HAS_DATA_CONFIG:
         # Get performance data with dates
         perf = ca._perf_features(market)
-        if 'date' in perf.columns or 'Date' in perf.columns:
+        if "date" in perf.columns or "Date" in perf.columns:
             perf_test = filter_data_by_split(perf, "date", split="test")
             merged = merged[merged.index.isin(perf_test.index)]
             print(f"  ✓ Applied TEST split: {len(merged)} records from 2023-2024")
         else:
-            print(f"  ⚠️  No date column in performance data; using all records")
+            print("  ⚠️  No date column in performance data; using all records")
 
     # Validate data quality
     if HAS_DATA_CONFIG:
         config = DataConfig()
-        if 'composite' in merged.columns and target in merged.columns:
-            df_check = merged[['composite', target]].dropna()
+        if "composite" in merged.columns and target in merged.columns:
+            df_check = merged[["composite", target]].dropna()
             if len(df_check) > 0:
                 errors = config.validation.validate_dataframe(df_check)
                 if errors:
-                    print(f"  ⚠️  Data validation warnings:")
+                    print("  ⚠️  Data validation warnings:")
                     for error in errors[:3]:  # Show first 3 errors
                         print(f"     • {error}")
 
@@ -122,10 +123,7 @@ def validate(market: str, target: str = "cagr", q: int = 5, use_test_split: bool
 
 
 def validate_with_proper_split(
-    market: str,
-    target: str = "cagr",
-    quantiles: int = 5,
-    use_test_split: bool = True
+    market: str, target: str = "cagr", quantiles: int = 5, use_test_split: bool = True
 ) -> Dict:
     """
     PROPER BACKTEST: Validate fundamentals composite with train/test split.
@@ -142,7 +140,7 @@ def validate_with_proper_split(
         Results dictionary
     """
     print(f"\n{'='*80}")
-    print(f"FUNDAMENTALS COMPOSITE VALIDATION")
+    print("FUNDAMENTALS COMPOSITE VALIDATION")
     print(f"{'='*80}")
 
     if use_test_split and HAS_DATA_CONFIG:
@@ -150,7 +148,7 @@ def validate_with_proper_split(
         test_start, test_end = config.date_splits.get_test_range()
         print(f"✓ Using TEST split: {test_start} to {test_end} (unseen data)")
     else:
-        print(f"⚠️  Using all available data (not recommended for evaluation)")
+        print("⚠️  Using all available data (not recommended for evaluation)")
 
     return validate(market, target, quantiles, use_test_split=use_test_split)
 
@@ -160,19 +158,28 @@ def main() -> int:
         description="Phase 4 — fundamentals-composite quintile backtest with proper train/test splits"
     )
     ap.add_argument("--market", default="US", help="Market code (US, IN, etc.)")
-    ap.add_argument("--target", default="cagr", choices=ca.PERF, help="Performance metric to validate")
+    ap.add_argument(
+        "--target", default="cagr", choices=ca.PERF, help="Performance metric to validate"
+    )
     ap.add_argument("--quantiles", type=int, default=5, help="Number of quintiles")
-    ap.add_argument("--use-test-split", action="store_true", default=True,
-                   help="Use TEST split to prevent leakage (default: True)")
-    ap.add_argument("--no-split", action="store_true",
-                   help="Use all data (not recommended; overrides --use-test-split)")
+    ap.add_argument(
+        "--use-test-split",
+        action="store_true",
+        default=True,
+        help="Use TEST split to prevent leakage (default: True)",
+    )
+    ap.add_argument(
+        "--no-split",
+        action="store_true",
+        help="Use all data (not recommended; overrides --use-test-split)",
+    )
     a = ap.parse_args()
 
-    print("\n" + "🎯 "*40)
+    print("\n" + "🎯 " * 40)
     print("FUNDAMENTALS COMPOSITE VALIDATION")
-    print("🎯 "*40)
-    print(f"\n✓ Using proper train/test splits from data_config.py")
-    print(f"✓ This prevents data leakage and ensures fair evaluation")
+    print("🎯 " * 40)
+    print("\n✓ Using proper train/test splits from data_config.py")
+    print("✓ This prevents data leakage and ensures fair evaluation")
 
     use_split = not a.no_split
     r = validate_with_proper_split(a.market, a.target, a.quantiles, use_test_split=use_split)
@@ -183,10 +190,10 @@ def main() -> int:
 
     print(f"\n{a.market} — fundamentals composite vs {a.target} (n={r['n']})")
     print(f"  metrics: {', '.join(r['metrics_used'])}")
-    if r.get('used_test_split'):
-        print(f"  ✓ Evaluated on TEST split (unseen 2023-2024 data)")
+    if r.get("used_test_split"):
+        print("  ✓ Evaluated on TEST split (unseen 2023-2024 data)")
     else:
-        print(f"  ⚠️  Evaluated on all available data")
+        print("  ⚠️  Evaluated on all available data")
 
     tbl = r["table"].copy()
     tbl["mean"] = (tbl["mean"] * 100).round(1)
@@ -199,8 +206,8 @@ def main() -> int:
         f"→ {'signal separates winners' if sp > 0 else 'no/negative separation'}"
     )
 
-    print(f"\n✅ Validation complete")
-    print(f"📖 For details on train/test splits, see DATA_VALIDATION_GUIDE.md")
+    print("\n✅ Validation complete")
+    print("📖 For details on train/test splits, see DATA_VALIDATION_GUIDE.md")
     return 0
 
 

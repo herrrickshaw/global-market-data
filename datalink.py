@@ -50,8 +50,26 @@ LIVE_CACHE = Path(
 )
 
 MARKETS = [
-    "IN", "US", "JP", "KR", "CN", "SG", "EU", "HK", "TW", "CA",
-    "AU", "UK", "DE", "SA", "BR", "CH", "ZA", "SE", "FI", "DK",
+    "IN",
+    "US",
+    "JP",
+    "KR",
+    "CN",
+    "SG",
+    "EU",
+    "HK",
+    "TW",
+    "CA",
+    "AU",
+    "UK",
+    "DE",
+    "SA",
+    "BR",
+    "CH",
+    "ZA",
+    "SE",
+    "FI",
+    "DK",
 ]
 
 
@@ -133,7 +151,9 @@ def ccc_map_cached(max_age_days: float = 1.0, allow_network: bool = True) -> dic
     if _CCC_CACHE is not None:
         return _CCC_CACHE
 
-    fresh = CCC_PARQUET.exists() and (time.time() - CCC_PARQUET.stat().st_mtime) < max_age_days * 86400
+    fresh = (
+        CCC_PARQUET.exists() and (time.time() - CCC_PARQUET.stat().st_mtime) < max_age_days * 86400
+    )
     if not fresh and allow_network:
         try:
             from screener_in import ccc_screen
@@ -255,7 +275,9 @@ def build_store_incremental(verbose: bool = True) -> dict:
     env.close()
     STORE_STATE.write_text(json.dumps(_stm_signatures(), indent=2))
     if verbose:
-        print(f"  store incremental: refreshed {len(changed)} market(s) {changed}, {written} symbols")
+        print(
+            f"  store incremental: refreshed {len(changed)} market(s) {changed}, {written} symbols"
+        )
     return {"mode": "incremental", "symbols": written, "changed": changed}
 
 
