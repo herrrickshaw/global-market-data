@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -40,8 +39,16 @@ import datalink
 AGENT_DIR = Path(__file__).parent / "cache_seed" / "models"
 AGENT_DIR.mkdir(parents=True, exist_ok=True)
 
-ACTIONS = ["SKIP", "ENTER_SMALL", "ENTER_FULL", "HOLD", "ADD",
-           "PARTIAL_EXIT", "FULL_EXIT", "STOP_LOSS"]
+ACTIONS = [
+    "SKIP",
+    "ENTER_SMALL",
+    "ENTER_FULL",
+    "HOLD",
+    "ADD",
+    "PARTIAL_EXIT",
+    "FULL_EXIT",
+    "STOP_LOSS",
+]
 A = {a: i for i, a in enumerate(ACTIONS)}
 
 
@@ -89,7 +96,7 @@ def _bucket(v: float, edges: List[float]) -> int:
 
 def encode_state(s: dict) -> Tuple[int, ...]:
     return (
-        _bucket(s["score"], [0.33, 0.66]),                 # supervised conviction
+        _bucket(s["score"], [0.33, 0.66]),  # supervised conviction
         {"Bear": 0, "Neutral": 1, "Bull": 2}.get(s["regime"], 1),
         _bucket(s["days_held"], [1, 5, 20]),
         _bucket(s["pnl"], [-0.08, 0.0, 0.10]),
@@ -107,8 +114,15 @@ class StockEnv:
     """One episode walks a stock forward `horizon` steps from an as-of date; the
     agent picks an action each step and is rewarded per the doc reward function."""
 
-    def __init__(self, close: np.ndarray, t0: int, score: float, regime: str,
-                 horizon: int = 63, stop: float = -0.08):
+    def __init__(
+        self,
+        close: np.ndarray,
+        t0: int,
+        score: float,
+        regime: str,
+        horizon: int = 63,
+        stop: float = -0.08,
+    ):
         self.close, self.t0, self.score = close, t0, regime and score
         self.score, self.regime, self.horizon, self.stop = score, regime, horizon, stop
 
@@ -128,11 +142,16 @@ class StockEnv:
     def _state(self) -> dict:
         pnl = self._pnl()
         self.peak = max(self.peak, pnl)
-        return {"score": self.score, "regime": self.regime, "days_held": self.days_held,
-                "pnl": pnl, "exposure": self.exposure,
-                "drawdown_from_peak": max(0.0, self.peak - pnl),
-                "sector_boom_phase": "early" if self.regime == "Bull" else "mid",
-                "in_position": int(self.entry is not None)}
+        return {
+            "score": self.score,
+            "regime": self.regime,
+            "days_held": self.days_held,
+            "pnl": pnl,
+            "exposure": self.exposure,
+            "drawdown_from_peak": max(0.0, self.peak - pnl),
+            "sector_boom_phase": "early" if self.regime == "Bull" else "mid",
+            "in_position": int(self.entry is not None),
+        }
 
     def step(self, action: str):
         s = self._state()
@@ -187,7 +206,7 @@ class QAgent:
 def _regime_at(close: np.ndarray, t: int) -> str:
     if t < 200:
         return "Neutral"
-    last, sma200 = close[t], close[t - 200:t].mean()
+    last, sma200 = close[t], close[t - 200 : t].mean()
     r63 = close[t] / close[t - 63] - 1 if t > 63 else 0
     if last > sma200 and r63 > 0.05:
         return "Bull"
@@ -235,13 +254,17 @@ def train(market: str, episodes: int = 4000, horizon: int = 63, verbose: bool = 
 
     joblib.dump({"Q": agent.Q, "actions": ACTIONS}, AGENT_DIR / f"{market}_rl.pkl")
     if verbose:
-        print(f"  trained RL {market}: {episodes} episodes, {len(agent.Q)} states, "
-              f"avg reward/ep {total/episodes:.3f}")
+        print(
+            f"  trained RL {market}: {episodes} episodes, {len(agent.Q)} states, "
+            f"avg reward/ep {total/episodes:.3f}"
+        )
     return {"market": market, "episodes": episodes, "states": len(agent.Q)}
 
 
 # ── act on today's shortlist ─────────────────────────────────────────────────────
-def decide(market: str, shortlist: Optional[List[str]] = None, verbose: bool = True) -> pd.DataFrame:
+def decide(
+    market: str, shortlist: Optional[List[str]] = None, verbose: bool = True
+) -> pd.DataFrame:
     import joblib
 
     p = AGENT_DIR / f"{market}_rl.pkl"
@@ -276,12 +299,24 @@ def decide(market: str, shortlist: Optional[List[str]] = None, verbose: bool = T
         if d is None or len(d) < 201:
             continue
         close = d["Close"].to_numpy("float64")
-        st = {"score": scores.get(sym, 0.5), "regime": _regime_at(close, len(close) - 1),
-              "days_held": 0, "pnl": 0.0, "exposure": 0.0, "drawdown_from_peak": 0.0,
-              "in_position": 0}
+        st = {
+            "score": scores.get(sym, 0.5),
+            "regime": _regime_at(close, len(close) - 1),
+            "days_held": 0,
+            "pnl": 0.0,
+            "exposure": 0.0,
+            "drawdown_from_peak": 0.0,
+            "in_position": 0,
+        }
         action = agent.act(st, explore=False)
-        rows.append({"Symbol": sym, "Action": action, "Score": round(st["score"], 3),
-                     "Regime": st["regime"]})
+        rows.append(
+            {
+                "Symbol": sym,
+                "Action": action,
+                "Score": round(st["score"], 3),
+                "Regime": st["regime"],
+            }
+        )
     out = pd.DataFrame(rows)
     if verbose and not out.empty:
         print(f"\n=== RL trade decisions — {market} ===")
@@ -298,8 +333,10 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.ppo:
-        print("PPO path requires stable_baselines3 + gymnasium (not installed); "
-              "using the built-in Q-learning agent instead.")
+        print(
+            "PPO path requires stable_baselines3 + gymnasium (not installed); "
+            "using the built-in Q-learning agent instead."
+        )
     if args.train:
         train(args.market, episodes=args.episodes)
         return 0
