@@ -247,8 +247,14 @@ def main() -> int:
             args.screen,
             top=15,
         )
-        cols = [c for c in ["Symbol", "Close", "RSI14", "PctFromHigh", "Ret252", "Liquidity"] if c in df.columns]
-        print(df[cols].to_string(index=False) if not df.empty else "no serving view — run --refresh")
+        cols = [
+            c
+            for c in ["Symbol", "Close", "RSI14", "PctFromHigh", "Ret252", "Liquidity"]
+            if c in df.columns
+        ]
+        print(
+            df[cols].to_string(index=False) if not df.empty else "no serving view — run --refresh"
+        )
         return 0
 
     refresh(args.market)

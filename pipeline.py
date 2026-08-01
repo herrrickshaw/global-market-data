@@ -85,8 +85,13 @@ def filter_clearers(market: str, min_turnover_usd: float = 1_000_000) -> Dict[st
     try:
         import screen_metrics as sm
 
-        for name in ("golden_crossover", "companies_creating_new_high",
-                     "price_volume_action", "breakout_stocks", "multibagger_momentum"):
+        for name in (
+            "golden_crossover",
+            "companies_creating_new_high",
+            "price_volume_action",
+            "breakout_stocks",
+            "multibagger_momentum",
+        ):
             df = sm.run_screen(name, market, min_turnover_usd=min_turnover_usd)
             if not df.empty:
                 add(name, df["Symbol"])
@@ -151,8 +156,9 @@ def promoted(market: str) -> Dict[str, dict]:
     return _load().get(market, {}).get("promoted", {})
 
 
-def sync(market: str, min_turnover_usd: float = 1_000_000, min_filters: int = 2,
-         verbose: bool = True) -> dict:
+def sync(
+    market: str, min_turnover_usd: float = 1_000_000, min_filters: int = 2, verbose: bool = True
+) -> dict:
     """The pipeline driver: run the filters, diff against the registry, promote new
     HIGH-CONVICTION clearers (clearing ≥ min_filters distinct filters) and demote
     names that no longer qualify. The conviction gate bounds the deep-tracked set so
@@ -167,14 +173,14 @@ def sync(market: str, min_turnover_usd: float = 1_000_000, min_filters: int = 2,
     _mkt(state, market)["synced"] = _dt.datetime.now().isoformat(timespec="seconds")
     _save(state)
     if verbose:
-        print(f"  sync[{market}]: watchlist {len(now)} "
-              f"(+{n_new} promoted, -{n_gone} demoted)")
+        print(f"  sync[{market}]: watchlist {len(now)} " f"(+{n_new} promoted, -{n_gone} demoted)")
     return {"market": market, "watchlist": len(now), "promoted": n_new, "demoted": n_gone}
 
 
 # ── UPDATE: align the tiers + fetch deep data for promoted only ──────────────────
-def refresh(market: str, fetch_fundamentals: bool = True, fund_limit: int = 60,
-            verbose: bool = True) -> dict:
+def refresh(
+    market: str, fetch_fundamentals: bool = True, fund_limit: int = 60, verbose: bool = True
+) -> dict:
     """Align STM/LTM and fetch the expensive deep data ONLY for promoted stocks.
 
     STM (whole universe) is kept broad/cheap by the daily memory job; here we ensure
@@ -230,8 +236,14 @@ def status(markets: Optional[List[str]] = None) -> pd.DataFrame:
         if not pm:
             continue
         refreshed = sum(1 for v in pm.values() if v.get("refreshed"))
-        rows.append({"market": m, "watchlist": len(pm), "fund_refreshed": refreshed,
-                     "synced": state.get(m, {}).get("synced")})
+        rows.append(
+            {
+                "market": m,
+                "watchlist": len(pm),
+                "fund_refreshed": refreshed,
+                "synced": state.get(m, {}).get("synced"),
+            }
+        )
     return pd.DataFrame(rows)
 
 
@@ -243,7 +255,9 @@ def main() -> int:
     ap.add_argument("--status", action="store_true", help="show watchlist coverage")
     ap.add_argument("--all", action="store_true", help="apply to all 20 markets")
     ap.add_argument("--min-turnover", type=float, default=1_000_000)
-    ap.add_argument("--min-filters", type=int, default=2, help="conviction: clear >= N filters to promote")
+    ap.add_argument(
+        "--min-filters", type=int, default=2, help="conviction: clear >= N filters to promote"
+    )
     args = ap.parse_args()
 
     if args.status:

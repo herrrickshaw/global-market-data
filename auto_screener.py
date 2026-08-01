@@ -34,7 +34,7 @@ import argparse
 import json
 import warnings
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -74,8 +74,8 @@ def known_good(market: str) -> set:
         pass
     liq = df["Liquidity"].isin(LIQ_GOOD) if "Liquidity" in df else True
     darvas = df["Above200DMA"] & (df["PctFromHigh"] > -5) & (df["Ret126"] > 0)  # near-high breakout
-    golden = df["GoldenCross"] & df["Above200DMA"]                              # golden crossover
-    quality = (df["Ret252"] > 15) & df["Above200DMA"]                          # coffee-can momentum
+    golden = df["GoldenCross"] & df["Above200DMA"]  # golden crossover
+    quality = (df["Ret252"] > 15) & df["Above200DMA"]  # coffee-can momentum
     good = set(df[liq & (darvas | golden | quality)]["Symbol"])
     good |= supervised
     # fold in Screener.in popular-screen universe (validation module) as labels
@@ -141,8 +141,13 @@ def regime(df: pd.DataFrame) -> dict:
         tape = "Bear"
     else:
         tape = "Neutral"
-    return {"tape": tape, "breadth": breadth, "med_rsi": med_rsi,
-            "med_ret252": med_ret, "liquid_share": liq_share}
+    return {
+        "tape": tape,
+        "breadth": breadth,
+        "med_rsi": med_rsi,
+        "med_ret252": med_ret,
+        "liquid_share": liq_share,
+    }
 
 
 def _matrix(df: pd.DataFrame) -> Tuple[np.ndarray, pd.DataFrame]:
@@ -190,9 +195,14 @@ def discover(market: str, k: int = 6, min_turnover_usd: float = 1_000_000) -> di
 
     # candidate screen = the cluster's central feature bounds (10th–90th pct)
     rule = _rule_from_cluster(cl, reg)
-    return {"market": market, "regime": reg, "cluster_size": int(len(cl)),
-            "cluster_overlap": round(len(set(cl["Symbol"]) & good) / max(len(cl), 1), 3),
-            "known_good_n": len(good), "rule": rule}
+    return {
+        "market": market,
+        "regime": reg,
+        "cluster_size": int(len(cl)),
+        "cluster_overlap": round(len(set(cl["Symbol"]) & good) / max(len(cl), 1), 3),
+        "known_good_n": len(good),
+        "rule": rule,
+    }
 
 
 def _rule_from_cluster(cl: pd.DataFrame, reg: dict) -> Dict[str, list]:
@@ -234,28 +244,39 @@ def evaluate(rule: Dict[str, list], market: str, good: set, target=(15, 60)) -> 
     if n == 0:
         return {"reward": -3.0, "n": 0, "overlap": 0.0, "liq": 0.0, "ret": 0.0, "deviation": 1.0}
     picks = set(sel["Symbol"])
-    overlap = len(picks & good) / n                       # precision vs known universe
+    overlap = len(picks & good) / n  # precision vs known universe
     liq = float(sel["Liquidity"].isin(LIQ_GOOD).mean())
     ret = float(_ret(sel).median())
     lo, hi = target
     size_dev = 0.0 if lo <= n <= hi else (min(abs(n - lo), abs(n - hi)) / hi)
     deviation = (1 - overlap) * 0.6 + (1 - liq) * 0.2 + min(size_dev, 1.0) * 0.2
     reward = 2.0 * overlap + 0.5 * liq + 0.01 * ret - 1.5 * deviation
-    return {"reward": round(reward, 3), "n": n, "overlap": round(overlap, 3),
-            "liq": round(liq, 3), "ret": round(ret, 2), "deviation": round(deviation, 3)}
+    return {
+        "reward": round(reward, 3),
+        "n": n,
+        "overlap": round(overlap, 3),
+        "liq": round(liq, 3),
+        "ret": round(ret, 2),
+        "deviation": round(deviation, 3),
+    }
 
 
 # ── REINFORCEMENT correction: reward-driven policy search over thresholds ─────────
-def rl_refine(rule: Dict[str, list], market: str, good: set,
-              iters: int = 40, verbose: bool = True) -> Tuple[Dict[str, list], dict]:
+def rl_refine(
+    rule: Dict[str, list], market: str, good: set, iters: int = 40, verbose: bool = True
+) -> Tuple[Dict[str, list], dict]:
     """Kicks in when the discovered screen deviates too far. Perturbs the numeric
     thresholds (cross-entropy / hill-climb), keeping only changes that raise the
     reward — pulling the screen back toward the validated universe."""
     rng = np.random.default_rng(42)
-    best_rule = json.loads(json.dumps(rule))            # deep copy
+    best_rule = json.loads(json.dumps(rule))  # deep copy
     best = evaluate(best_rule, market, good)
-    numeric = [(c, i) for c, conds in rule.items() for i, (op, v) in enumerate(conds)
-               if isinstance(v, (int, float)) and not isinstance(v, bool)]
+    numeric = [
+        (c, i)
+        for c, conds in rule.items()
+        for i, (op, v) in enumerate(conds)
+        if isinstance(v, (int, float)) and not isinstance(v, bool)
+    ]
     for _ in range(iters):
         cand = json.loads(json.dumps(best_rule))
         for c, i in numeric:
@@ -266,13 +287,14 @@ def rl_refine(rule: Dict[str, list], market: str, good: set,
         if r["reward"] > best["reward"]:
             best_rule, best = cand, r
     if verbose:
-        print(f"  RL correction: reward {evaluate(rule, market, good)['reward']} → {best['reward']}")
+        print(
+            f"  RL correction: reward {evaluate(rule, market, good)['reward']} → {best['reward']}"
+        )
     return best_rule, best
 
 
 # ── orchestration ────────────────────────────────────────────────────────────────
-def recommend(market: str, top: int = 15, min_reward: float = 0.6,
-              verbose: bool = True) -> dict:
+def recommend(market: str, top: int = 15, min_reward: float = 0.6, verbose: bool = True) -> dict:
     disc = discover(market)
     good = known_good(market)
     ev = evaluate(disc["rule"], market, good)
@@ -298,17 +320,26 @@ def recommend(market: str, top: int = 15, min_reward: float = 0.6,
     if verbose:
         r = disc["regime"]
         print(f"\n=== auto-screener recommendation: {market} ===")
-        print(f"  regime: {r['tape']}  breadth={r['breadth']:.0%}  medRSI={r['med_rsi']:.0f}  "
-              f"medRet252={r['med_ret252']:.0f}%  liquid={r['liquid_share']:.0%}")
-        print(f"  discovered from cluster ({disc['cluster_size']} names, "
-              f"{disc['cluster_overlap']:.0%} overlap w/ {disc['known_good_n']} known-good)")
+        print(
+            f"  regime: {r['tape']}  breadth={r['breadth']:.0%}  medRSI={r['med_rsi']:.0f}  "
+            f"medRet252={r['med_ret252']:.0f}%  liquid={r['liquid_share']:.0%}"
+        )
+        print(
+            f"  discovered from cluster ({disc['cluster_size']} names, "
+            f"{disc['cluster_overlap']:.0%} overlap w/ {disc['known_good_n']} known-good)"
+        )
         print(f"  RL correction applied: {used_rl}")
         print(f"  final rule: {json.dumps(rule)}")
-        print(f"  metrics: reward={refined['reward']} n={refined['n']} "
-              f"overlap={refined['overlap']} liq={refined['liq']} medRet={refined['ret']}%")
+        print(
+            f"  metrics: reward={refined['reward']} n={refined['n']} "
+            f"overlap={refined['overlap']} liq={refined['liq']} medRet={refined['ret']}%"
+        )
         if not picks.empty:
-            cols = [c for c in ["Symbol", "Close", "RSI14", "PctFromHigh", "Ret252", "Liquidity"]
-                    if c in picks.columns]
+            cols = [
+                c
+                for c in ["Symbol", "Close", "RSI14", "PctFromHigh", "Ret252", "Liquidity"]
+                if c in picks.columns
+            ]
             print("\n  top picks:\n" + picks[cols].to_string(index=False))
     return rec
 

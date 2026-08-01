@@ -33,8 +33,11 @@ def _git(*args) -> str:
 
 
 def local_branches() -> list:
-    return [b.strip() for b in _git("for-each-ref", "--format=%(refname:short)",
-                                    "refs/heads").splitlines() if b.strip()]
+    return [
+        b.strip()
+        for b in _git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines()
+        if b.strip()
+    ]
 
 
 def blobs(branch: str):
@@ -44,7 +47,7 @@ def blobs(branch: str):
         parts = head.split()
         if len(parts) < 4 or parts[1] != "blob":
             continue
-        mode, typ, sha, size = parts[0], parts[1], parts[2], parts[3]
+        sha, size = parts[2], parts[3]
         yield path, sha, (int(size) if size.isdigit() else 0)
 
 
@@ -62,15 +65,20 @@ def scan() -> dict:
 def main() -> int:
     r = scan()
     dups = r["duplicates"]
-    print(f"vCRUD precheck: {len(dups)} duplicated blobs across {len(r['branches'])} "
-          f"local branches; {r['wasted_bytes']/1e6:.1f} MB non-LFS content duplicated "
-          f"(LFS-tracked duplicates cost ~0 — deduped by OID).")
+    print(
+        f"vCRUD precheck: {len(dups)} duplicated blobs across {len(r['branches'])} "
+        f"local branches; {r['wasted_bytes']/1e6:.1f} MB non-LFS content duplicated "
+        f"(LFS-tracked duplicates cost ~0 — deduped by OID)."
+    )
     for sha, locs in sorted(dups.items(), key=lambda kv: -kv[1][0][2])[:5]:
         b0, p0, sz = locs[0]
-        print(f"   {sz/1e6:6.1f} MB ×{len(locs):<2} {p0}  [{', '.join(sorted({l[0] for l in locs}))}]")
+        print(
+            f"   {sz/1e6:6.1f} MB ×{len(locs):<2} {p0}  [{', '.join(sorted({l[0] for l in locs}))}]"
+        )
     if not WARN_ONLY and r["wasted_bytes"] > 0:
-        print("vCRUD precheck FAILED (VCRUD_STRICT=1 and non-LFS duplicates exist).",
-              file=sys.stderr)
+        print(
+            "vCRUD precheck FAILED (VCRUD_STRICT=1 and non-LFS duplicates exist).", file=sys.stderr
+        )
         return 1
     return 0
 
