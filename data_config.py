@@ -21,15 +21,16 @@ Usage:
     test_df = load_data(config.TEST_START, "2024-12-31")
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
-import pandas as pd
+from datetime import datetime
+from typing import Dict, List, Tuple
 
+import pandas as pd
 
 # ============================================================================
 # GLOBAL DATE SPLITS (EXHAUSTIVE VALIDATION)
 # ============================================================================
+
 
 @dataclass
 class DateSplits:
@@ -37,12 +38,12 @@ class DateSplits:
 
     # CRITICAL: All historical data is split chronologically
     # Earlier data trains, middle data validates, recent data tests
-    TRAIN_START = "2015-01-01"      # Oldest available data
-    TRAIN_END = "2021-12-31"        # 7 years of training data
-    VAL_START = "2022-01-01"        # Validation period
-    VAL_END = "2022-12-31"          # 1 year validation
-    TEST_START = "2023-01-01"       # Recent unseen data
-    TEST_END = "2024-06-30"         # Current date (always update)
+    TRAIN_START = "2015-01-01"  # Oldest available data
+    TRAIN_END = "2021-12-31"  # 7 years of training data
+    VAL_START = "2022-01-01"  # Validation period
+    VAL_END = "2022-12-31"  # 1 year validation
+    TEST_START = "2023-01-01"  # Recent unseen data
+    TEST_END = "2024-06-30"  # Current date (always update)
 
     @classmethod
     def get_train_range(cls) -> Tuple[str, str]:
@@ -70,6 +71,7 @@ class DateSplits:
 # ============================================================================
 # DATA SOURCES REGISTRY
 # ============================================================================
+
 
 @dataclass
 class DataSourceRegistry:
@@ -157,6 +159,7 @@ class DataSourceRegistry:
 # DATA VALIDATION RULES
 # ============================================================================
 
+
 @dataclass
 class DataValidationRules:
     """Define data quality requirements."""
@@ -166,8 +169,8 @@ class DataValidationRules:
     CRITICAL_COLUMNS = ["open", "high", "low", "close", "volume", "date"]
 
     # OHLC sanity
-    HIGH_MUST_BE_MAX = True         # high >= max(o,h,l,c)
-    LOW_MUST_BE_MIN = True          # low <= min(o,h,l,c)
+    HIGH_MUST_BE_MAX = True  # high >= max(o,h,l,c)
+    LOW_MUST_BE_MIN = True  # low <= min(o,h,l,c)
     CLOSE_MUST_BE_NUMERIC = True
     VOLUME_MUST_BE_POSITIVE = True
 
@@ -181,7 +184,7 @@ class DataValidationRules:
 
     # Time series
     MIN_RECORDS_PER_SYMBOL = 252  # At least 1 trading year
-    MIN_SYMBOLS_IN_MARKET = 100   # Market must have minimum coverage
+    MIN_SYMBOLS_IN_MARKET = 100  # Market must have minimum coverage
 
     @staticmethod
     def validate_dataframe(df: pd.DataFrame, raise_on_error: bool = False) -> List[str]:
@@ -204,16 +207,16 @@ class DataValidationRules:
                 errors.append(msg)
 
         # Check OHLC sanity
-        if all(c in df.columns for c in ['open', 'high', 'low', 'close']):
-            invalid = (df['high'] < df['low']).sum()
+        if all(c in df.columns for c in ["open", "high", "low", "close"]):
+            invalid = (df["high"] < df["low"]).sum()
             if invalid > 0:
                 msg = f"{invalid} rows with high < low"
                 errors.append(msg)
 
         # Check price movement sanity
-        if 'close' in df.columns:
-            df['returns'] = df['close'].pct_change()
-            extreme = (df['returns'].abs() > DataValidationRules.MAX_DAILY_MOVE_PCT).sum()
+        if "close" in df.columns:
+            df["returns"] = df["close"].pct_change()
+            extreme = (df["returns"].abs() > DataValidationRules.MAX_DAILY_MOVE_PCT).sum()
             if extreme > len(df) * 0.01:  # More than 1% extreme moves
                 msg = f"{extreme} extreme daily moves (>{DataValidationRules.MAX_DAILY_MOVE_PCT}%)"
                 errors.append(msg)
@@ -225,6 +228,7 @@ class DataValidationRules:
 # UNIVERSE DEFINITIONS (what to analyze)
 # ============================================================================
 
+
 @dataclass
 class Universe:
     """Define which symbols/markets to analyze."""
@@ -232,16 +236,26 @@ class Universe:
     INDIA_FOCUS = {
         "market": "IN",
         "min_market_cap_usd": 100_000_000,  # >$100M
-        "min_volume_usd": 1_000_000,        # >$1M daily avg
+        "min_volume_usd": 1_000_000,  # >$1M daily avg
         "lookback_years": 2,
-        "symbols": ["RELIANCE", "TCS", "INFY", "ICICIBANK", "SBIN", "MARUTI",
-                    "BAJAJFINSV", "BHARTIARTL", "HINDUNILVR", "WIPRO"],  # Top 10
+        "symbols": [
+            "RELIANCE",
+            "TCS",
+            "INFY",
+            "ICICIBANK",
+            "SBIN",
+            "MARUTI",
+            "BAJAJFINSV",
+            "BHARTIARTL",
+            "HINDUNILVR",
+            "WIPRO",
+        ],  # Top 10
     }
 
     US_LARGE_CAP = {
         "market": "US",
         "min_market_cap_usd": 10_000_000_000,  # >$10B
-        "min_volume_usd": 10_000_000,          # >$10M daily avg
+        "min_volume_usd": 10_000_000,  # >$10M daily avg
         "lookback_years": 3,
         "symbols": None,  # Use all S&P 500
         "count_limit": 500,
@@ -269,6 +283,7 @@ class Universe:
 # ============================================================================
 # DATA FRESHNESS REQUIREMENTS
 # ============================================================================
+
 
 @dataclass
 class FreshnessRequirements:
@@ -304,10 +319,7 @@ class FreshnessRequirements:
     }
 
     @staticmethod
-    def check_freshness(
-        source_last_updated: datetime,
-        requirement: Dict
-    ) -> Tuple[bool, str]:
+    def check_freshness(source_last_updated: datetime, requirement: Dict) -> Tuple[bool, str]:
         """Check if data meets freshness requirement."""
         now = datetime.now()
 
@@ -340,6 +352,7 @@ class FreshnessRequirements:
 # CROSS-SOURCE CONSISTENCY RULES
 # ============================================================================
 
+
 @dataclass
 class ConsistencyRules:
     """Define acceptable discrepancies between sources."""
@@ -361,11 +374,7 @@ class ConsistencyRules:
     }
 
     @staticmethod
-    def acceptable_difference(
-        value1: float,
-        value2: float,
-        tolerance_pct: float
-    ) -> bool:
+    def acceptable_difference(value1: float, value2: float, tolerance_pct: float) -> bool:
         """Check if difference is acceptable."""
         if value1 == 0 or value2 == 0:
             return abs(value1 - value2) < 0.01
@@ -377,6 +386,7 @@ class ConsistencyRules:
 # ============================================================================
 # CONFIGURATION SINGLETON
 # ============================================================================
+
 
 class DataConfig:
     """Main configuration object."""
@@ -405,11 +415,8 @@ class DataConfig:
 # HELPERS
 # ============================================================================
 
-def filter_data_by_split(
-    df: pd.DataFrame,
-    date_col: str,
-    split: str = "test"
-) -> pd.DataFrame:
+
+def filter_data_by_split(df: pd.DataFrame, date_col: str, split: str = "test") -> pd.DataFrame:
     """Filter DataFrame to specific date split."""
     config = DataConfig()
     date_splits = config.date_splits
@@ -429,19 +436,18 @@ def filter_data_by_split(
     return filtered
 
 
-def validate_universe_consistency(
-    universe_dict: Dict,
-    df: pd.DataFrame
-) -> List[str]:
+def validate_universe_consistency(universe_dict: Dict, df: pd.DataFrame) -> List[str]:
     """Check if DataFrame matches universe definition."""
     issues = []
 
     # Check symbol count
     if "symbols" in universe_dict and isinstance(universe_dict["symbols"], list):
-        available = set(universe_dict["symbols"]) & set(df['symbol'].unique())
+        available = set(universe_dict["symbols"]) & set(df["symbol"].unique())
         if len(available) < len(universe_dict["symbols"]) * 0.8:
-            issues.append(f"Only {len(available)}/{len(universe_dict['symbols'])} "
-                         f"defined symbols found in data")
+            issues.append(
+                f"Only {len(available)}/{len(universe_dict['symbols'])} "
+                f"defined symbols found in data"
+            )
 
     # Check market cap filter
     if "min_market_cap_usd" in universe_dict:

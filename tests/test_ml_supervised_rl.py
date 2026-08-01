@@ -6,10 +6,10 @@ import numpy as np
 def test_return_labels():
     import ml_supervised as m
 
-    assert m._label(40, 12, 6) == 3   # Strong Buy
-    assert m._label(8, 12, 6) == 2    # Buy
-    assert m._label(2, 12, 6) == 1    # Hold
-    assert m._label(-5, 12, 6) == 0   # Avoid
+    assert m._label(40, 12, 6) == 3  # Strong Buy
+    assert m._label(8, 12, 6) == 2  # Buy
+    assert m._label(2, 12, 6) == 1  # Hold
+    assert m._label(-5, 12, 6) == 0  # Avoid
 
 
 def test_feat_at_needs_history_and_is_causal():
@@ -17,9 +17,9 @@ def test_feat_at_needs_history_and_is_causal():
 
     close = np.linspace(100, 200, 260)
     vol = np.full(260, 1000.0)
-    assert m._feat_at(close, vol, 150) is None      # <200 bars → None
+    assert m._feat_at(close, vol, 150) is None  # <200 bars → None
     f = m._feat_at(close, vol, 259)
-    assert f is not None and f["above_200dma"] == 1.0   # rising series
+    assert f is not None and f["above_200dma"] == 1.0  # rising series
     # causal: features at t must not depend on data after t
     f2a = m._feat_at(close, vol, 220)
     close2 = close.copy()
@@ -62,8 +62,15 @@ def test_env_entry_then_forward():
 def test_encode_state_shape():
     import rl_trader as rl
 
-    s = {"score": 0.7, "regime": "Bull", "days_held": 3, "pnl": 0.05,
-         "exposure": 0.5, "drawdown_from_peak": 0.02, "in_position": 1}
+    s = {
+        "score": 0.7,
+        "regime": "Bull",
+        "days_held": 3,
+        "pnl": 0.05,
+        "exposure": 0.5,
+        "drawdown_from_peak": 0.02,
+        "in_position": 1,
+    }
     enc = rl.encode_state(s)
     assert len(enc) == len(rl.N_STATE_DIMS)
     assert all(0 <= enc[i] < rl.N_STATE_DIMS[i] for i in range(len(enc)))
