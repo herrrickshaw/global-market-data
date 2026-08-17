@@ -63,3 +63,25 @@ cache_seed/ltm/CN.parquet
 cache_seed/ltm/IN.parquet
 *.bak
 warehouse/etl_registry.sqlite
+
+# ── price panels: migrated out of git 2026-08-17 ──────────────────────────────
+# The note above ("the warehouse is the tracked store") is no longer true for
+# these two trees. 909 MB of year-partitioned parquet now lives in the cloud
+# store and is reached through ~/scripts/market_paths.py, which materialises it
+# into ~/.cache/market-warehouse on demand:
+#
+#     dropbox:market-data-archive/current/gmd_warehouse/ohlcv       (66 files)
+#     dropbox:market-data-archive/current/gmd_warehouse/ohlcv_adj   (14 files)
+#
+# 🔴 WHY THEY ARE IGNORED AND NOT MERELY DELETED. On 2026-08-14 these files were
+# removed from the working tree WITHOUT being untracked. Git therefore kept
+# insisting 94 files were missing, any `git checkout` resurrected them, and the
+# two consumers still pointing at the old path failed three days later with "no
+# warehouse partitions" (E-033). Untracking is the half that was skipped; doing
+# only the delete is what caused the incident.
+#
+# Everything else under warehouse/ (bhavcopy/, cgd/, audit/, energy/,
+# warehouse.duckdb, regimes.parquet, the adjustment_factors tables) was NOT part
+# of that migration and stays tracked here.
+warehouse/ohlcv/
+warehouse/ohlcv_adj/
