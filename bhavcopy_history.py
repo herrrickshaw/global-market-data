@@ -39,7 +39,16 @@ except ImportError:
 
 import os
 
-CACHE = Path(os.environ.get("BHAV_CACHE", Path.home() / "Downloads" / "data" / "bhavcopy_cache"))
+# 🔴 The default was ~/Downloads/data/bhavcopy_cache until 2026-08-24 — the dead
+# pre-migration tree, whose nse/ and bse/ directories still exist and are EMPTY.
+# Every other consumer of BHAV_CACHE (ohlcv_cache, bhavcopy_store, screener_kit,
+# liquidity, data_catalog, bhavcopy_raw_archive) already defaults to the live
+# path below, which holds 296 NSE and 298 BSE day-CSVs. This module was the last
+# straggler, so it silently saw an empty cache and re-fetched everything.
+# The mkdir on the next lines is what kept it quiet: it CREATES the empty dirs
+# rather than failing on a missing one.
+CACHE = Path(os.environ.get(
+    "BHAV_CACHE", Path.home() / "market-pipeline" / "data" / "bhavcopy_cache"))
 (NSE_DIR := CACHE / "nse").mkdir(parents=True, exist_ok=True)
 (BSE_DIR := CACHE / "bse").mkdir(parents=True, exist_ok=True)
 ASSEMBLED = CACHE / "assembled_long.parquet"  # consolidated raw (Date,Symbol,OHLCV)
@@ -53,19 +62,128 @@ OHLC_MAP = {
     "ClsPric": "Close",
     "TtlTradgVol": "Volume",
 }
-# BSE equity is filtered on FinInstrmTp=="STK"; NSE equity on SctySrs=="EQ".
+# ── equity filters ────────────────────────────────────────────────────────────
+# NSE equity is SctySrs == "EQ" and always was.
+#
+# 🔴 BSE was filtered on FinInstrmTp == "STK" until 2026-08-24, and that is a
+# NO-OP: every BSE bhavcopy row carries FinInstrmTp "STK", including corporate
+# bonds, government securities, gold ETFs and InvITs. Measured over the full
+# staging table, all 17 BSE groups are "STK".
+#
+# The consequence was invisible for a long time because every screen requires
+# ~200 bars for a moving average and thinly-traded debt never reaches it, so the
+# junk was silently dropped at screen time rather than at ingest. What it did
+# corrupt: the India panel carried 7,507 symbols against a real equity universe
+# of ~2,681, the median symbol had 29 sessions out of 2,625, and liquidity
+# quintiles — which ARE computed over the whole eligible population — were being
+# ranked against a mix that included bonds.
+#
+# The giveaway names: 0ANSPL28, 1003IIFL29, 1003NHF30 are group F, where the
+# numeric prefix is the coupon and the suffix the maturity year. 1018GS2026 is
+# group G, a government security.
+#
+# ALLOWLIST, not a denylist. A BSE group code that appears later and is not
+# listed here is EXCLUDED and logged, so a new instrument class shows up as a
+# coverage change we notice rather than as silent pollution. The repo's standing
+# rule on instrument identity is the same: allowlist, never infer from the shape
+# of the ticker.
+BSE_EQUITY_GROUPS = frozenset({
+    "A", "B", "T", "Z",        # main board; T = trade-to-trade, Z = non-compliant
+    "X", "XT",                 # X group; XT = its trade-to-trade counterpart
+    "M", "MT", "MS", "TS",     # SME board and its trade-to-trade variants
+    "ZP", "P",                 # Z-permitted and permitted securities
+})
+# Deliberately excluded, with what each one is:
+#   F   corporate bonds / debentures      (2,736 symbols — the largest group)
+#   G   government securities             (694)
+#   E   ETFs, mostly gold                 (45)   — and the liquidity gate
+#                                                  already treats ETFs as
+#                                                  non-picks (LIQUIDSBI)
+#   IF  InvITs / REITs                    (25)
+#   R   rights entitlements, "-RE" suffix (143)  — temporary instruments
+BSE_NON_EQUITY_GROUPS = frozenset({"F", "G", "E", "IF", "R"})
+
+_seen_unknown_groups: set = set()
+
+# ── ISIN is the real discriminator, not the exchange's own group code ─────────
+# The group allowlist above is an APPROXIMATION and it leaks in both directions:
+#   * group B (main equity board) carries 08ABB / 08AGG / 08DPD, which are
+#     Nippon India Mutual Fund units, ISIN INF204KB17R6
+#   * groups F and IF carry some INE-prefixed rows
+#   * NSE's own SctySrs == "EQ" filter still admits 356 INF mutual-fund symbols
+#
+# Indian ISINs encode the instrument type POSITIONALLY, which is why "the ISIN
+# prefix is the instrument type" is a standing rule in this repo. Measured over
+# the full BSE staging table:
+#
+#   INE + "01"  5,006 syms  EQUITY                    <- the only thing we want
+#   INE + "07"  2,263       debentures
+#   INE + "08"    327       bonds        (0ANSPL28)
+#   INE + "A7"     42       bonds        (1015ECL29)
+#   INE + "20"    143       rights       (3IINFO-RE)
+#   INF + 01/A1/B1/C1  301  mutual funds and ETFs
+#   IN0 + 5X/5Y/5Z     132  T-bills      (91TB010825, 364T020426)
+#
+# So: keep ISIN starting "INE" with characters 8-9 == "01". The group allowlist
+# is retained only as a fallback for rows with no usable ISIN.
+EQUITY_ISIN_PREFIX = "INE"
+EQUITY_ISIN_TYPE = "01"      # characters 8-9, 1-indexed
+
+
+def _isin_is_equity(isin: pd.Series) -> pd.Series:
+    s = isin.astype(str).str.strip().str.upper()
+    return (s.str.len() == 12) & s.str.startswith(EQUITY_ISIN_PREFIX) & \
+        (s.str.slice(7, 9) == EQUITY_ISIN_TYPE)
+
+
+def _equity_only(df: pd.DataFrame, exchange: str) -> pd.DataFrame:
+    """Keep common-equity rows. Applied to cached CSVs too — see _bse_day."""
+    if df is None or df.empty:
+        return df
+
+    if "ISIN" in df.columns:
+        ok = _isin_is_equity(df["ISIN"])
+        # Rows with no parseable ISIN fall back to the exchange's group code so
+        # a missing identifier drops a name rather than admitting an unknown
+        # instrument: EQ for NSE, the allowlist for BSE.
+        blank = df["ISIN"].isna() | (df["ISIN"].astype(str).str.strip() == "")
+        if blank.any() and "SctySrs" in df.columns:
+            grp = df["SctySrs"].astype(str).str.strip()
+            fallback = grp.eq("EQ") if exchange == "NSE" else \
+                grp.isin(BSE_EQUITY_GROUPS)
+            ok = ok | (blank & fallback)
+        return df[ok]
+
+    if "SctySrs" not in df.columns:
+        return df
+    grp = df["SctySrs"].astype(str).str.strip()
+    if exchange == "NSE":
+        return df[grp == "EQ"]
+    unknown = set(grp.unique()) - BSE_EQUITY_GROUPS - BSE_NON_EQUITY_GROUPS
+    for g in sorted(unknown - _seen_unknown_groups):
+        _seen_unknown_groups.add(g)
+        print(f"  [bse] unknown security group {g!r} — EXCLUDED. Add it to "
+              f"BSE_EQUITY_GROUPS if it is equity.")
+    return df[grp.isin(BSE_EQUITY_GROUPS)]
+
+
+def _bse_equity_only(df: pd.DataFrame) -> pd.DataFrame:
+    return _equity_only(df, "BSE")
 
 
 # ── per-day download (cached) ──────────────────────────────────────────────────
 def _nse_day(day: _dt.date, nse_client) -> Optional[pd.DataFrame]:
     f = NSE_DIR / f"{day:%Y%m%d}.csv"
     if f.exists():
-        return pd.read_csv(f)
+        # NOT merely idempotent: nse_raw is 100% SctySrs "EQ" yet still contains
+        # 356 INF mutual-fund symbols, so the ISIN test below removes names the
+        # download-time EQ filter admitted.
+        return _equity_only(pd.read_csv(f), "NSE")
     try:
         p = nse_client.equityBhavcopy(date=_dt.datetime(day.year, day.month, day.day))
         df = pd.read_csv(p)
         df.columns = [c.strip() for c in df.columns]
-        df = df[df.get("SctySrs", "") == "EQ"]
+        df = _equity_only(df, "NSE")
         df.to_csv(f, index=False)
         try:
             Path(p).unlink()
@@ -79,7 +197,11 @@ def _nse_day(day: _dt.date, nse_client) -> Optional[pd.DataFrame]:
 def _bse_day(day: _dt.date, sess: requests.Session) -> Optional[pd.DataFrame]:
     f = BSE_DIR / f"{day:%Y%m%d}.csv"
     if f.exists():
-        return pd.read_csv(f)
+        # Filter on READ, not only before caching. Every CSV cached before
+        # 2026-08-24 was written through the no-op FinInstrmTp filter and still
+        # holds bonds and G-Secs; filtering only at download time would leave
+        # the entire cached history polluted and fix nothing retroactively.
+        return _bse_equity_only(pd.read_csv(f))
     url = (
         "https://www.bseindia.com/download/BhavCopy/Equity/"
         f"BhavCopy_BSE_CM_0_0_0_{day:%Y%m%d}_F_0000.CSV"
@@ -90,7 +212,7 @@ def _bse_day(day: _dt.date, sess: requests.Session) -> Optional[pd.DataFrame]:
             return None
         df = pd.read_csv(io.BytesIO(r.content))
         df.columns = [c.strip() for c in df.columns]
-        df = df[df.get("FinInstrmTp", "") == "STK"]
+        df = _bse_equity_only(df)
         df.to_csv(f, index=False)
         return df
     except Exception:
