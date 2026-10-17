@@ -36,17 +36,28 @@ RCLONE = "/opt/homebrew/bin/rclone"
 REMOTE = "dropbox:market-data-backup/current"
 
 HOME = os.path.expanduser("~")
-SOURCES = {  # source name -> (local root, dropbox dataset name or None)
-    "ohlcv":       (os.path.join(GMD, "warehouse", "ohlcv"), "gmd-warehouse/ohlcv"),
-    "ohlcv_adj":   (os.path.join(GMD, "warehouse", "ohlcv_adj"), "gmd-warehouse/ohlcv_adj"),
-    "bhavcopy":    (os.path.join(GMD, "warehouse", "bhavcopy"), "gmd-warehouse/bhavcopy"),
-    "cache_seed":  (os.path.join(GMD, "cache_seed"), "gmd-cache_seed"),
-    "pipeline":    (os.path.join(HOME, "market-pipeline/code/python_files/cache_seed"),
-                    "pipeline-cache_seed"),
-    "market_cache": (os.path.join(HOME, "Downloads/market_cache"), "market_cache"),
-    "gss_cache":   (os.path.join(HOME, "repos/global-stock-screener/cache_seed"),
-                    "gss-cache_seed"),
-}
+# Dataset paths/names/excludes come from the SSOT manifest, not from a list kept
+# here. They used to be kept here, and they drifted: this file pointed
+# market_cache at ~/Downloads for the three weeks after the tree moved, so every
+# weekly audit reported 7,661 phantom "missing" files and buried any real loss.
+# Patch ~/.config/market-data/datasets.conf; do not re-add a literal here.
+#
+# No hardcoded fallback on purpose — a fallback IS a second source of truth, and
+# silently auditing stale paths is exactly the failure this replaced. Fail loud.
+sys.path.insert(0, os.path.expanduser("~/.config/market-data"))
+try:
+    import datasets as _ssot
+except ImportError as e:  # pragma: no cover
+    sys.exit(f"ETL registry: cannot load dataset SSOT "
+             f"(~/.config/market-data/datasets.py): {e}")
+
+_SSOT_REMOTE, _SSOT_ROWS = _ssot.load()
+# source name -> (local root, remote dataset subpath)
+SOURCES = _ssot.registry_sources()
+# dataset subpath -> rclone excludes. The audit must skip exactly what the backup
+# skips (pipeline-market_cache's nse_xbrl/xml and ohlc are archived as tar.zst
+# instead of synced raw), or it reports engineered absences as data loss.
+EXCLUDES = {d["name"]: d["excludes"] for d in _SSOT_ROWS}
 EXT = (".parquet", ".csv", ".db", ".duckdb", ".sqlite", ".gz", ".json", ".xlsx")
 STALE_DAYS = 7
 
@@ -158,10 +169,16 @@ def audit():
         if dataset is None or not os.path.isdir(root):
             continue
         legs = {"local": "✅"}
-        for label, base in (("dropbox", "dropbox:market-data-backup/current"),
+        # Same excludes the backup applies, plus macOS metadata Dropbox refuses
+        # to store at all — without these the check counts deliberate omissions
+        # as missing data (.DS_Store alone failed three datasets nightly).
+        ex = []
+        for pat in EXCLUDES.get(dataset.split("/", 1)[0], []) + [".DS_Store", "._*"]:
+            ex += ["--exclude", pat]
+        for label, base in ((("dropbox", f"{_SSOT_REMOTE}/current")),
                             ("gdrive", "googledrive:market-data-backup/current")):
             r = subprocess.run([RCLONE, "check", root, f"{base}/{dataset}",
-                                "--one-way", "--size-only"],
+                                "--one-way", "--size-only"] + ex,
                                capture_output=True, text=True)
             legs[label] = "✅" if r.returncode == 0 else "❌"
             if r.returncode != 0:
