@@ -59,6 +59,35 @@ prints results and saves them to `results/`.
 
 ---
 
+## Literature context
+
+Entries from the market-pipeline `LITERATURE_REGISTER.md` relevant to this repo's
+point-in-time, survivorship (964 delisted names) and benchmark design. Grades are the
+register's own:
+
+| Register entry | arXiv id | Register's grade |
+|---|---|---|
+| Agentic Trading: When LLM Agents Meet Financial Markets (hub paper, under "Strong evidence, high relevance") | 2605.19337 | section heading "Strong evidence"; no separate grade line |
+| Survivorship Bias in Emerging Market Small-Cap Indices: Evidence from India's NIFTY Smallcap 250 | 2603.19380 | moderate-to-weak |
+| Look-Ahead Benchmark Bias in Portfolio Performance Evaluation | 0810.1922 | high |
+| Transaction-cost-aware Factors (Baldi-Lanfranchi, 2024; no arXiv id given) | n/a | medium-strong |
+| Selecting and Testing Asset Pricing Models: A Stepwise Approach | 2601.10279 | medium |
+
+## Open questions from literature
+
+From the market-pipeline `BACKTEST_QUEUE.md`. These are queued there; **none has been run
+or implemented in this repo**, and the file/line references in the queue point at the
+market-pipeline code, not this repo:
+- Real point-in-time `filed` dates instead of an FYE+90d proxy (queue item 5).
+- Availability-time vs reference-time audit of every fundamentals read (queue item 11).
+- Purge/embargo or a gap equal to the longest evaluated horizon in walk-forward splits
+  (queue items 6 and 10); `walk_forward_backtest.py` exists here but its split was not
+  inspected in this pass.
+- Execution-cost model wired into evaluation (queue item 4).
+- Factor spanning test on the factor set (queue item 12).
+
+---
+
 ## What's inside
 
 - **20 markets:** IN, US, JP, KR, CN, HK, TW, CA, AU, UK, DE, SA, BR, CH, ZA, SE, FI, DK, SG, Euronext (`cache_seed/ltm/*.parquet`)
@@ -71,7 +100,8 @@ prints results and saves them to `results/`.
 
 Exchange bhavcopy (NSE/BSE), SEC EDGAR (US fundamentals), JPX/KRX/SGX/Euronext/
 Eastmoney (universes), Yahoo→Stooq (prices, with fallback), Damodaran & Fama-French
-(reference), screener.in (India CCC).
+(reference), screener.in (India CCC). Added 2026-10-17: regional Fama-French 5-factor + momentum and ECB FX
+reference rates, see [`DATA_SOURCES.md`](DATA_SOURCES.md).
 
 ## Repo layout
 
