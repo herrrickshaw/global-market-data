@@ -73,7 +73,8 @@ def edge_metrics(pick_rets: List[float], mkt_rets: List[float]) -> dict:
         "avg_ret": round(float(np.nanmean(pr)), 2),
         "mkt_ret": round(float(np.nanmean(mr)), 2),
         "edge": round(float(np.nanmean(pr - mr)), 2),
-        "win_rate": round(float(np.nanmean(pr > mr)), 3),
+        # a tie (pick == its own market, up to float rounding of the mean) is not a win
+        "win_rate": round(float(np.nanmean(pr > mr + 1e-9)), 3),
     }
 
 
@@ -86,26 +87,35 @@ def backtest_screen(
     pred = SCREENS[screen]
     data = datalink.load_market(market, tier="ltm") or datalink.load_market(market)
     syms = list(data)[:max_symbols] if max_symbols else list(data)
-    pick_rets: List[float] = []
-    mkt_rets: List[float] = []
+    picks: List[tuple] = []  # (as-of date, forward return) of every pick
+    mkt_parts: List[pd.Series] = []  # eligible forward returns, indexed by as-of date
     for sym in syms:
         df = data.get(sym)
         if df is None or len(df) < 200 + horizon + 1:
             continue
         close = df["Close"].to_numpy("float64")
         n = len(close)
+        fwd_all = np.full(n, np.nan)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            fwd_all[: n - horizon] = (close[horizon:] / close[: n - horizon] - 1) * 100
+        # drop Yahoo glitch bars (a 21d return >500% is a data error)
+        ok = np.isfinite(fwd_all) & (np.abs(fwd_all) <= 500)
+        ok[:200] = False
+        ok[n - horizon - 1 :] = False
+        # the equal-weight market = every eligible name on every as-of DATE
+        mkt_parts.append(pd.Series(fwd_all[ok], index=df.index[ok]))
         for t in range(200, n - horizon - 1, step):
-            fwd = (close[t + horizon] / close[t] - 1) * 100 if close[t] else np.nan
-            if not np.isfinite(fwd) or abs(fwd) > 500:
-                continue  # drop Yahoo glitch bars (a 21d return >500% is a data error)
-            mkt_rets.append(fwd)  # every eligible name = the equal-weight market sample
+            if not ok[t]:
+                continue
             f = _pit(close, t)
             if f and pred(f):
-                pick_rets.append(fwd)
-    m = edge_metrics(pick_rets, [np.nanmean(mkt_rets)] * len(pick_rets) if mkt_rets else [])
+                picks.append((df.index[t], fwd_all[t]))
+    # Pair each pick with the market's return over the SAME window. Averaging the
+    # market over all windows let a screen that only fires in up-legs show an edge
+    # that was just market timing of the sample.
+    mkt = pd.concat(mkt_parts).groupby(level=0).mean() if mkt_parts else pd.Series(dtype=float)
+    m = edge_metrics([r for _, r in picks], [float(mkt[d]) for d, _ in picks])
     m["market"], m["screen"], m["horizon"] = market, screen, horizon
-    m["mkt_ret"] = round(float(np.nanmean(mkt_rets)), 2) if mkt_rets else 0.0
-    m["edge"] = round(m["avg_ret"] - m["mkt_ret"], 2)
     return m
 
 
