@@ -88,3 +88,62 @@ def test_stooq_symbol_mapping():
 def test_eodhd_dormant_without_key(monkeypatch):
     monkeypatch.delenv("EODHD_API_KEY", raising=False)
     assert ds.eodhd_fetch(["AAPL"], verbose=False) == {}
+
+
+class _Resp:
+    def __init__(self, text, status=200):
+        self.text, self.status_code = text, status
+
+
+class _Session:
+    def __init__(self, responses):
+        self.responses, self.urls = responses, []
+
+    def get(self, url, **kw):
+        self.urls.append(url)
+        return self.responses.pop(0)
+
+
+def _csv(n=3):
+    rows = [f"2024-01-0{i + 1},1,2,0.5,{1 + i},100" for i in range(n)]
+    head = "Date,Open,High,Low,Close,Volume"
+    return "\n".join([head, *rows]) + "\n"
+
+
+def test_stooq_fetch_parses_csv_and_skips_misses(monkeypatch):
+    monkeypatch.setattr(ds, "clean_ohlcv", None)
+    sess = _Session([_Resp(_csv(3)), _Resp("<html>limit</html>")])
+    out = ds.stooq_fetch(["AAPL", "MSFT", "RELIANCE.NS"], min_bars=3, verbose=False, session=sess)
+    assert list(out) == ["AAPL"] and len(out["AAPL"]) == 3
+    assert sess.urls == [
+        "https://stooq.com/q/d/l/?s=aapl.us&i=d",
+        "https://stooq.com/q/d/l/?s=msft.us&i=d",
+    ]
+
+
+def test_stooq_fetch_enforces_min_bars(monkeypatch):
+    monkeypatch.setattr(ds, "clean_ohlcv", None)
+    out = ds.stooq_fetch(["AAPL"], min_bars=5, verbose=False, session=_Session([_Resp(_csv(3))]))
+    assert out == {}
+
+
+def test_eodhd_fetch_with_key_uses_injected_session(monkeypatch):
+    monkeypatch.setenv("EODHD_API_KEY", "test-key")
+    monkeypatch.setattr(ds, "clean_ohlcv", None)
+    sess = _Session([_Resp(_csv(3))])
+    out = ds.eodhd_fetch(["7203.T"], min_bars=3, verbose=False, session=sess)
+    assert list(out) == ["7203.T"]
+    assert sess.urls == ["https://eodhd.com/api/eod/7203.TSE"]
+
+
+def test_report_after_uses_injected_audit(tmp_path):
+    path = tmp_path / "seed.parquet"
+    path.write_bytes(b"x" * 2_000_000)
+    rep = ig.report_after("US", path, 1_000_000, verbose=False, audit=lambda m, p, r: "fake")
+    assert rep == {
+        "market": "US",
+        "before_mb": 1.0,
+        "after_mb": 2.0,
+        "delta_mb": 1.0,
+        "audit": "fake",
+    }
