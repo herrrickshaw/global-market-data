@@ -78,8 +78,7 @@ def test_changed_file_supersedes_old_version(env, capsys):
 def test_audit_pass_writes_report(env, monkeypatch):
     er.scan()
     run = _Run(rc=0)
-    monkeypatch.setattr(er.subprocess, "run", run)
-    assert er.audit() == 0
+    assert er.audit(run) == 0
     report = (env.parent / "reports" / "ETL_AUDIT.md").read_text()
     assert "**PASS**" in report
     assert "| missing locally | 0 |" in report
@@ -91,8 +90,7 @@ def test_audit_fail_on_missing_file_and_cloud_leg_sends_alert(env, monkeypatch):
     er.scan()
     (env / "a.csv").unlink()
     run = _Run(rc=1)
-    monkeypatch.setattr(er.subprocess, "run", run)
-    assert er.audit() == 1
+    assert er.audit(run) == 1
     report = (env.parent / "reports" / "ETL_AUDIT.md").read_text()
     assert "**FAIL**" in report and "MISSING:" in report
     assert "| ohlcv | ✅ | ❌ | ❌ |" in report
