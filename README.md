@@ -1,102 +1,104 @@
-# 📊 Global Market Data — Deep 10-Year Point-in-Time Backtest Engine
+# Global Market Data
 
-<!-- how-to-use-with-ai -->
-> **New here?** See [How to use this repo with AI (Claude, Gemini, ChatGPT)](HOW_TO_USE_WITH_AI.md) — clone it, paste it into an AI tool, and ask in plain English.
+Multi-market equity price and fundamentals warehouse plus a point-in-time (no-lookahead) screening and
+backtest toolkit. It holds roughly 10 years of daily OHLCV for about 20 markets (IN, US, JP, KR, CN, HK, TW,
+CA, AU, UK, DE, SA, BR, CH, ZA, SE, FI, DK, SG, Euronext), a bhavcopy store for India, reference tables
+(Damodaran, Fama-French) and 11 strategy screens. Outputs are CSV result tables, a Daily Market Brief
+(HTML) and an ETL audit report (`reports/ETL_AUDIT.md`).
 
+> Status: active (research data repo). Educational / research use only; not investment advice. Backtest
+> edges are historical averages, not guarantees. No licence file yet — all rights reserved. Large data
+> files are Git LFS objects.
 
-Deep, multi-market historical equity data (10 years, 20 markets, ~44M OHLCV rows)
-plus the **point-in-time, no-lookahead backtest engine** that turns it into evidence
-on which screens actually work, where.
+## What it does
+- Runs 11 built-in screens (`strategies/`: piotroski, coffee_can, magic_formula, bluest_blue_chips, debt_reduction, dividend_yield, golden_crossover, loss_to_profit, garp, darvas, cash_conversion_cycle) on any cached market via `run.py`.
+- Keeps a long-term (`cache_seed/ltm/<MKT>.parquet`) and short-term (`cache_seed/cleaned_long*.parquet`) OHLCV store, updated by `market_memory.py` with idempotent upserts (newest bar wins).
+- Ingests India EOD from official NSE/BSE bhavcopy (`bhavcopy_history.py`, `update_bhavcopy_daily.py`) into an LMDB store (`bhavcopy_store.py`).
+- Fetches non-India prices through an ordered source chain (`data_sources.py`; default Yahoo-only, Stooq / EODHD / Groww opt-in).
+- Gates every write through `ingest_gate.py` (drop duplicate `(Symbol, Date)` rows, compact float32/int32 dtypes, size report).
+- Registers files as content-addressed, versioned batches and runs a weekly replication audit (`etl_registry.py`).
+- Verifies tracked data against a SHA-256 manifest (`integrity.py --verify`).
+- Headline result (`BACKTEST_FINDINGS.md`, 10-year point-in-time, 21-day forward): `rsi_oversold` is the most robust screen (positive edge in every market tested); `golden_crossover` is consistently weakest; India is momentum-friendly while US/KR/CN lean mean-reversion.
 
-> ⚠️ **Educational / research only. NOT investment advice.** Backtest edges are
-> historical averages, not guarantees. Past performance does not guarantee future
-> returns. Consult a SEBI-registered (or your jurisdiction's) advisor.
-
----
-
-## How this differs from [`global-stock-screener`](https://github.com/herrrickshaw/global-stock-screener)
-
-Same strategy library and market coverage, different job:
-
-| | `global-market-data` (this repo) | `global-stock-screener` |
-|---|---|---|
-| **Data depth** | 10 years, LFS-committed (`cache_seed/ltm/*.parquet`) | ~1 year cached, optimized for a fast clone |
-| **Purpose** | Point-in-time backtesting — *did this screen actually beat the market, historically?* | Live screening — *what passes the filter today?* |
-| **Output** | Edge/win-rate tables per market (`BACKTEST_FINDINGS.md`) | Ranked stock lists, daily mailer |
-
-If you want today's screen results, use `global-stock-screener`. If you want to know
-whether a screen has a real historical edge before trusting it, this is that repo.
-
----
-
-## Headline finding (`BACKTEST_FINDINGS.md`, 10-year point-in-time, 21-day forward)
-
-1. **`rsi_oversold` (mean-reversion) is the most robust screen** — positive edge in
-   every market tested, #1 in US/KR/CN/JP.
-2. **`golden_crossover` is consistently the weakest** — negative/near-zero edge
-   everywhere; the classic 50/200-DMA cross did not add value out-of-sample.
-3. **India is momentum-friendly** (`near_high` +1.33pp, `momentum` +1.18pp) while
-   the **US/KR/CN lean mean-reversion** — the edge is regime/market-dependent, not
-   universal.
-
-Full ranked table and methodology in [`BACKTEST_FINDINGS.md`](BACKTEST_FINDINGS.md).
-Architecture and data schema in [`ARCHITECTURE.md`](ARCHITECTURE.md).
-
----
-
-## Run it
-
+## Quick start
 ```bash
 git lfs install && git clone https://github.com/herrrickshaw/global-market-data.git
 cd global-market-data && git lfs pull
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python run.py --list                  # all strategies & markets
+python run.py --list                    # strategies and markets
 python run.py --strategy darvas --market IN
-python backtest.py                    # re-run the point-in-time backtest (run_all)
+```
+`run.py` bootstraps the committed seeds into a local store on first use, prints the result and saves it
+to `results/`. `colab_quickstart.ipynb` does the same without local setup.
+
+## How it works
+```
+stage            module(s)                                   output
+ingest           universe_sources, bhavcopy_history,         raw bars per market
+                 data_sources, fetch_market_ohlc
+gate             ingest_gate (dedup, dtypes, size delta)     clean long frame
+store            market_memory (LTM 5y / STM 1y),            cache_seed/*.parquet,
+                 bhavcopy_store (LMDB)                       warehouse/ (parquet + DuckDB)
+screen           screener_kit -> strategies/*, liquidity     result DataFrame / CSV
+report           build_mailer -> send_mailer, run.py --brief Daily Market Brief (HTML)
+audit            etl_registry, integrity                     warehouse/etl_registry.sqlite,
+                                                             reports/ETL_AUDIT.md
+```
+Key decisions: Parquet (zstd) plus LMDB for fast keyed reads instead of CSV; every write passes
+`ingest_gate`; ETL batches are named `BATCH-<source>-<YYYYMMDD>-<seq>` and a changed file becomes a new
+version (old row marked superseded) while identical content at another path is linked as a duplicate.
+`etl_registry.audit()` takes an injectable subprocess runner and `data_sources` fetchers take an
+injectable HTTP session, so tests never touch the network. See `ARCHITECTURE.md` for the layered flow and
+schemas.
+
+## Repository layout
+| Path | Purpose |
+|---|---|
+| `run.py`, `screener_kit.py` | CLI entry and facade (bootstrap / load / get / update / screen / custom_screen) |
+| `strategies/` | 11 screen modules (`base.py` + one file each) |
+| `market_memory.py`, `ingest_gate.py`, `bhavcopy_*.py`, `data_sources.py`, `market_calendar.py` | ingest, gate and store |
+| `etl_registry.py`, `integrity.py`, `warehouse_etl_extras.py` | ETL registry, audits, non-OHLCV warehouse domains (cgd / energy / audit) |
+| `backtest_screeners.py`, `walk_forward_backtest.py`, `backtest_*` | backtests |
+| `cache_seed/`, `reference_seed/`, `warehouse/` | tracked data (Git LFS; not hand-edited) |
+| `tests/` | pytest suite (synthetic frames, no network) |
+| `schedule/` | launchd plist and morning dashboard script |
+
+## Data sources
+| Source | What is taken | Access route | Licence / caveat |
+|---|---|---|---|
+| NSE / BSE bhavcopy | India EOD | official files | exchange terms apply |
+| SEC EDGAR | US fundamentals | public API | public |
+| JPX / KRX / SGX / Euronext / Eastmoney | listed universes | public lists, partly scraped | check each site's terms |
+| Yahoo Finance (yfinance), Stooq | prices outside India | API / CSV (Stooq is rate-limited) | unofficial, personal use |
+| EODHD, Groww | optional prices | API key / entitlement required | dormant unless configured |
+| Damodaran, Fama-French | industry multiples, factors | public downloads | cite the authors |
+| screener.in | India cash-conversion cycle | scraped (login in `screener_in_auth.py`) | terms apply |
+
+## Configuration
+- `BHAV_CACHE`: bhavcopy cache directory (defaults to `~/Downloads/data/bhavcopy_cache`, `/content/cache` on Colab).
+- `EODHD_API_KEY`: enables the EODHD source (unset = source returns nothing).
+- `VCRUD_DB`: optional audit database used by `ingest_gate` (best-effort; failures are skipped).
+- Mailer credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`, `MAIL_TO`) come from the environment and are never committed.
+
+## Testing
+```bash
+pip install pytest ruff black
+pytest -q          # 63 tests, synthetic data only
+ruff check . && black --check .
 ```
 
-Or open [`colab_quickstart.ipynb`](colab_quickstart.ipynb) and Runtime → Run all —
-no local setup, no API keys.
+## Limitations and known issues
+- **Freshness is judged by trading session, not file mtime.** Never grade a dataset by modified time, filename date or row count; compare the last bar to the last expected trading session (`market_calendar.py`).
+- **India prices come from `cleaned_ohlcv` only** (the collision-safe NSE+BSE merge in `warehouse/bhavcopy/`); do not mix in raw NSE or BSE frames or other India panels.
+- **yfinance `auto_adjust=True` misses some recent JP/KR splits.** Several scanners still call it (`full_us_market_scan.py`, `us_stocks_colab.py`); validate adjusted closes for JP/KR before trusting returns.
+- **Never combine DataFrames with `or`** (`df_a or df_b` raises on truthiness); use explicit `is None` / `.empty` checks.
+- Stooq returns an HTML limit page on bulk requests, so the default chain is Yahoo-only.
+- Some docs (`QUICK_START.md`, several `SGX_*` / `DDD_*` files) describe unrelated projects and are pending cleanup; `CHANGELOG.md` records removals. Earlier docs mention `backtest.py`, which does not exist: use `backtest_screeners.py` / `walk_forward_backtest.py`.
+- Several scripts hard-code maintainer paths (`~/market-pipeline`, `~/Downloads/...`); see the Phase 2 list in the refactor PR.
 
-`run.py` auto-bootstraps the committed cache into a local store on first use, then
-prints results and saves them to `results/`.
+## Related repositories
+- [`global-stock-screener`](https://github.com/herrrickshaw/global-stock-screener): same strategy library, about 1 year of cache, for live daily screening. This repo is the 10-year point-in-time side.
 
----
-
-## What's inside
-
-- **20 markets:** IN, US, JP, KR, CN, HK, TW, CA, AU, UK, DE, SA, BR, CH, ZA, SE, FI, DK, SG, Euronext (`cache_seed/ltm/*.parquet`)
-- **11 strategies:** `piotroski, coffee_can, magic_formula, bluest_blue_chips, debt_reduction, dividend_yield, golden_crossover, loss_to_profit, garp, darvas, cash_conversion_cycle`
-- **Point-in-time backtest engine** (`backtest.py`) — no-lookahead, equal-weight market benchmark, glitch-bar filtering
-- **Reference data**: Damodaran industry multiples, Fama-French factors (`reference_seed/`)
-- **Tamper-evidence manifest**: `integrity.py --verify` checks every tracked file against `cache_seed/CHECKSUMS.sha256`
-
-## Data sources (all free / official)
-
-Exchange bhavcopy (NSE/BSE), SEC EDGAR (US fundamentals), JPX/KRX/SGX/Euronext/
-Eastmoney (universes), Yahoo→Stooq (prices, with fallback), Damodaran & Fama-French
-(reference), screener.in (India CCC).
-
-## Repo layout
-
-```
-run.py                 one-command entry (auto-bootstraps, prints + saves results)
-backtest.py             point-in-time backtest engine (run_all)
-screener_kit.py         facade: bootstrap / load / get / update / screen / custom_screen
-strategies/             11 strategy modules (base.py + one file each)
-bhavcopy_history.py     India EOD ingest + cache        bhavcopy_store.py  LMDB store
-data_sources.py         yahoo→stooq fallback            market_calendar.py trading days
-universe_sources.py     per-market listed universe      fetch_market_ohlc.py  seeds
-sec_fundamentals.py     US fundamentals (SEC EDGAR)      screener_in.py  India CCC
-reference_data.py       Damodaran / Fama-French          integrity.py  manifest verify
-cache_seed/  reference_seed/   committed 10-year data (Git LFS)
-```
-
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full layered data flow and schema.
-
----
-
-> **Note (2026-07-13):** this README replaces a stray copy of `global-stock-screener`'s
-> README that had ended up here via a shared-working-directory mixup. Some
-> docs in this repo (`QUICK_START.md`, several `SGX_*`/`DDD_*` files) still describe
-> unrelated projects from the same contamination pattern and are pending cleanup.
+## Licence
+No licence file yet — all rights reserved.
