@@ -2,6 +2,7 @@
 
 Uses tiny synthetic files in tmp_path; rclone and the alert script are faked, no network.
 """
+
 from __future__ import annotations
 
 import sqlite3

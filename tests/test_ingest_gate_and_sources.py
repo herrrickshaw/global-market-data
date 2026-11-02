@@ -1,4 +1,5 @@
 """Characterisation tests for ingest_gate (dedup/dtypes/report) and data_sources (fallback chain)."""
+
 from __future__ import annotations
 
 import numpy as np
