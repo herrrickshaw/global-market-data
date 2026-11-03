@@ -3,25 +3,6 @@
  "workbook": {
   "All_Stocks": [
    {
-    "200_Day_MA": 75.89,
-    "Box_Bottom": 88.35,
-    "Box_Top": 91.88,
-    "Change%": 0.74,
-    "Darvas_Signal": "BREAKOUT_BUY",
-    "Distance_to_200MA%": 35.22,
-    "Dividend_Yield%": 0,
-    "LTP": 102.62,
-    "Market_Cap_B": null,
-    "Name": "Adyen",
-    "P_B_Ratio": null,
-    "P_E_Ratio": null,
-    "Position_in_Box%": 404.5,
-    "Sector": "Financial Services",
-    "Symbol": "ADYEN.AS",
-    "Trend_Signal": "Above 200MA (Uptrend)",
-    "Upside_to_Top%": -10.47
-   },
-   {
     "200_Day_MA": 45.7,
     "Box_Bottom": 36.31,
     "Box_Top": 38.98,
@@ -41,25 +22,6 @@
     "Upside_to_Top%": 1.61
    },
    {
-    "200_Day_MA": 76.86,
-    "Box_Bottom": 91.36,
-    "Box_Top": 94.2,
-    "Change%": 0.1,
-    "Darvas_Signal": "IN_BOX",
-    "Distance_to_200MA%": 20.65,
-    "Dividend_Yield%": 0,
-    "LTP": 92.73,
-    "Market_Cap_B": null,
-    "Name": "Air Liquide",
-    "P_B_Ratio": null,
-    "P_E_Ratio": null,
-    "Position_in_Box%": 48.4,
-    "Sector": "Basic Materials",
-    "Symbol": "AI.PA",
-    "Trend_Signal": "Above 200MA (Uptrend)",
-    "Upside_to_Top%": 1.58
-   },
-   {
     "200_Day_MA": 72.09,
     "Box_Bottom": 78.61,
     "Box_Top": 81.81,
@@ -77,6 +39,44 @@
     "Symbol": "ADS.DE",
     "Trend_Signal": "Above 200MA (Uptrend)",
     "Upside_to_Top%": -6.19
+   },
+   {
+    "200_Day_MA": 75.89,
+    "Box_Bottom": 88.35,
+    "Box_Top": 91.88,
+    "Change%": 0.74,
+    "Darvas_Signal": "BREAKOUT_BUY",
+    "Distance_to_200MA%": 35.22,
+    "Dividend_Yield%": 0,
+    "LTP": 102.62,
+    "Market_Cap_B": null,
+    "Name": "Adyen",
+    "P_B_Ratio": null,
+    "P_E_Ratio": null,
+    "Position_in_Box%": 404.5,
+    "Sector": "Financial Services",
+    "Symbol": "ADYEN.AS",
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": -10.47
+   },
+   {
+    "200_Day_MA": 76.86,
+    "Box_Bottom": 91.36,
+    "Box_Top": 94.2,
+    "Change%": 0.1,
+    "Darvas_Signal": "IN_BOX",
+    "Distance_to_200MA%": 20.65,
+    "Dividend_Yield%": 0,
+    "LTP": 92.73,
+    "Market_Cap_B": null,
+    "Name": "Air Liquide",
+    "P_B_Ratio": null,
+    "P_E_Ratio": null,
+    "Position_in_Box%": 48.4,
+    "Sector": "Basic Materials",
+    "Symbol": "AI.PA",
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": 1.58
    }
   ],
   "Darvas_Signals": [

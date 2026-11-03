@@ -96,7 +96,12 @@ def check_golden(name: str, payload) -> None:
 def dump_workbook(path) -> dict:
     """Sheet name -> list of row dicts, for golden comparison of an .xlsx."""
     sheets = pd.read_excel(path, sheet_name=None)
+    # The scanners order rows with ``DataFrame.sort_values`` (default, unstable quicksort), so the
+    # order of rows with equal sort keys differs between platforms. Compare rows order-independently.
     return {
-        name: json.loads(df.to_json(orient="records", date_format="iso"))
+        name: sorted(
+            json.loads(df.to_json(orient="records", date_format="iso")),
+            key=lambda row: json.dumps(row, sort_keys=True),
+        )
         for name, df in sheets.items()
     }

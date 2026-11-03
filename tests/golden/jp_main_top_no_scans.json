@@ -3,23 +3,6 @@
  "workbook": {
   "All_Stocks": [
    {
-    "200_Day_MA": 76.0,
-    "Box_Bottom": 79,
-    "Box_Top": 82,
-    "Change%": 2.5,
-    "Code": 7000,
-    "Darvas_Signal": "BREAKOUT_BUY",
-    "Data_Points": 260,
-    "Distance_to_200MA%": 7.89,
-    "LTP_JPY": 82,
-    "Name": "Jp0",
-    "Position_in_Box%": 122.7,
-    "Sector": "Ind",
-    "Trend_Signal": "Above 200MA (Uptrend)",
-    "Upside_to_Top%": -0.73,
-    "YF_Ticker": "7000.T"
-   },
-   {
     "200_Day_MA": 59.0,
     "Box_Bottom": 54,
     "Box_Top": 56,
@@ -54,6 +37,23 @@
     "YF_Ticker": "7002.T"
    },
    {
+    "200_Day_MA": 76.0,
+    "Box_Bottom": 79,
+    "Box_Top": 82,
+    "Change%": 2.5,
+    "Code": 7000,
+    "Darvas_Signal": "BREAKOUT_BUY",
+    "Data_Points": 260,
+    "Distance_to_200MA%": 7.89,
+    "LTP_JPY": 82,
+    "Name": "Jp0",
+    "Position_in_Box%": 122.7,
+    "Sector": "Ind",
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": -0.73,
+    "YF_Ticker": "7000.T"
+   },
+   {
     "200_Day_MA": null,
     "Box_Bottom": 58,
     "Box_Top": 62,
@@ -73,23 +73,6 @@
   ],
   "Darvas_Signals": [
    {
-    "200_Day_MA": null,
-    "Box_Bottom": 58,
-    "Box_Top": 62,
-    "Change%": -3.39,
-    "Code": 7003,
-    "Darvas_Signal": "BREAKDOWN_SELL",
-    "Data_Points": 40,
-    "Distance_to_200MA%": null,
-    "LTP_JPY": 57,
-    "Name": "Jp3",
-    "Position_in_Box%": -18.3,
-    "Sector": "Ind",
-    "Trend_Signal": "Insufficient History",
-    "Upside_to_Top%": 8.11,
-    "YF_Ticker": "7003.T"
-   },
-   {
     "200_Day_MA": 76.0,
     "Box_Bottom": 79,
     "Box_Top": 82,
@@ -105,6 +88,23 @@
     "Trend_Signal": "Above 200MA (Uptrend)",
     "Upside_to_Top%": -0.73,
     "YF_Ticker": "7000.T"
+   },
+   {
+    "200_Day_MA": null,
+    "Box_Bottom": 58,
+    "Box_Top": 62,
+    "Change%": -3.39,
+    "Code": 7003,
+    "Darvas_Signal": "BREAKDOWN_SELL",
+    "Data_Points": 40,
+    "Distance_to_200MA%": null,
+    "LTP_JPY": 57,
+    "Name": "Jp3",
+    "Position_in_Box%": -18.3,
+    "Sector": "Ind",
+    "Trend_Signal": "Insufficient History",
+    "Upside_to_Top%": 8.11,
+    "YF_Ticker": "7003.T"
    }
   ],
   "Fundamentals": [],
