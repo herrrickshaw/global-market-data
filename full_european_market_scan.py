@@ -428,13 +428,200 @@ def style_excel_sheet(ws):
 
 
 # ── Main Scanner ──────────────────────────────────────────────────────────────
-def main():
+def _parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Optimized Euro Stoxx 50 Scanner")
     parser.add_argument("--top", type=int, default=0, help="Scan only first N tickers")
     parser.add_argument(
         "--no-scans", action="store_true", default=False, help="Skip Stage 4 fundamental scans"
     )
-    args = parser.parse_args()
+    return parser.parse_args(argv)
+
+
+def _trend_signal(dist_ma) -> str:
+    """Classify distance to the 200-day MA (percent) into a trend label."""
+    if dist_ma and dist_ma > 5:
+        return "Above 200MA (Uptrend)"
+    if dist_ma and dist_ma < -5:
+        return "Below 200MA (Downtrend)"
+    return "Near 200MA (Consolidation)" if dist_ma else "Insufficient History"
+
+
+def _technical_row(sym: str, raw_ohlc: pd.DataFrame) -> dict | None:
+    """Darvas box + 200-day MA row for one symbol; None if too little history."""
+    df = (
+        raw_ohlc[sym].dropna() if isinstance(raw_ohlc.columns, pd.MultiIndex) else raw_ohlc.dropna()
+    )
+    if df.empty or len(df) < 20:
+        return None
+
+    closes = pd.to_numeric(df["Close"], errors="coerce").dropna()
+    ltp = round(float(closes.iloc[-1]), 2)
+    prev = round(float(closes.iloc[-2]), 2) if len(closes) >= 2 else None
+    chg_pct = round((ltp - prev) / prev * 100, 2) if prev else None
+
+    ma_200 = round(closes.rolling(200).mean().iloc[-1], 2) if len(closes) >= 200 else None
+    dist_ma = round(((ltp - ma_200) / ma_200 * 100), 2) if ma_200 else None
+
+    darv = compute_darvas_box(df)
+    name, sector = EURO_STOXX_50_META.get(sym, (sym, "—"))
+    return {
+        "Symbol": sym,
+        "Name": name,
+        "Sector": sector,
+        "LTP": ltp,
+        "Change%": chg_pct,
+        "200_Day_MA": ma_200,
+        "Distance_to_200MA%": dist_ma,
+        "Trend_Signal": _trend_signal(dist_ma),
+        "Darvas_Signal": darv.get("signal"),
+        "Box_Top": darv.get("box_top"),
+        "Box_Bottom": darv.get("box_bottom"),
+        "Upside_to_Top%": darv.get("upside_pct"),
+        "Position_in_Box%": darv.get("pos_in_box"),
+        # Valuation fallbacks
+        "Market_Cap_B": None,
+        "P_E_Ratio": None,
+        "P_B_Ratio": None,
+        "Dividend_Yield%": 0.0,
+    }
+
+
+def _technical_scan(symbols: list[str], raw_ohlc: pd.DataFrame):
+    """Stage 3: local pandas math. Returns (symbol -> row, breakout symbols)."""
+    all_stocks_map = {}
+    breakout_symbols = []
+    for sym in symbols:
+        try:
+            row = _technical_row(sym, raw_ohlc)
+            if row is None:
+                continue
+            all_stocks_map[sym] = row
+            if row["Darvas_Signal"] == "BREAKOUT_BUY":
+                breakout_symbols.append(sym)
+        except Exception as e:
+            print(f"  ⚠️ Technical error on {sym}: {e}")
+    return all_stocks_map, breakout_symbols
+
+
+def _merge_fund_row(sym: str, tech: dict, res: dict) -> dict:
+    """Merge technicals with one fundamental_scan result."""
+    return {
+        "Symbol": sym,
+        "Name": tech.get("Name"),
+        "Sector": tech.get("Sector"),
+        "LTP": tech.get("LTP"),
+        "Change%": tech.get("Change%"),
+        "Darvas_Signal": tech.get("Darvas_Signal"),
+        "200_Day_MA": tech.get("200_Day_MA"),
+        "Distance_to_200MA%": tech.get("Distance_to_200MA%"),
+        "P_E_Ratio": res.get("pe_ratio"),
+        "P_B_Ratio": res.get("pb_ratio"),
+        "Dividend_Yield%": res.get("dividend_yield"),
+        "PEGY_Ratio": res.get("pegy_ratio"),
+        "Piotroski_Score": res.get("f_score"),
+        "Piotroski_Class": res.get("f_interpretation"),
+        "CoffeeCan_Score": res.get("cc_score"),
+        "CoffeeCan_Class": res.get("cc_qualifies"),
+        "CAGR_Revenue%": res.get("cc_rev_cagr"),
+        "ROCE_Average%": res.get("cc_roce_avg"),
+        "Debt_Equity": res.get("cc_debt_equity"),
+        "Error": res.get("error"),
+    }
+
+
+def _is_triple_hit(res: dict) -> bool:
+    return bool(
+        res.get("f_score")
+        and res.get("f_score") >= PIOTROSKI_STRONG
+        and res.get("cc_qualifies") == "PASS"
+    )
+
+
+def _fundamental_stage(all_stocks_map: dict, breakout_symbols: list[str]):
+    """Stage 4: fundamentals on breakout candidates only. Returns (fund_rows, triple_hits)."""
+    fund_rows = []
+    triple_hits = []
+    print(
+        f"\nStage 4 — Fetching financials & scans for {len(breakout_symbols)} breakouts ({MAX_WORKERS} workers) …"
+    )
+    done = 0
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        futures = {pool.submit(fundamental_scan, sym): sym for sym in breakout_symbols}
+        for future in as_completed(futures):
+            sym = futures[future]
+            done += 1
+            try:
+                res = future.result()
+                tech = all_stocks_map.get(sym, {})
+                fund_row = _merge_fund_row(sym, tech, res)
+                fund_rows.append(fund_row)
+
+                # Update the master mapping so All_Stocks sheet contains PE/PB/Yield for breakouts
+                tech.update(
+                    {
+                        "Market_Cap_B": res.get("market_cap_b"),
+                        "P_E_Ratio": res.get("pe_ratio"),
+                        "P_B_Ratio": res.get("pb_ratio"),
+                        "Dividend_Yield%": res.get("dividend_yield"),
+                    }
+                )
+
+                if _is_triple_hit(res):
+                    triple_hits.append(fund_row.copy())
+
+                if done % 5 == 0 or done == len(breakout_symbols):
+                    print(
+                        f"    {done}/{len(breakout_symbols)} processed (Triple Hits so far: {len(triple_hits)})"
+                    )
+            except Exception as e:
+                print(f"    ❌ Fundamental error on {sym}: {e}")
+    return fund_rows, triple_hits
+
+
+def _write_workbook(excel_path, all_stocks, darvas_signals, fund_rows, triple_hits) -> None:
+    """Stage 5: write the four-sheet Excel report."""
+    with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
+
+        def write_sheet(rows, name, sort_col=None):
+            if not rows:
+                pd.DataFrame().to_excel(writer, sheet_name=name, index=False)
+                return
+            df = pd.DataFrame(rows)
+            if sort_col and sort_col in df.columns:
+                df = df.sort_values(sort_col, ascending=False)
+            df.to_excel(writer, sheet_name=name, index=False)
+            if OPENPYXL_OK:
+                style_excel_sheet(writer.sheets[name])
+
+        write_sheet(all_stocks, "All_Stocks", sort_col="Change%")
+        write_sheet(darvas_signals, "Darvas_Signals", sort_col="Upside_to_Top%")
+        write_sheet(fund_rows, "Fundamentals", sort_col="Piotroski_Score")
+        write_sheet(triple_hits, "Triple_Hits", sort_col="Piotroski_Score")
+
+
+def _print_summary(all_stocks, breakout_symbols, fund_rows, triple_hits, excel_path) -> None:
+    print(f"\n{'='*60}")
+    print(f"  SCAN COMPLETE — {datetime.now().strftime('%d %b %Y  %H:%M:%S')}")
+    print(f"  Total European Stocks Scanned: {len(all_stocks)}")
+    print(f"  Darvas Breakouts Found:       {len(breakout_symbols)}")
+    print(f"  Fundamentals Scanned:         {len(fund_rows)}")
+    print(f"  ★ TRIPLE HITS FOUND:          {len(triple_hits)}")
+    print(f"{'='*60}")
+
+    if triple_hits:
+        print("\n  Triple Hit Stocks:")
+        for r in sorted(triple_hits, key=lambda x: x.get("Piotroski_Score") or 0, reverse=True):
+            print(
+                f"    • {r['Symbol']:<10} {r['Name']:<30} F-Score: {r['Piotroski_Score']}/9  CC: {r['CoffeeCan_Score']}  LTP: €{r['LTP']}"
+            )
+    else:
+        print("\n  No Triple Hit stocks found today.")
+
+    print(f"\n  📊 Excel report saved → {excel_path}\n")
+
+
+def main():
+    args = _parse_args()
 
     symbols = list(EURO_STOXX_50_META.keys())
     if args.top:
@@ -454,188 +641,29 @@ def main():
     except Exception as e:
         sys.exit(f"❌ Failed to download bulk OHLC data: {e}")
 
-    # Stage 3: Technical Scan (Local pandas math - instant)
     print("\nStage 3 — Computing Darvas Box & 200-day MA Trend locally …")
-    all_stocks_map = {}
-    breakout_symbols = []
-
-    for sym in symbols:
-        try:
-            df = (
-                raw_ohlc[sym].dropna()
-                if isinstance(raw_ohlc.columns, pd.MultiIndex)
-                else raw_ohlc.dropna()
-            )
-            if df.empty or len(df) < 20:
-                continue
-
-            closes = pd.to_numeric(df["Close"], errors="coerce").dropna()
-            ltp = round(float(closes.iloc[-1]), 2)
-            prev = round(float(closes.iloc[-2]), 2) if len(closes) >= 2 else None
-            chg_pct = round((ltp - prev) / prev * 100, 2) if prev else None
-
-            # 200-day Moving Average
-            ma_200 = round(closes.rolling(200).mean().iloc[-1], 2) if len(closes) >= 200 else None
-            dist_ma = round(((ltp - ma_200) / ma_200 * 100), 2) if ma_200 else None
-            trend_sig = (
-                "Above 200MA (Uptrend)"
-                if dist_ma and dist_ma > 5
-                else (
-                    "Below 200MA (Downtrend)"
-                    if dist_ma and dist_ma < -5
-                    else "Near 200MA (Consolidation)" if dist_ma else "Insufficient History"
-                )
-            )
-
-            # Darvas Box
-            darv = compute_darvas_box(df)
-            name, sector = EURO_STOXX_50_META.get(sym, (sym, "—"))
-
-            all_stocks_map[sym] = {
-                "Symbol": sym,
-                "Name": name,
-                "Sector": sector,
-                "LTP": ltp,
-                "Change%": chg_pct,
-                "200_Day_MA": ma_200,
-                "Distance_to_200MA%": dist_ma,
-                "Trend_Signal": trend_sig,
-                "Darvas_Signal": darv.get("signal"),
-                "Box_Top": darv.get("box_top"),
-                "Box_Bottom": darv.get("box_bottom"),
-                "Upside_to_Top%": darv.get("upside_pct"),
-                "Position_in_Box%": darv.get("pos_in_box"),
-                # Valuation fallbacks
-                "Market_Cap_B": None,
-                "P_E_Ratio": None,
-                "P_B_Ratio": None,
-                "Dividend_Yield%": 0.0,
-            }
-
-            if darv.get("signal") == "BREAKOUT_BUY":
-                breakout_symbols.append(sym)
-        except Exception as e:
-            print(f"  ⚠️ Technical error on {sym}: {e}")
-
+    all_stocks_map, breakout_symbols = _technical_scan(symbols, raw_ohlc)
     print(
         f"  Processed {len(all_stocks_map)} stocks. Found {len(breakout_symbols)} Darvas breakouts."
     )
 
-    # Stage 4: Fundamental scans (Only run on breakout candidates - huge speedup)
     fund_rows = []
     triple_hits = []
-
     if not args.no_scans and breakout_symbols:
-        print(
-            f"\nStage 4 — Fetching financials & scans for {len(breakout_symbols)} breakouts ({MAX_WORKERS} workers) …"
-        )
-        done = 0
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-            futures = {pool.submit(fundamental_scan, sym): sym for sym in breakout_symbols}
-            for future in as_completed(futures):
-                sym = futures[future]
-                done += 1
-                try:
-                    res = future.result()
-                    tech = all_stocks_map.get(sym, {})
-
-                    # Merge technicals with fundamental scan result
-                    fund_row = {
-                        "Symbol": sym,
-                        "Name": tech.get("Name"),
-                        "Sector": tech.get("Sector"),
-                        "LTP": tech.get("LTP"),
-                        "Change%": tech.get("Change%"),
-                        "Darvas_Signal": tech.get("Darvas_Signal"),
-                        "200_Day_MA": tech.get("200_Day_MA"),
-                        "Distance_to_200MA%": tech.get("Distance_to_200MA%"),
-                        "P_E_Ratio": res.get("pe_ratio"),
-                        "P_B_Ratio": res.get("pb_ratio"),
-                        "Dividend_Yield%": res.get("dividend_yield"),
-                        "PEGY_Ratio": res.get("pegy_ratio"),
-                        "Piotroski_Score": res.get("f_score"),
-                        "Piotroski_Class": res.get("f_interpretation"),
-                        "CoffeeCan_Score": res.get("cc_score"),
-                        "CoffeeCan_Class": res.get("cc_qualifies"),
-                        "CAGR_Revenue%": res.get("cc_rev_cagr"),
-                        "ROCE_Average%": res.get("cc_roce_avg"),
-                        "Debt_Equity": res.get("cc_debt_equity"),
-                        "Error": res.get("error"),
-                    }
-                    fund_rows.append(fund_row)
-
-                    # Update the master mapping so All_Stocks sheet contains PE/PB/Yield for breakouts
-                    tech.update(
-                        {
-                            "Market_Cap_B": res.get("market_cap_b"),
-                            "P_E_Ratio": res.get("pe_ratio"),
-                            "P_B_Ratio": res.get("pb_ratio"),
-                            "Dividend_Yield%": res.get("dividend_yield"),
-                        }
-                    )
-
-                    if (
-                        res.get("f_score")
-                        and res.get("f_score") >= PIOTROSKI_STRONG
-                        and res.get("cc_qualifies") == "PASS"
-                    ):
-                        triple_hits.append(fund_row.copy())
-
-                    if done % 5 == 0 or done == len(breakout_symbols):
-                        print(
-                            f"    {done}/{len(breakout_symbols)} processed (Triple Hits so far: {len(triple_hits)})"
-                        )
-                except Exception as e:
-                    print(f"    ❌ Fundamental error on {sym}: {e}")
+        fund_rows, triple_hits = _fundamental_stage(all_stocks_map, breakout_symbols)
     else:
         print("\nStage 4 — Skipped (No active breakouts or --no-scans set)")
 
-    # Stage 5: Save formatted Excel
     print("\nStage 5 — Saving Excel workbook …")
     all_stocks = list(all_stocks_map.values())
     darvas_signals = [
         s for s in all_stocks if s["Darvas_Signal"] in ("BREAKOUT_BUY", "BREAKDOWN_SELL")
     ]
-
     date_str = datetime.today().strftime("%Y%m%d_%H%M")
     excel_path = DOWNLOAD_DIR / f"european_market_scan_{date_str}.xlsx"
+    _write_workbook(excel_path, all_stocks, darvas_signals, fund_rows, triple_hits)
 
-    with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-
-        def write_sheet(rows, name, sort_col=None):
-            if not rows:
-                pd.DataFrame().to_excel(writer, sheet_name=name, index=False)
-                return
-            df = pd.DataFrame(rows)
-            if sort_col and sort_col in df.columns:
-                df = df.sort_values(sort_col, ascending=False)
-            df.to_excel(writer, sheet_name=name, index=False)
-            if OPENPYXL_OK:
-                style_excel_sheet(writer.sheets[name])
-
-        write_sheet(all_stocks, "All_Stocks", sort_col="Change%")
-        write_sheet(darvas_signals, "Darvas_Signals", sort_col="Upside_to_Top%")
-        write_sheet(fund_rows, "Fundamentals", sort_col="Piotroski_Score")
-        write_sheet(triple_hits, "Triple_Hits", sort_col="Piotroski_Score")
-
-    print(f"\n{'='*60}")
-    print(f"  SCAN COMPLETE — {datetime.now().strftime('%d %b %Y  %H:%M:%S')}")
-    print(f"  Total European Stocks Scanned: {len(all_stocks)}")
-    print(f"  Darvas Breakouts Found:       {len(breakout_symbols)}")
-    print(f"  Fundamentals Scanned:         {len(fund_rows)}")
-    print(f"  ★ TRIPLE HITS FOUND:          {len(triple_hits)}")
-    print(f"{'='*60}")
-
-    if triple_hits:
-        print("\n  Triple Hit Stocks:")
-        for r in sorted(triple_hits, key=lambda x: x.get("Piotroski_Score") or 0, reverse=True):
-            print(
-                f"    • {r['Symbol']:<10} {r['Name']:<30} F-Score: {r['Piotroski_Score']}/9  CC: {r['CoffeeCan_Score']}  LTP: €{r['LTP']}"
-            )
-    else:
-        print("\n  No Triple Hit stocks found today.")
-
-    print(f"\n  📊 Excel report saved → {excel_path}\n")
+    _print_summary(all_stocks, breakout_symbols, fund_rows, triple_hits, excel_path)
 
 
 if __name__ == "__main__":
