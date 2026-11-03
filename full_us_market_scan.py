@@ -52,6 +52,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from scan_common import gc_signal, ohlc_counts, screens_passed, tally_screens
+
 # Persistent cache (avoids re-downloading on subsequent runs)
 log = logging.getLogger(__name__)
 
@@ -883,11 +885,7 @@ def _ohlc_base_row(ticker: str, df: pd.DataFrame, min_price: float) -> dict | No
         "Upside_to_Top%": darvas.get("upside_to_top_pct"),
         "Position_in_Box%": darvas.get("position_in_box_pct"),
         "Data_Points": darvas.get("data_points"),
-        "GC_Signal": (
-            "GOLDEN_CROSS"
-            if gc.get("gc_signal")
-            else ("ABOVE_200DMA" if gc.get("dma50_above_200") else "BELOW_200DMA")
-        ),
+        "GC_Signal": gc_signal(gc),
         "DMA50": gc.get("dma50"),
         "DMA200": gc.get("dma200"),
         "DMA_Gap%": gc.get("dma_gap_%"),
@@ -907,18 +905,6 @@ def _screen_ohlc(ohlc_data: dict, min_price: float):
         if base_row["Darvas_Signal"] in ("BREAKOUT_BUY", "BREAKDOWN_SELL"):
             darvas_rows.append(base_row.copy())
     return all_rows, darvas_rows, ohlc_row_map
-
-
-def _ohlc_counts(all_rows: list[dict]) -> dict:
-    """Headline OHLC screener counts."""
-    return {
-        "breakout": sum(1 for r in all_rows if r["Darvas_Signal"] == "BREAKOUT_BUY"),
-        "breakdown": sum(1 for r in all_rows if r["Darvas_Signal"] == "BREAKDOWN_SELL"),
-        "gc": sum(1 for r in all_rows if r["GC_Signal"] == "GOLDEN_CROSS"),
-        "above_200": sum(
-            1 for r in all_rows if r["GC_Signal"] in ("GOLDEN_CROSS", "ABOVE_200DMA")
-        ),
-    }
 
 
 def _fund_row(sym: str, res: dict, ohlc: dict) -> dict:
@@ -953,20 +939,6 @@ def _fund_row(sym: str, res: dict, ohlc: dict) -> dict:
     }
 
 
-def _screens_passed(ohlc: dict, res: dict) -> int:
-    """How many of the six screens (Darvas, GC, Piotroski, CC, MF, BC) this stock passes."""
-    return sum(
-        [
-            ohlc.get("Darvas_Signal") == "BREAKOUT_BUY",
-            ohlc.get("GC_Signal") in ("GOLDEN_CROSS", "ABOVE_200DMA"),
-            bool(res.get("f_strong")),
-            bool(res.get("qualifies_cc")),
-            bool(res.get("qualifies_mf")),
-            bool(res.get("qualifies_bc")),
-        ]
-    )
-
-
 def _run_fundamental_stage(ohlc_row_map: dict, workers: int):
     """Stage 4: all fundamental screeners on every stock. Returns (fund_rows, six_rows, counts)."""
     fund_rows, six_screen_rows = [], []
@@ -988,18 +960,11 @@ def _run_fundamental_stage(ohlc_row_map: dict, workers: int):
                 row = _fund_row(sym, res, ohlc)
                 fund_rows.append(row)
 
-                for key, flag in (
-                    ("piotroski", "f_strong"),
-                    ("cc", "qualifies_cc"),
-                    ("mf", "qualifies_mf"),
-                    ("bc", "qualifies_bc"),
-                ):
-                    if res.get(flag):
-                        sc_counts[key] += 1
+                tally_screens(sc_counts, res)
 
-                screens_passed = _screens_passed(ohlc, res)
-                if screens_passed >= 3:
-                    six_screen_rows.append({**row, "Screens_Passed": screens_passed})
+                n_passed = screens_passed(ohlc, res)
+                if n_passed >= 3:
+                    six_screen_rows.append({**row, "Screens_Passed": n_passed})
 
                 if done % 200 == 0 or done == len(all_syms_for_fund):
                     print(
@@ -1094,7 +1059,7 @@ def main(
 
     print("Stage 3 — Darvas Box + Golden Crossover screen (all stocks) …")
     all_rows, darvas_rows, ohlc_row_map = _screen_ohlc(ohlc_data, min_price)
-    counts = _ohlc_counts(all_rows)
+    counts = ohlc_counts(all_rows)
     print(f"  Darvas Breakout BUY:    {counts['breakout']}")
     print(f"  Darvas Breakdown SELL:  {counts['breakdown']}")
     print(f"  Golden Cross (today):   {counts['gc']}")

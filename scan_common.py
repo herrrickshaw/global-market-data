@@ -33,3 +33,50 @@ def write_scan_workbook(
             df.to_excel(writer, sheet_name=name, index=False)
             if style_fn is not None:
                 style_fn(writer.sheets[name])
+
+
+GOLDEN_OR_ABOVE = ("GOLDEN_CROSS", "ABOVE_200DMA")
+_SCREEN_FLAGS = (
+    ("piotroski", "f_strong"),
+    ("cc", "qualifies_cc"),
+    ("mf", "qualifies_mf"),
+    ("bc", "qualifies_bc"),
+)
+
+
+def ohlc_counts(all_rows: list[dict]) -> dict:
+    """Headline Darvas / Golden-Cross counts over the OHLC rows."""
+    return {
+        "breakout": sum(1 for r in all_rows if r["Darvas_Signal"] == "BREAKOUT_BUY"),
+        "breakdown": sum(1 for r in all_rows if r["Darvas_Signal"] == "BREAKDOWN_SELL"),
+        "gc": sum(1 for r in all_rows if r["GC_Signal"] == "GOLDEN_CROSS"),
+        "above_200": sum(1 for r in all_rows if r["GC_Signal"] in GOLDEN_OR_ABOVE),
+    }
+
+
+def screens_passed(ohlc: dict, res: dict) -> int:
+    """How many of the six screens (Darvas, GC, Piotroski, CC, MF, BC) a stock passes."""
+    return sum(
+        [
+            ohlc.get("Darvas_Signal") == "BREAKOUT_BUY",
+            ohlc.get("GC_Signal") in GOLDEN_OR_ABOVE,
+            bool(res.get("f_strong")),
+            bool(res.get("qualifies_cc")),
+            bool(res.get("qualifies_mf")),
+            bool(res.get("qualifies_bc")),
+        ]
+    )
+
+
+def tally_screens(sc_counts: dict, res: dict) -> None:
+    """Increment the per-screener pass counters from one fundamental_scan result."""
+    for key, flag in _SCREEN_FLAGS:
+        if res.get(flag):
+            sc_counts[key] += 1
+
+
+def gc_signal(gc: dict) -> str:
+    """Golden-Crossover label from a compute_golden_crossover result."""
+    if gc.get("gc_signal"):
+        return "GOLDEN_CROSS"
+    return "ABOVE_200DMA" if gc.get("dma50_above_200") else "BELOW_200DMA"
