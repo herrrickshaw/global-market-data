@@ -5,6 +5,7 @@ No network, no files outside tmp, no mail: every external dependency is faked.
 """
 
 import contextlib
+import difflib
 import io
 import json
 import os
@@ -84,7 +85,12 @@ def check_golden(name: str, payload) -> None:
         GOLDEN_DIR.mkdir(exist_ok=True)
         path.write_text(text + "\n")
         return
-    assert path.read_text() == text + "\n"
+    expected = path.read_text()
+    if expected != text + "\n":
+        diff = difflib.unified_diff(
+            expected.splitlines(), text.splitlines(), "golden", "actual", lineterm="", n=2
+        )
+        raise AssertionError(f"golden {name} differs:\n" + "\n".join(list(diff)[:60]))
 
 
 def dump_workbook(path) -> dict:
