@@ -1,94 +1,59 @@
-# Memory
+# CLAUDE.md
 
-## Me
-Uma — Senior professional based in Bhopal. Dual Degree Chemical Engineering (IIT Madras) + MBA Accounting & Finance (ESMT Berlin). Background: Shell (LNG process engineering), Invest India (FDI/investment promotion, oil & gas), GITA/MPIDC (state investment strategy, Madhya Pradesh), Ritzenhöfer & Company (Germany, consulting), Synergy Marine Group (business transformation). Currently: independent consulting/advisory + active job search.
+Technical guidance for working in this repository (global-market-data: 10-year point-in-time backtest engine). Educational / research
+use only; not investment advice. Paths are repo-relative.
 
----
+## Commands
 
-## Active Workstreams
+```bash
+pip install -r requirements.txt
+python run.py --list                      # strategies and markets
+python run.py --strategy darvas --market IN
+python -m pytest tests                    # test suite
+ruff check . && black --check .           # lint, as in .github/workflows/tests.yml
+```
+python backtest_screeners.py             # point-in-time screen backtest (see BACKTEST_FINDINGS.md)
 
-| Project | What |
-|---------|------|
-| **Distillery Model** | 200 KLPD grain-based distillery financial model; GOI interest subvention scheme for CSMs |
-| **CSM M&A** | Cooperative Sugar Mill partnership entry structures (JV, BOT, BOOT, PPP); pitch deck + policy brief |
-| **Ethanol Policy** | EBP blending targets, overcapacity analysis (CareEdge/PIB), multi-feedstock conversion |
-| **CBG/SATAT** | Compressed Biogas scheme; state-wise Gobardhan data; blending obligation presentation |
-| **IPO Tracking** | TruAlt Bioenergy, Godavari Biorefineries; ethanol/distillery IPO pipeline |
-| **PE/VC Database** | India-focused PE/VC investor mapping; deal origination in bioenergy |
-| **Flipcarbon** | Business strategy document consulting/BD engagement |
-| **Sri Tara Global** | Family health & wellness products (malts, dosa mixes, wellness soups); international e-commerce |
+Large data under `cache_seed/` is stored with Git LFS (`git lfs pull` to fetch).
 
----
+## Layout
 
-## Terms & Acronyms
+| Path | Purpose |
+|---|---|
+| `run.py`, `screener_kit.py` | CLI and facade: bootstrap, load, screen |
+| `strategies/` | One module per screen (`darvas`, `piotroski`, `coffee_can`, `garp`, ...) returning `Result` |
+| `universe_sources.py`, `data_sources.py`, `fetch_market_ohlc.py` | Universe lists and OHLC ingest (Yahoo with Stooq fallback) |
+| `bhavcopy_history.py`, `bhavcopy_store.py` | India EOD ingest and LMDB store |
+| `liquidity.py`, `market_calendar.py` | Turnover tiers and trading-day calendars |
+| `cache_seed/` | Per-market parquet seeds (`cleaned_long_<MKT>.parquet`) |
+| `reference_seed/` | Reference tables (industry benchmarks, factor data) |
+| `tests/` | pytest suite |
+| `walk_forward_backtest.py`, `backtest_screeners.py` | Point-in-time backtests |
+| `warehouse/` | Adjustment-factor tables |
 
-| Term | Meaning |
-|------|---------|
-| EBP | Ethanol Blending Programme (GOI) |
-| CSM | Cooperative Sugar Mill |
-| KLPD | Kilolitres Per Day (distillery capacity unit) |
-| NCDC | National Cooperative Development Corporation (loan scheme) |
-| SATAT | Sustainable Alternative Towards Affordable Transportation (CBG scheme) |
-| CBG | Compressed Biogas |
-| SAF | Sustainable Aviation Fuel |
-| DDGS | Dried Distillers Grains with Solubles (distillery co-product) |
-| FDI | Foreign Direct Investment |
-| IEM | Industrial Entrepreneur Memorandum (DPIIT investment tracking) |
-| DPIIT | Dept for Promotion of Industry and Internal Trade |
-| MPIDC | Madhya Pradesh Industrial Development Corporation |
-| GITA | Global Innovation & Technology Alliance |
-| LNG | Liquefied Natural Gas |
-| HCV | Heavy Commercial Vehicle |
-| TCO | Total Cost of Ownership |
-| DISCOM | Distribution Company (power sector) |
-| CRMB | Crumb Rubber Modified Bitumen |
-| PPO | Proximal Policy Optimization (RL) |
-| NPV/IRR | Net Present Value / Internal Rate of Return |
-| BOT/BOOT | Build-Operate-Transfer / Build-Own-Operate-Transfer |
-| PPP | Public-Private Partnership |
-| PARIVESH | MoEFCC environmental clearance portal |
-| VDA/ACMA/SIAM | German/Indian auto industry associations |
+See `ARCHITECTURE.md` for the layered data flow and schemas.
 
----
+## Data flow
 
-## Key Sectors & Expertise
+sources -> ingest -> parquet/LMDB cache -> `screener_kit.load()` (liquidity pre-filter)
+-> `strategies.<slug>.screen(stock)` -> `Result(pass, score, metrics)` -> `results/*.csv`.
 
-- **Bioenergy:** Ethanol, CBG, SAF, biodiesel — policy, financial modelling, M&A
-- **Oil & Gas / LNG:** Process engineering (Shell), BD (Codvo-type roles), LNG shift supervisor
-- **Investment Promotion:** FDI facilitation (Invest India), state-level (MP, Tamil Nadu)
-- **Financial Modelling:** NPV/IRR, DCF, distillery models, TCO, startup valuation, DISCOM debt
-- **Equity Research:** Indian banking, Praj Industries, SPARC pharma, small-cap screening
-- **ML/Quant:** XGBoost + UMAP/HDBSCAN + PPO RL for Indian small-cap stock screening
+## Technical hazards
 
----
-
-## Active Job Search — Target Roles
-
-| Role Type | Notes |
-|-----------|-------|
-| Boutique IB / M&A advisory | Xpertiz-type; bioenergy, infra |
-| BD / Investment Promotion | Gallup BDM, DPIIT-adjacent |
-| LNG / O&G Operations | Shift Supervisor (Qatar, Middle East) |
-| PPP / Project Development | Infrastructure, bioenergy |
-| Oil & Gas BD | Codvo-type |
-
----
-
-## Preferences
-
-- Deliverables: Excel models, Word reports (.docx), PowerPoint decks (.pptx), PDFs
-- Python for quantitative work (pandas, numpy, sklearn, matplotlib)
-- Structured output: tables, numbered sections, exec summaries first
-- Financial models: always include NPV, IRR, sensitivity tables
-- Pitch decks: problem → market → solution → financials → ask structure
-- Cover letters: concise, achievement-led, 3 paragraphs max
-- India-focus by default unless stated otherwise
-
----
-
-## Deep Memory Index
-
-→ Sector detail: bioenergy policy, LNG/O&G, FDI/investment promotion  
-→ Models built: distillery 200 KLPD, TCO HCV, DISCOM debt, startup valuation, INR/USD regression  
-→ Geographies: India (MP, TN, Northeast), Germany, Qatar, Singapore  
-→ Relationships: Invest India network, MPIDC/GITA contacts, Shell alumni, ESMT Berlin network
+- **Freshness is judged by trading session**, not file mtime, filename date or row count.
+  A file written today can hold a stale session; compare the last bar date to the
+  market's last trading day (see `market_calendar.py`).
+- **India price data comes from the cleaned long-format cache only**
+  (`cache_seed/cleaned_long_IN.parquet`). Do not substitute raw vendor tables or
+  unreviewed exports; they have carried corporate-action and EPS-scaling errors.
+- **yfinance split caveat**: `history(auto_adjust=True)` can return unadjusted prices for
+  recent Japan/Korea splits even when `.splits` lists the event. Validate adjustments by
+  series continuity, not by comparing windowed returns.
+- **Never use `or` between DataFrames** (`a or b` raises on truthiness of a DataFrame).
+  Use `a if a is not None and not a.empty else b`.
+- **Darvas box excludes the current bar.** Form the box from prior bars only, otherwise
+  the breakout bar defines its own ceiling and the signal is look-ahead.
+- Backtests must be point-in-time: no fundamentals or prices dated after the decision day.
+- Tickers must be exchange-qualified; never infer the exchange from the ticker shape.
+- Secrets (API keys, cookies, logins) belong in environment variables or untracked local
+  files, never in the repository.
