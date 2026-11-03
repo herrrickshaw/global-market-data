@@ -29,6 +29,8 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+from scan_common import trend_label, write_scan_workbook
+
 try:
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
@@ -437,15 +439,6 @@ def _parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def _trend_signal(dist_ma) -> str:
-    """Classify distance to the 200-day MA (percent) into a trend label."""
-    if dist_ma and dist_ma > 5:
-        return "Above 200MA (Uptrend)"
-    if dist_ma and dist_ma < -5:
-        return "Below 200MA (Downtrend)"
-    return "Near 200MA (Consolidation)" if dist_ma else "Insufficient History"
-
-
 def _technical_row(sym: str, raw_ohlc: pd.DataFrame) -> dict | None:
     """Darvas box + 200-day MA row for one symbol; None if too little history."""
     df = (
@@ -472,7 +465,7 @@ def _technical_row(sym: str, raw_ohlc: pd.DataFrame) -> dict | None:
         "Change%": chg_pct,
         "200_Day_MA": ma_200,
         "Distance_to_200MA%": dist_ma,
-        "Trend_Signal": _trend_signal(dist_ma),
+        "Trend_Signal": trend_label(dist_ma, "Insufficient History"),
         "Darvas_Signal": darv.get("signal"),
         "Box_Top": darv.get("box_top"),
         "Box_Bottom": darv.get("box_bottom"),
@@ -580,23 +573,16 @@ def _fundamental_stage(all_stocks_map: dict, breakout_symbols: list[str]):
 
 def _write_workbook(excel_path, all_stocks, darvas_signals, fund_rows, triple_hits) -> None:
     """Stage 5: write the four-sheet Excel report."""
-    with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-
-        def write_sheet(rows, name, sort_col=None):
-            if not rows:
-                pd.DataFrame().to_excel(writer, sheet_name=name, index=False)
-                return
-            df = pd.DataFrame(rows)
-            if sort_col and sort_col in df.columns:
-                df = df.sort_values(sort_col, ascending=False)
-            df.to_excel(writer, sheet_name=name, index=False)
-            if OPENPYXL_OK:
-                style_excel_sheet(writer.sheets[name])
-
-        write_sheet(all_stocks, "All_Stocks", sort_col="Change%")
-        write_sheet(darvas_signals, "Darvas_Signals", sort_col="Upside_to_Top%")
-        write_sheet(fund_rows, "Fundamentals", sort_col="Piotroski_Score")
-        write_sheet(triple_hits, "Triple_Hits", sort_col="Piotroski_Score")
+    write_scan_workbook(
+        excel_path,
+        [
+            (all_stocks, "All_Stocks", "Change%"),
+            (darvas_signals, "Darvas_Signals", "Upside_to_Top%"),
+            (fund_rows, "Fundamentals", "Piotroski_Score"),
+            (triple_hits, "Triple_Hits", "Piotroski_Score"),
+        ],
+        style_excel_sheet if OPENPYXL_OK else None,
+    )
 
 
 def _print_summary(all_stocks, breakout_symbols, fund_rows, triple_hits, excel_path) -> None:
