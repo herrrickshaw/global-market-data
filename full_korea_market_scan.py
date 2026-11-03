@@ -604,9 +604,7 @@ def _fund_row(code: str, sfx: str, tech: dict, res: dict) -> dict:
 def _fundamental_stage(breakout_info: list, darvas_rows: list[dict], workers: int):
     """Stage 4: fundamentals on breakout candidates. Returns (fund_rows, triple_rows)."""
     fund_rows, triple_rows = [], []
-    print(
-        f"\nStage 4 — Fundamental scans ({len(breakout_info)} candidates, {workers} workers) …"
-    )
+    print(f"\nStage 4 — Fundamental scans ({len(breakout_info)} candidates, {workers} workers) …")
     done = 0
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {

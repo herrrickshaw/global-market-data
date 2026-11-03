@@ -43,8 +43,12 @@ def _kr_setup(monkeypatch, tmp_path):
     monkeypatch.setattr(kr, "DOWNLOAD_DIR", tmp_path)
     monkeypatch.setattr(kr, "fundamental_scan", _fund)
     universe = [
-        {"code": f"00{i}0", "name": f"Kr{i}", "market": "KOSPI" if i % 2 else "KOSDAQ",
-         "yf_suffix": ".KS" if i % 2 else ".KQ"}
+        {
+            "code": f"00{i}0",
+            "name": f"Kr{i}",
+            "market": "KOSPI" if i % 2 else "KOSDAQ",
+            "yf_suffix": ".KS" if i % 2 else ".KQ",
+        }
         for i in range(1, 8)
     ]
     monkeypatch.setattr(kr, "build_krx_universe", lambda kospi_only=False: list(universe))
@@ -73,10 +77,28 @@ def _jp_setup(monkeypatch, tmp_path):
 
 CASES = [
     ("kr_main", kr, _kr_setup, ["prog", "--workers", "1"], "korea_market_scan_*.xlsx"),
-    ("kr_main_top_no_scans", kr, _kr_setup, ["prog", "--top", "4", "--no-scans"], "korea_market_scan_*.xlsx"),
-    ("kr_main_capped", kr, _kr_setup, ["prog", "--workers", "1", "--kospi-only"], "korea_market_scan_*.xlsx"),
+    (
+        "kr_main_top_no_scans",
+        kr,
+        _kr_setup,
+        ["prog", "--top", "4", "--no-scans"],
+        "korea_market_scan_*.xlsx",
+    ),
+    (
+        "kr_main_capped",
+        kr,
+        _kr_setup,
+        ["prog", "--workers", "1", "--kospi-only"],
+        "korea_market_scan_*.xlsx",
+    ),
     ("jp_main", jp, _jp_setup, ["prog", "--workers", "1"], "japan_market_scan_*.xlsx"),
-    ("jp_main_top_no_scans", jp, _jp_setup, ["prog", "--top", "4", "--no-scans"], "japan_market_scan_*.xlsx"),
+    (
+        "jp_main_top_no_scans",
+        jp,
+        _jp_setup,
+        ["prog", "--top", "4", "--no-scans"],
+        "japan_market_scan_*.xlsx",
+    ),
     ("jp_main_capped", jp, _jp_setup, ["prog", "--workers", "1"], "japan_market_scan_*.xlsx"),
 ]
 

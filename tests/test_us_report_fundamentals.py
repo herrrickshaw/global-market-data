@@ -16,7 +16,9 @@ def _df(rows):
     """rows: {name: (curr, prev, older...)} -> yfinance-style frame (newest year first)."""
     width = max(len(v) for v in rows.values())
     cols = [pd.Timestamp(2025 - i, 12, 31) for i in range(width)]
-    return pd.DataFrame({n: list(v) + [None] * (width - len(v)) for n, v in rows.items()}, index=cols).T
+    return pd.DataFrame(
+        {n: list(v) + [None] * (width - len(v)) for n, v in rows.items()}, index=cols
+    ).T
 
 
 GOOD = dict(

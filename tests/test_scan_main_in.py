@@ -65,8 +65,16 @@ def faked(monkeypatch):
 @pytest.mark.parametrize(
     "name,cache,kwargs",
     [
-        ("in_main_cache_hit", (["RELI", "TCS", "INFZ", "HDFC"], ["500001", "500002"]), {"workers": 1}),
-        ("in_main_cache_hit_nse_only", (["RELI", "TCS"], ["500001"]), {"nse_only": True, "workers": 1}),
+        (
+            "in_main_cache_hit",
+            (["RELI", "TCS", "INFZ", "HDFC"], ["500001", "500002"]),
+            {"workers": 1},
+        ),
+        (
+            "in_main_cache_hit_nse_only",
+            (["RELI", "TCS"], ["500001"]),
+            {"nse_only": True, "workers": 1},
+        ),
         ("in_main_miss_no_scans", None, {"run_scans": False, "top": 3}),
     ],
 )
