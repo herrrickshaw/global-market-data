@@ -72,6 +72,7 @@
 #   pip install nsepython bseindia yfinance pandas openpyxl requests
 
 import argparse
+import logging
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -111,6 +112,8 @@ try:
 except ImportError:
     sys.exit("❌  pip install yfinance")
 
+log = logging.getLogger(__name__)
+
 # ── Constants ──────────────────────────────────────────────────────────────────
 DOWNLOAD_DIR = Path("./indian_full_scan")
 DOWNLOAD_DIR.mkdir(exist_ok=True)
@@ -135,8 +138,8 @@ def _load_symbol_cache():
             data = _json.loads(_SYMBOL_CACHE.read_text())
             if time.time() - data.get("ts", 0) < SYMBOL_CACHE_TTL:
                 return data.get("nse", []), data.get("bse_only", [])
-    except Exception:
-        pass
+    except (OSError, ValueError, AttributeError) as exc:
+        log.debug("symbol cache unreadable, refetching: %s", exc)
     return None, None
 
 
@@ -145,8 +148,8 @@ def _save_symbol_cache(nse_syms, bse_syms):
         _SYMBOL_CACHE.write_text(
             _json.dumps({"ts": time.time(), "nse": nse_syms, "bse_only": bse_syms})
         )
-    except Exception:
-        pass
+    except (OSError, TypeError) as exc:
+        log.debug("symbol cache not written: %s", exc)
 
 
 # ── Symbol fetch ───────────────────────────────────────────────────────────────

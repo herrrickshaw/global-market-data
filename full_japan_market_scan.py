@@ -26,6 +26,7 @@
 
 import argparse
 import json
+import logging
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -46,6 +47,8 @@ try:
     OPENPYXL_OK = True
 except ImportError:
     OPENPYXL_OK = False
+
+log = logging.getLogger(__name__)
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 DOWNLOAD_DIR = Path("./japan_scan")
@@ -76,16 +79,16 @@ def _load_cache():
             data = json.loads(_CACHE_FILE.read_text())
             if time.time() - data.get("ts", 0) < SYMBOL_CACHE_TTL:
                 return data.get("tickers", [])
-    except Exception:
-        pass
+    except (OSError, ValueError, AttributeError) as exc:
+        log.debug("symbol cache unreadable, refetching: %s", exc)
     return None
 
 
 def _save_cache(tickers):
     try:
         _CACHE_FILE.write_text(json.dumps({"ts": time.time(), "tickers": tickers}))
-    except Exception:
-        pass
+    except (OSError, TypeError) as exc:
+        log.debug("symbol cache not written: %s", exc)
 
 
 def fetch_tse_universe_kabupy() -> list[dict]:

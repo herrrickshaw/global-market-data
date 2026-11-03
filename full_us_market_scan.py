@@ -123,8 +123,8 @@ def _load_symbol_cache():
             data = json.loads(_SYMBOL_CACHE.read_text())
             if time.time() - data.get("ts", 0) < SYMBOL_CACHE_TTL:
                 return data.get("nasdaq", []), data.get("nyse", [])
-    except Exception:
-        pass
+    except (OSError, ValueError, AttributeError) as exc:
+        log.debug("symbol cache unreadable, refetching: %s", exc)
     return None, None
 
 
@@ -133,8 +133,8 @@ def _save_symbol_cache(nasdaq_syms, nyse_syms):
         _SYMBOL_CACHE.write_text(
             json.dumps({"ts": time.time(), "nasdaq": nasdaq_syms, "nyse": nyse_syms})
         )
-    except Exception:
-        pass
+    except (OSError, TypeError) as exc:
+        log.debug("symbol cache not written: %s", exc)
 
 
 # ── Symbol fetch ───────────────────────────────────────────────────────────────
