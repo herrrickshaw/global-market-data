@@ -1,0 +1,126 @@
+{
+ "bad": {
+  "component_scores": {
+   "F1_ROA_positive": 0,
+   "F2_OCF_positive": 0,
+   "F3_ROA_improving": 0,
+   "F4_Accruals": 1,
+   "F5_Leverage_down": 0,
+   "F6_CurrentRatio_up": 0,
+   "F7_No_dilution": 0,
+   "F8_GrossMargin_up": 0,
+   "F9_AssetTurnover_up": 0
+  },
+  "details": {
+   "AssetTurnover_curr": 0.8,
+   "AssetTurnover_prev": 1.0,
+   "CurrentRatio_curr": 0.86,
+   "CurrentRatio_prev": 1.54,
+   "GrossMargin_curr_%": 25.0,
+   "GrossMargin_prev_%": 33.33,
+   "LTD_ratio_curr_%": 40.0,
+   "LTD_ratio_prev_%": 22.22,
+   "OCF_current_$M": -0.0,
+   "ROA_current_%": -2.0,
+   "ROA_prev_%": 4.44,
+   "Shares_curr_M": 2.0
+  },
+  "f_score": 1,
+  "interpretation": "WEAK \u2014 avoid or short candidate",
+  "symbol": "SYM"
+ },
+ "fcf_row_ltd_de": {
+  "component_scores": {
+   "F1_ROA_positive": 1,
+   "F2_OCF_positive": 0,
+   "F3_ROA_improving": 1,
+   "F4_Accruals": 0,
+   "F5_Leverage_down": 1,
+   "F6_CurrentRatio_up": 1,
+   "F7_No_dilution": 1,
+   "F8_GrossMargin_up": 1,
+   "F9_AssetTurnover_up": 1
+  },
+  "details": {
+   "AssetTurnover_curr": 1.5,
+   "AssetTurnover_prev": 1.2,
+   "CurrentRatio_curr": 2.0,
+   "CurrentRatio_prev": 1.54,
+   "GrossMargin_curr_%": 40.0,
+   "GrossMargin_prev_%": 37.5,
+   "LTD_ratio_curr_%": 10.0,
+   "LTD_ratio_prev_%": 20.0,
+   "OCF_current_$M": "N/A",
+   "ROA_current_%": 15.0,
+   "ROA_prev_%": 10.0,
+   "Shares_curr_M": 1.0
+  },
+  "f_score": 7,
+  "interpretation": "STRONG \u2014 likely outperformer",
+  "symbol": "SYM"
+ },
+ "good": {
+  "component_scores": {
+   "F1_ROA_positive": 1,
+   "F2_OCF_positive": 1,
+   "F3_ROA_improving": 1,
+   "F4_Accruals": 1,
+   "F5_Leverage_down": 1,
+   "F6_CurrentRatio_up": 1,
+   "F7_No_dilution": 1,
+   "F8_GrossMargin_up": 1,
+   "F9_AssetTurnover_up": 1
+  },
+  "details": {
+   "AssetTurnover_curr": 1.5,
+   "AssetTurnover_prev": 1.2,
+   "CurrentRatio_curr": 2.0,
+   "CurrentRatio_prev": 1.54,
+   "GrossMargin_curr_%": 40.0,
+   "GrossMargin_prev_%": 37.5,
+   "LTD_ratio_curr_%": 10.0,
+   "LTD_ratio_prev_%": 20.0,
+   "OCF_current_$M": 0.0,
+   "ROA_current_%": 15.0,
+   "ROA_prev_%": 10.0,
+   "Shares_curr_M": 1.0
+  },
+  "f_score": 9,
+  "interpretation": "STRONG \u2014 likely outperformer",
+  "symbol": "SYM"
+ },
+ "no_income": {
+  "error": "No income statement data available",
+  "symbol": "SYM"
+ },
+ "sparse": {
+  "component_scores": {
+   "F1_ROA_positive": 0,
+   "F2_OCF_positive": 0,
+   "F3_ROA_improving": 0,
+   "F4_Accruals": 0,
+   "F5_Leverage_down": 0,
+   "F6_CurrentRatio_up": 0,
+   "F7_No_dilution": 1,
+   "F8_GrossMargin_up": 0,
+   "F9_AssetTurnover_up": 0
+  },
+  "details": {
+   "AssetTurnover_curr": "N/A",
+   "AssetTurnover_prev": "N/A",
+   "CurrentRatio_curr": "N/A",
+   "CurrentRatio_prev": "N/A",
+   "GrossMargin_curr_%": "N/A",
+   "GrossMargin_prev_%": "N/A",
+   "LTD_ratio_curr_%": "N/A",
+   "LTD_ratio_prev_%": "N/A",
+   "OCF_current_$M": "N/A",
+   "ROA_current_%": "N/A",
+   "ROA_prev_%": "N/A",
+   "Shares_curr_M": "N/A"
+  },
+  "f_score": 1,
+  "interpretation": "WEAK \u2014 avoid or short candidate",
+  "symbol": "SYM"
+ }
+}
