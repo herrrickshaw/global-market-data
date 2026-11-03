@@ -1,0 +1,127 @@
+{
+ "all_lows_zero_after_top": {
+  "box_bottom": null,
+  "box_top": 14.0,
+  "note": "Could not confirm a box bottom",
+  "signal": "NO_BOX"
+ },
+ "bottom_fallback_min": {
+  "box_bottom": 8.5,
+  "box_range": 5.5,
+  "box_top": 14.0,
+  "confirm_days": 3,
+  "current_price": 12.0,
+  "data_points": 10,
+  "position_in_box_pct": 63.6,
+  "signal": "IN_BOX",
+  "upside_to_top_pct": 16.67
+ },
+ "breakdown": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 3,
+  "current_price": 9.0,
+  "data_points": 12,
+  "position_in_box_pct": -66.7,
+  "signal": "BREAKDOWN_SELL",
+  "upside_to_top_pct": 55.56
+ },
+ "breakout": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 3,
+  "current_price": 16.0,
+  "data_points": 12,
+  "position_in_box_pct": 166.7,
+  "signal": "BREAKOUT_BUY",
+  "upside_to_top_pct": -12.5
+ },
+ "breakout_confirm2": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 2,
+  "current_price": 16.0,
+  "data_points": 12,
+  "position_in_box_pct": 166.7,
+  "signal": "BREAKOUT_BUY",
+  "upside_to_top_pct": -12.5
+ },
+ "empty": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "Empty OHLC DataFrame",
+  "signal": "INSUFFICIENT_DATA"
+ },
+ "in_box": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 3,
+  "current_price": 12.5,
+  "data_points": 12,
+  "position_in_box_pct": 50.0,
+  "signal": "IN_BOX",
+  "upside_to_top_pct": 12.0
+ },
+ "in_box_confirm2": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 2,
+  "current_price": 12.5,
+  "data_points": 12,
+  "position_in_box_pct": 50.0,
+  "signal": "IN_BOX",
+  "upside_to_top_pct": 12.0
+ },
+ "no_cols": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "Could not identify OHLC columns in ['x']",
+  "signal": "INSUFFICIENT_DATA"
+ },
+ "none": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "Empty OHLC DataFrame",
+  "signal": "INSUFFICIENT_DATA"
+ },
+ "nse_cols": {
+  "box_bottom": 11.0,
+  "box_range": 3.0,
+  "box_top": 14.0,
+  "confirm_days": 3,
+  "current_price": 16.0,
+  "data_points": 12,
+  "position_in_box_pct": 166.7,
+  "signal": "BREAKOUT_BUY",
+  "upside_to_top_pct": -12.5
+ },
+ "rising_no_box": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "No confirmed box top in look-back window",
+  "signal": "NO_BOX"
+ },
+ "rising_no_box_confirm2": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "No confirmed box top in look-back window",
+  "signal": "NO_BOX"
+ },
+ "short": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "Need \u2265 8 bars; got 6",
+  "signal": "INSUFFICIENT_DATA"
+ },
+ "zeros": {
+  "box_bottom": null,
+  "box_top": null,
+  "note": "No confirmed box top in look-back window",
+  "signal": "NO_BOX"
+ }
+}

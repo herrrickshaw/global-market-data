@@ -24,6 +24,8 @@
 from __future__ import annotations
 
 import io
+import logging
+import os
 import warnings
 from typing import Dict, List
 
@@ -40,6 +42,31 @@ except ImportError:
     clean_ohlcv = None
 
 _UA = {"User-Agent": "Mozilla/5.0 (market-research)"}
+log = logging.getLogger(__name__)
+SOURCES_WITH_PERIOD = ("yahoo", "eodhd", "groww")  # fetchers that accept `period=`
+
+
+def _new_session():
+    """requests.Session with the shared User-Agent (injection point for tests)."""
+    sess = requests.Session()
+    sess.headers.update(_UA)
+    return sess
+
+
+def _csv_to_ohlcv(text: str, ticker: str, min_bars: int, capitalise: bool = False):
+    """Parse a Stooq/EODHD daily CSV body into a cleaned OHLCV frame (None = miss)."""
+    df = pd.read_csv(io.StringIO(text))
+    if df.empty or "Close" not in df.columns:
+        return None
+    if capitalise:
+        df = df.rename(columns=str.capitalize)
+    df["Date"] = pd.to_datetime(df["Date"])
+    df = df.set_index("Date")[["Open", "High", "Low", "Close", "Volume"]]
+    if clean_ohlcv is not None:
+        df = clean_ohlcv(df, ticker=ticker, min_bars=min_bars)
+    if df is not None and len(df) >= min_bars:
+        return df
+    return None
 
 
 # ── Stooq (free, no key) ───────────────────────────────────────────────────────
@@ -68,11 +95,11 @@ def _stooq_symbol(t: str) -> str | None:
 
 
 def stooq_fetch(
-    tickers: List[str], min_bars: int = 60, verbose: bool = True
+    tickers: List[str], min_bars: int = 60, verbose: bool = True, session=None
 ) -> Dict[str, pd.DataFrame]:
+    """Stooq daily EOD for `tickers` (yfinance symbols); misses are silently skipped."""
     out: Dict[str, pd.DataFrame] = {}
-    sess = requests.Session()
-    sess.headers.update(_UA)
+    sess = session or _new_session()
     for t in tickers:
         s = _stooq_symbol(t)
         if not s:
@@ -81,17 +108,11 @@ def stooq_fetch(
             r = sess.get(f"https://stooq.com/q/d/l/?s={s}&i=d", timeout=20)
             if r.status_code != 200 or not r.text.startswith("Date"):
                 continue  # HTML / limit page → treat as miss
-            df = pd.read_csv(io.StringIO(r.text))
-            if df.empty or "Close" not in df.columns:
-                continue
-            df = df.rename(columns=str.capitalize)
-            df["Date"] = pd.to_datetime(df["Date"])
-            df = df.set_index("Date")[["Open", "High", "Low", "Close", "Volume"]]
-            if clean_ohlcv is not None:
-                df = clean_ohlcv(df, ticker=t, min_bars=min_bars)
-            if df is not None and len(df) >= min_bars:
+            df = _csv_to_ohlcv(r.text, t, min_bars, capitalise=True)
+            if df is not None:
                 out[t] = df
-        except Exception:
+        except Exception as exc:  # network/parse failure for one ticker must not abort the batch
+            log.debug("stooq %s failed: %s", t, exc)
             continue
     if verbose:
         print(f"    stooq: {len(out)}/{len(tickers)} fetched")
@@ -149,17 +170,19 @@ def _period_to_from(period: str) -> str | None:
 
 
 def eodhd_fetch(
-    tickers: List[str], period: str = "1y", min_bars: int = 60, verbose: bool = True
+    tickers: List[str],
+    period: str = "1y",
+    min_bars: int = 60,
+    verbose: bool = True,
+    session=None,
 ) -> Dict[str, pd.DataFrame]:
-    import os
-
+    """EODHD daily EOD (needs EODHD_API_KEY; returns {} when unset)."""
     key = os.environ.get("EODHD_API_KEY", "")
     if not key:
         return {}  # dormant when unkeyed — keeps the stack $0
     out: Dict[str, pd.DataFrame] = {}
     frm = _period_to_from(period)
-    sess = requests.Session()
-    sess.headers.update(_UA)
+    sess = session or _new_session()
     for t in tickers:
         s = _eodhd_symbol(t)
         if not s:
@@ -171,16 +194,11 @@ def eodhd_fetch(
             r = sess.get(f"https://eodhd.com/api/eod/{s}", params=params, timeout=20)
             if r.status_code != 200 or not r.text.startswith("Date"):
                 continue
-            df = pd.read_csv(io.StringIO(r.text))
-            if df.empty or "Close" not in df.columns:
-                continue
-            df["Date"] = pd.to_datetime(df["Date"])
-            df = df.set_index("Date")[["Open", "High", "Low", "Close", "Volume"]]
-            if clean_ohlcv is not None:
-                df = clean_ohlcv(df, ticker=t, min_bars=min_bars)
-            if df is not None and len(df) >= min_bars:
+            df = _csv_to_ohlcv(r.text, t, min_bars)
+            if df is not None:
                 out[t] = df
-        except Exception:
+        except Exception as exc:  # one bad ticker must not abort the batch
+            log.debug("eodhd %s failed: %s", t, exc)
             continue
     if verbose:
         print(f"    eodhd: {len(out)}/{len(tickers)} fetched")
@@ -205,7 +223,8 @@ def groww_fetch(
         import groww_source
 
         return groww_source.fetch(tickers, period=period, min_bars=min_bars, verbose=verbose)
-    except Exception:
+    except Exception as exc:  # opt-in source: any failure means "no data", never fatal
+        log.debug("groww fetch unavailable: %s", exc)
         return {}
 
 
@@ -238,7 +257,7 @@ def fetch(
         if verbose:
             print(f"  source '{src}': attempting {len(pending)} tickers …")
         kw = dict(min_bars=min_bars, verbose=verbose)
-        if src in ("yahoo", "eodhd", "groww"):
+        if src in SOURCES_WITH_PERIOD:
             kw["period"] = period
         got = fn(pending, **kw)
         per_source[src] = len(got)

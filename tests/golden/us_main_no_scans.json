@@ -1,0 +1,90 @@
+{
+ "result": {
+  "breakout_count": 1,
+  "excel_path": "/tmp/fake_us.xlsx",
+  "gc_count": 0,
+  "six_screen_hits": [],
+  "total_scanned": 3,
+  "triple_hits": []
+ },
+ "saved": {
+  "args": [
+   [
+    {
+     "Box_Bottom": 79.25,
+     "Box_Top": 81.9,
+     "Change%": 3.06,
+     "DMA200": 76.3,
+     "DMA50": 79.46,
+     "DMA_Gap%": 4.14,
+     "Darvas_Signal": "BREAKOUT_BUY",
+     "Data_Points": 260,
+     "GC_Signal": "ABOVE_200DMA",
+     "LTP": 82.5,
+     "Position_in_Box%": 122.7,
+     "Prev_Close": 80.05,
+     "Symbol": "AAA",
+     "Upside_to_Top%": -0.73
+    },
+    {
+     "Box_Bottom": 53.98,
+     "Box_Top": 55.85,
+     "Change%": -0.24,
+     "DMA200": 58.89,
+     "DMA50": 58.02,
+     "DMA_Gap%": -1.46,
+     "Darvas_Signal": "IN_BOX",
+     "Data_Points": 260,
+     "GC_Signal": "BELOW_200DMA",
+     "LTP": 55.12,
+     "Position_in_Box%": 60.9,
+     "Prev_Close": 55.25,
+     "Symbol": "BBB",
+     "Upside_to_Top%": 1.32
+    },
+    {
+     "Box_Bottom": 73.68,
+     "Box_Top": 77.37,
+     "Change%": -0.87,
+     "DMA200": 71.38,
+     "DMA50": 77.6,
+     "DMA_Gap%": 8.72,
+     "Darvas_Signal": "IN_BOX",
+     "Data_Points": 260,
+     "GC_Signal": "ABOVE_200DMA",
+     "LTP": 76.0,
+     "Position_in_Box%": 63.0,
+     "Prev_Close": 76.67,
+     "Symbol": "CCZ",
+     "Upside_to_Top%": 1.8
+    }
+   ],
+   [
+    {
+     "Box_Bottom": 79.25,
+     "Box_Top": 81.9,
+     "Change%": 3.06,
+     "DMA200": 76.3,
+     "DMA50": 79.46,
+     "DMA_Gap%": 4.14,
+     "Darvas_Signal": "BREAKOUT_BUY",
+     "Data_Points": 260,
+     "GC_Signal": "ABOVE_200DMA",
+     "LTP": 82.5,
+     "Position_in_Box%": 122.7,
+     "Prev_Close": 80.05,
+     "Symbol": "AAA",
+     "Upside_to_Top%": -0.73
+    }
+   ],
+   [],
+   [],
+   []
+  ],
+  "kwargs": {
+   "ml_signal_map": {},
+   "tag": "us"
+  }
+ },
+ "stdout": "\n############################################################\n  FULL US MARKET SCAN \u2014 NASDAQ + NYSE\n  Started: 15 Jan 2026  10:30:00\n  Cache: \u2705 active (Parquet)\n  ML signal: \u26a0\ufe0f  disabled\n############################################################\n\n\nStage 1 \u2014 Fetching symbol lists \u2026\n  Symbol cache hit: 3 NASDAQ + 2 NYSE/other\n  (limited to first 3 symbols)\n  Total unique symbols: 3\n\nStage 2 \u2014 Bulk OHLC download (1-year window; needed for Golden Crossover 200 DMA) \u2026\n  \u2192 3 tickers with usable data\n\nStage 3 \u2014 Darvas Box + Golden Crossover screen (all stocks) \u2026\n  Darvas Breakout BUY:    1\n  Darvas Breakdown SELL:  0\n  Golden Cross (today):   0\n  DMA50 above DMA200:     2\n\nStage 4 \u2014 Skipped (--no-scans)\n\nStage 5 \u2014 Saving results \u2026\n\n======================================================================\n  SCAN COMPLETE \u2014 15 Jan 2026  10:30:00\n  Tickers scanned:          3\n  \u2500\u2500 OHLC Screeners \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Darvas Breakouts:         1\n  Darvas Breakdowns:        0\n  Golden Cross (today):     0\n  DMA50 above DMA200:       2\n  \u2500\u2500 Fundamental Screeners \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Piotroski \u22657 (Strong):    0\n  Coffee Can PASS:          0\n  Magic Formula PASS:       0\n  Bull Cartel PASS:         0\n  \u2500\u2500 Combined \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Triple Hits (D+P+CC):     0\n  \u2605 Multi-Screen Hits (3+): 0\n======================================================================\n\n"
+}

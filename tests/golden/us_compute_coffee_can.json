@@ -1,0 +1,100 @@
+{
+ "bad": {
+  "criteria": {
+   "C1_Revenue_CAGR_gt10": 0,
+   "C2_ROE_gt15": 0,
+   "C3_LowDebt": 0,
+   "C4_MCap_ge1B": 0,
+   "C5_NoProfitLoss": 0,
+   "C6_FreeCashFlow_pos": 0
+  },
+  "details": {
+   "Debt_to_Equity": 1.5,
+   "FCF_latest_$M": "N/A",
+   "Loss_years": 1,
+   "Market_Cap": "$500.00M",
+   "ROE_avg_%": 4.81,
+   "ROE_min_%": -6.67,
+   "Revenue_CAGR_%": -8.23,
+   "Revenue_years": 2,
+   "Years_analysed": 3
+  },
+  "qualifies": false,
+  "score": "0/6",
+  "symbol": "SYM"
+ },
+ "fcf_row_ltd_de": {
+  "criteria": {
+   "C1_Revenue_CAGR_gt10": 1,
+   "C2_ROE_gt15": 0,
+   "C3_LowDebt": 1,
+   "C4_MCap_ge1B": 1,
+   "C5_NoProfitLoss": 1,
+   "C6_FreeCashFlow_pos": 1
+  },
+  "details": {
+   "Debt_to_Equity": 0.12,
+   "FCF_latest_$M": 0.0,
+   "Loss_years": 0,
+   "Market_Cap": "$2.00B",
+   "ROE_avg_%": 14.59,
+   "ROE_min_%": 12.0,
+   "Revenue_CAGR_%": 18.56,
+   "Revenue_years": 3,
+   "Years_analysed": 4
+  },
+  "qualifies": false,
+  "score": "5/6",
+  "symbol": "SYM"
+ },
+ "good": {
+  "criteria": {
+   "C1_Revenue_CAGR_gt10": 1,
+   "C2_ROE_gt15": 0,
+   "C3_LowDebt": 1,
+   "C4_MCap_ge1B": 1,
+   "C5_NoProfitLoss": 1,
+   "C6_FreeCashFlow_pos": 1
+  },
+  "details": {
+   "Debt_to_Equity": 0.45,
+   "FCF_latest_$M": 0.0,
+   "Loss_years": 0,
+   "Market_Cap": "$5.00B",
+   "ROE_avg_%": 14.59,
+   "ROE_min_%": 12.0,
+   "Revenue_CAGR_%": 18.56,
+   "Revenue_years": 3,
+   "Years_analysed": 4
+  },
+  "qualifies": false,
+  "score": "5/6",
+  "symbol": "SYM"
+ },
+ "no_income": {
+  "error": "No income statement data available",
+  "symbol": "SYM"
+ },
+ "sparse": {
+  "criteria": {
+   "C1_Revenue_CAGR_gt10": 0,
+   "C2_ROE_gt15": 0,
+   "C3_LowDebt": 0,
+   "C4_MCap_ge1B": 0,
+   "C5_NoProfitLoss": 1,
+   "C6_FreeCashFlow_pos": 0
+  },
+  "details": {
+   "Debt_to_Equity": "N/A",
+   "FCF_latest_$M": "N/A",
+   "Loss_years": 0,
+   "Market_Cap": "N/A",
+   "ROE_avg_%": "N/A",
+   "Revenue_CAGR_%": "N/A",
+   "Years_analysed": 1
+  },
+  "qualifies": false,
+  "score": "1/6",
+  "symbol": "SYM"
+ }
+}

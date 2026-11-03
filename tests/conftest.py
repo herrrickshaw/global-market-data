@@ -1,6 +1,8 @@
 """Shared pytest fixtures + path setup so `import screener_kit` etc. resolve."""
 
+import importlib.util
 import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -9,6 +11,29 @@ import pytest
 
 # repo root (parent of tests/) on the path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+def _no_network(*_args, **_kwargs):
+    raise RuntimeError("network access is disabled in tests; inject a fake client")
+
+
+def _stub_missing_optional_modules(modules):
+    """Register a stand-in for each optional dependency that is not installed.
+
+    The report/scan modules only need ``import yfinance`` etc. to succeed at import
+    time; every test that exercises them injects its own fake client, so no real
+    package (or network) is needed on a clean runner.
+    """
+    for name, attrs in modules.items():
+        if name in sys.modules or importlib.util.find_spec(name) is not None:
+            continue
+        stub = types.ModuleType(name)
+        for attr in attrs:
+            setattr(stub, attr, _no_network)
+        sys.modules[name] = stub
+
+
+_stub_missing_optional_modules({"yfinance": ("download", "Ticker")})
 
 
 def _ohlcv(closes, vols=None):

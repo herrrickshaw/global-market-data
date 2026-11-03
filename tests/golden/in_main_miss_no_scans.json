@@ -1,0 +1,87 @@
+{
+ "result": {
+  "breakout_count": 0,
+  "excel_path": "/tmp/fake_in.xlsx",
+  "gc_count": 0,
+  "six_screen_hits": [],
+  "total_scanned": 3,
+  "triple_hits": []
+ },
+ "saved": {
+  "args": [
+   [
+    {
+     "Box_Bottom": 53.49,
+     "Box_Top": 56.42,
+     "Change%": 0.59,
+     "DMA200": null,
+     "DMA50": null,
+     "DMA_Gap%": null,
+     "Darvas_Signal": "IN_BOX",
+     "Data_Points": 30,
+     "GC_Signal": "BELOW_200DMA",
+     "LTP": 54.36,
+     "Position_in_Box%": 29.5,
+     "Prev_Close": 54.04,
+     "Suffix": ".NS",
+     "Symbol": "AAA",
+     "Upside_to_Top%": 3.79
+    },
+    {
+     "Box_Bottom": 53.98,
+     "Box_Top": 55.85,
+     "Change%": -0.24,
+     "DMA200": 58.89,
+     "DMA50": 58.02,
+     "DMA_Gap%": -1.46,
+     "Darvas_Signal": "IN_BOX",
+     "Data_Points": 260,
+     "GC_Signal": "BELOW_200DMA",
+     "LTP": 55.12,
+     "Position_in_Box%": 60.9,
+     "Prev_Close": 55.25,
+     "Suffix": ".NS",
+     "Symbol": "BBB",
+     "Upside_to_Top%": 1.32
+    },
+    {
+     "Box_Bottom": 73.68,
+     "Box_Top": 77.37,
+     "Change%": -0.87,
+     "DMA200": 71.38,
+     "DMA50": 77.6,
+     "DMA_Gap%": 8.72,
+     "Darvas_Signal": "IN_BOX",
+     "Data_Points": 260,
+     "GC_Signal": "ABOVE_200DMA",
+     "LTP": 76.0,
+     "Position_in_Box%": 63.0,
+     "Prev_Close": 76.67,
+     "Suffix": ".NS",
+     "Symbol": "CCC",
+     "Upside_to_Top%": 1.8
+    }
+   ],
+   [],
+   [],
+   [],
+   []
+  ],
+  "cache_saved": [
+   [
+    [
+     "AAA",
+     "BBB",
+     "CCC"
+    ],
+    [
+     "500009"
+    ]
+   ]
+  ],
+  "kwargs": {
+   "tag": "indian"
+  }
+ },
+ "stdout": "\n############################################################\n  FULL INDIAN MARKET SCAN\n  Started: 15 Jan 2026  10:30:00\n############################################################\n\n  NIFTY live context (fake)\nFetching NSE symbol list (nsepython) \u2026\n  \u2192 3 NSE EQ symbols\nFetching BSE-only symbols (bseindia) \u2026\n  \u2192 1 BSE-only symbols\n  (limited to first 3 tickers)\n\nTotal tickers to scan: 3\n\nStage 2 \u2014 Bulk OHLC download (1-year window; needed for Golden Crossover 200 DMA) \u2026\n  \u2192 3 tickers with usable OHLC data\n\nStage 3 \u2014 Darvas Box + Golden Crossover screen (all stocks) \u2026\n  Darvas Breakout BUY:    0\n  Darvas Breakdown SELL:  0\n  Golden Cross (today):   0\n  DMA50 above DMA200:     1\n\nStage 4 \u2014 Skipped (--no-scans)\n\nStage 5 \u2014 Saving results \u2026\n\n======================================================================\n  SCAN COMPLETE \u2014 15 Jan 2026  10:30:00\n  Tickers scanned:          3\n  \u2500\u2500 OHLC Screeners \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Darvas Breakouts:         0\n  Darvas Breakdowns:        0\n  Golden Cross (today):     0\n  DMA50 above DMA200:       1\n  \u2500\u2500 Fundamental Screeners \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Piotroski \u22657 (Strong):    0\n  Coffee Can PASS:          0\n  Magic Formula PASS:       0\n  Bull Cartel PASS:         0\n  \u2500\u2500 Combined \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  Triple Hits (D+P+CC):     0\n  \u2605 Multi-Screen Hits (3+): 0\n======================================================================\n\n"
+}

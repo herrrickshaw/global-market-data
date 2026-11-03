@@ -1,0 +1,113 @@
+{
+ "stdout": "\n############################################################\n  FULL KOREA (KRX) MARKET SCAN\n  Started: 15 Jan 2026  10:30:00\n############################################################\n\nStage 1 \u2014 Building KRX equity universe \u2026\n  (limited to first 4 tickers)\n  Total: 4 tickers (2 KOSPI + 2 KOSDAQ)\n\nStage 2 \u2014 Fetching OHLC from KRX for 4 tickers \u2026\n\nStage 3 \u2014 Darvas Box screen \u2026\n  Breakout BUY:   1\n  Breakdown SELL: 1\n  In Box:         2\n\nStage 4 \u2014 Skipped\n\nStage 5 \u2014 Saving Excel workbook \u2026\n\n============================================================\n  SCAN COMPLETE \u2014 15 Jan 2026  10:30:00\n  KRX stocks scanned:    4\n  Darvas Breakouts:      1\n  Fundamentals scanned:  0\n  \u2605 TRIPLE HITS:         0\n\n  No Triple Hit stocks found today.\n\n  \ud83d\udcca Excel saved \u2192 <TMP>/korea_market_scan_20260115_1030.xlsx\n\n============================================================\n\n",
+ "workbook": {
+  "All_Stocks": [
+   {
+    "200_Day_MA": 59.0,
+    "Box_Bottom": 54,
+    "Box_Top": 56,
+    "Change%": 0.0,
+    "Code": 20,
+    "Darvas_Signal": "IN_BOX",
+    "Data_Points": 260,
+    "Distance_to_200MA%": -6.78,
+    "LTP_KRW": 55,
+    "Market": "KOSDAQ",
+    "Name": "Kr2",
+    "Position_in_Box%": 60.9,
+    "Trend_Signal": "Below 200MA (Downtrend)",
+    "Upside_to_Top%": 1.32,
+    "YF_Ticker": "0020.KQ"
+   },
+   {
+    "200_Day_MA": 71.0,
+    "Box_Bottom": 74,
+    "Box_Top": 77,
+    "Change%": -1.3,
+    "Code": 30,
+    "Darvas_Signal": "IN_BOX",
+    "Data_Points": 260,
+    "Distance_to_200MA%": 7.04,
+    "LTP_KRW": 76,
+    "Market": "KOSPI",
+    "Name": "Kr3",
+    "Position_in_Box%": 63.0,
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": 1.8,
+    "YF_Ticker": "0030.KS"
+   },
+   {
+    "200_Day_MA": 76.0,
+    "Box_Bottom": 79,
+    "Box_Top": 82,
+    "Change%": 2.5,
+    "Code": 10,
+    "Darvas_Signal": "BREAKOUT_BUY",
+    "Data_Points": 260,
+    "Distance_to_200MA%": 7.89,
+    "LTP_KRW": 82,
+    "Market": "KOSPI",
+    "Name": "Kr1",
+    "Position_in_Box%": 122.7,
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": -0.73,
+    "YF_Ticker": "0010.KS"
+   },
+   {
+    "200_Day_MA": null,
+    "Box_Bottom": 58,
+    "Box_Top": 62,
+    "Change%": -3.39,
+    "Code": 40,
+    "Darvas_Signal": "BREAKDOWN_SELL",
+    "Data_Points": 40,
+    "Distance_to_200MA%": null,
+    "LTP_KRW": 57,
+    "Market": "KOSDAQ",
+    "Name": "Kr4",
+    "Position_in_Box%": -18.3,
+    "Trend_Signal": "Need 200+ days",
+    "Upside_to_Top%": 8.11,
+    "YF_Ticker": "0040.KQ"
+   }
+  ],
+  "Darvas_Signals": [
+   {
+    "200_Day_MA": 76.0,
+    "Box_Bottom": 79,
+    "Box_Top": 82,
+    "Change%": 2.5,
+    "Code": 10,
+    "Darvas_Signal": "BREAKOUT_BUY",
+    "Data_Points": 260,
+    "Distance_to_200MA%": 7.89,
+    "LTP_KRW": 82,
+    "Market": "KOSPI",
+    "Name": "Kr1",
+    "Position_in_Box%": 122.7,
+    "Trend_Signal": "Above 200MA (Uptrend)",
+    "Upside_to_Top%": -0.73,
+    "YF_Ticker": "0010.KS"
+   },
+   {
+    "200_Day_MA": null,
+    "Box_Bottom": 58,
+    "Box_Top": 62,
+    "Change%": -3.39,
+    "Code": 40,
+    "Darvas_Signal": "BREAKDOWN_SELL",
+    "Data_Points": 40,
+    "Distance_to_200MA%": null,
+    "LTP_KRW": 57,
+    "Market": "KOSDAQ",
+    "Name": "Kr4",
+    "Position_in_Box%": -18.3,
+    "Trend_Signal": "Need 200+ days",
+    "Upside_to_Top%": 8.11,
+    "YF_Ticker": "0040.KQ"
+   }
+  ],
+  "Fundamentals": [],
+  "Triple_Hits": []
+ }
+}

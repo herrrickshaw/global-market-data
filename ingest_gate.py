@@ -17,14 +17,16 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
-from typing import Tuple
+from typing import Callable, Tuple
 
 import pandas as pd
 
 HERE = Path(__file__).parent
 KEYS = ["Symbol", "Date"]
+log = logging.getLogger(__name__)
 
 
 def dedup(long: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
@@ -68,7 +70,8 @@ def _audit(market: str, path: Path, report: dict) -> str:
         for r in recs:
             db.create_file(r)
         return "audited"
-    except Exception:
+    except Exception as exc:  # VCRUD (postgres + modules) is optional; audit must never be fatal
+        log.debug("vcrud audit skipped: %s", exc)
         return "audit-skipped"
 
 
@@ -91,8 +94,14 @@ def gate_frame(
     return clean
 
 
-def report_after(market: str, out_path: Path, before_bytes: int, verbose: bool = True) -> dict:
-    """Called after the write: size delta + VCRUD audit."""
+def report_after(
+    market: str,
+    out_path: Path,
+    before_bytes: int,
+    verbose: bool = True,
+    audit: Callable[[str, Path, dict], str] = _audit,
+) -> dict:
+    """Called after the write: size delta + VCRUD audit (`audit` injectable for tests)."""
     after = out_path.stat().st_size if out_path.exists() else 0
     rep = {
         "market": market,
@@ -100,7 +109,7 @@ def report_after(market: str, out_path: Path, before_bytes: int, verbose: bool =
         "after_mb": round(after / 1e6, 1),
         "delta_mb": round((after - before_bytes) / 1e6, 1),
     }
-    rep["audit"] = _audit(market, out_path, rep)
+    rep["audit"] = audit(market, out_path, rep)
     if verbose:
         print(
             f"  ⟢ ingest-gate[{market}]: on-disk {rep['after_mb']}MB "
