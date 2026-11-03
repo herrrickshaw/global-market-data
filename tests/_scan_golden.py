@@ -25,6 +25,10 @@ class FrozenDatetime:
 
         return _d.datetime(2026, 1, 15, 10, 30, 0)
 
+    @classmethod
+    def today(cls):
+        return cls.now()
+
 
 def synthetic_ohlc(seed: int, n: int = 260, start: float = 50.0) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
@@ -81,3 +85,12 @@ def check_golden(name: str, payload) -> None:
         path.write_text(text + "\n")
         return
     assert path.read_text() == text + "\n"
+
+
+def dump_workbook(path) -> dict:
+    """Sheet name -> list of row dicts, for golden comparison of an .xlsx."""
+    sheets = pd.read_excel(path, sheet_name=None)
+    return {
+        name: json.loads(df.to_json(orient="records", date_format="iso"))
+        for name, df in sheets.items()
+    }
