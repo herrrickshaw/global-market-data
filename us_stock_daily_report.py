@@ -566,36 +566,8 @@ def display_darvas_box(result: dict):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def compute_piotroski_score(ticker: yf.Ticker, symbol: str = "") -> dict:
-    """
-    Piotroski F-Score (0–9) from annual financial statements.
-
-    Joseph Piotroski (2000) showed this 9-point accounting score predicts
-    one-year outperformance.  Score ≥ 7 → strong; ≤ 3 → weak.
-
-    ── 9 Criteria ───────────────────────────────────────────────────────────
-    Profitability (4 pts)
-      F1  ROA > 0
-      F2  Operating Cash Flow > 0
-      F3  Δ ROA > 0 (improving)
-      F4  Accruals: OCF/Assets > ROA (cash-backed earnings)
-
-    Leverage & Liquidity (3 pts)
-      F5  Δ Long-term debt ratio < 0 (less leverage)
-      F6  Δ Current ratio > 0 (more liquidity)
-      F7  No new shares issued (no dilution)
-
-    Operating Efficiency (2 pts)
-      F8  Δ Gross margin > 0
-      F9  Δ Asset turnover > 0
-    """
-    inc, bal, cf = _yf_financials(ticker)
-    if inc is None or inc.empty:
-        return {"symbol": symbol, "error": "No income statement data available"}
-
-    scores = {}
-    details = {}
-
+def _piotroski_profitability(inc, bal, cf, scores: dict, details: dict):
+    """F1-F4 (profitability). Returns (assets_0, assets_1) for the later criteria."""
     # ── Profitability ─────────────────────────────────────────────────────────
     net_inc_0 = _row(inc, "Net Income", col=0)
     assets_0 = _row(bal, "Total Assets", col=0)
@@ -622,7 +594,11 @@ def compute_piotroski_score(ticker: yf.Ticker, symbol: str = "") -> dict:
         scores["F4_Accruals"] = 1 if (ocf_0 / assets_0) > roa_0 else 0
     else:
         scores["F4_Accruals"] = 0
+    return assets_0, assets_1
 
+
+def _piotroski_leverage(bal, assets_0, assets_1, scores: dict, details: dict) -> None:
+    """F5-F7 (leverage, liquidity, dilution)."""
     # ── Leverage & Liquidity ──────────────────────────────────────────────────
     ltd_0 = _row(bal, "Long Term Debt", col=0) or 0
     ltd_1 = _row(bal, "Long Term Debt", col=1) or 0
@@ -654,6 +630,10 @@ def compute_piotroski_score(ticker: yf.Ticker, symbol: str = "") -> dict:
     details["Shares_curr_M"] = round(sh_0 / 1e6, 1) if sh_0 else "N/A"
 
     # ── Operating Efficiency ──────────────────────────────────────────────────
+
+
+def _piotroski_efficiency(inc, assets_0, assets_1, scores: dict, details: dict) -> None:
+    """F8-F9 (gross margin, asset turnover)."""
     rev_0 = _row(inc, "Total Revenue", col=0)
     gp_0 = _row(inc, "Gross Profit", col=0)
     rev_1 = _row(inc, "Total Revenue", col=1)
@@ -675,6 +655,41 @@ def compute_piotroski_score(ticker: yf.Ticker, symbol: str = "") -> dict:
         scores["F9_AssetTurnover_up"] = 0
     details["AssetTurnover_curr"] = round(at_0, 3) if at_0 else "N/A"
     details["AssetTurnover_prev"] = round(at_1, 3) if at_1 else "N/A"
+
+
+def compute_piotroski_score(ticker: yf.Ticker, symbol: str = "") -> dict:
+    """
+    Piotroski F-Score (0–9) from annual financial statements.
+
+    Joseph Piotroski (2000) showed this 9-point accounting score predicts
+    one-year outperformance.  Score ≥ 7 → strong; ≤ 3 → weak.
+
+    ── 9 Criteria ───────────────────────────────────────────────────────────
+    Profitability (4 pts)
+      F1  ROA > 0
+      F2  Operating Cash Flow > 0
+      F3  Δ ROA > 0 (improving)
+      F4  Accruals: OCF/Assets > ROA (cash-backed earnings)
+
+    Leverage & Liquidity (3 pts)
+      F5  Δ Long-term debt ratio < 0 (less leverage)
+      F6  Δ Current ratio > 0 (more liquidity)
+      F7  No new shares issued (no dilution)
+
+    Operating Efficiency (2 pts)
+      F8  Δ Gross margin > 0
+      F9  Δ Asset turnover > 0
+    """
+    inc, bal, cf = _yf_financials(ticker)
+    if inc is None or inc.empty:
+        return {"symbol": symbol, "error": "No income statement data available"}
+
+    scores = {}
+    details = {}
+
+    assets_0, assets_1 = _piotroski_profitability(inc, bal, cf, scores, details)
+    _piotroski_leverage(bal, assets_0, assets_1, scores, details)
+    _piotroski_efficiency(inc, assets_0, assets_1, scores, details)
 
     total = sum(scores.values())
     interp = (
@@ -726,6 +741,114 @@ def display_piotroski_score(result: dict):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
+def _series(df, *rows) -> list[float]:
+    """First matching row of a financials frame as a list of floats (newest first)."""
+    for name in rows:
+        if df is not None and name in df.index:
+            return [float(v) for v in df.loc[name].dropna() if pd.notna(v)]
+    return []
+
+
+def _cc_revenue(inc, criteria: dict, details: dict) -> None:
+    """C1: revenue CAGR > 10%."""
+    # ── C1: Revenue CAGR > 10% ───────────────────────────────────────────────
+    revs = _series(inc, "Total Revenue")
+    if len(revs) >= 2:
+        years = len(revs) - 1
+        cagr = ((revs[0] / revs[-1]) ** (1 / years) - 1) * 100 if revs[-1] > 0 else None
+        criteria["C1_Revenue_CAGR_gt10"] = 1 if (cagr and cagr > 10) else 0
+        details["Revenue_CAGR_%"] = round(cagr, 2) if cagr else "N/A"
+        details["Revenue_years"] = years
+    else:
+        criteria["C1_Revenue_CAGR_gt10"] = 0
+        details["Revenue_CAGR_%"] = "N/A"
+
+
+def _cc_roe(ni_s, eq_s, criteria: dict, details: dict) -> None:
+    """C2: average ROE > 15%."""
+    # ── C2: Return on Equity > 15% avg ───────────────────────────────────────
+    # ROE = Net Income / Shareholders' Equity
+    roe_list = []
+    for i in range(min(len(ni_s), len(eq_s))):
+        if eq_s[i] > 0:
+            roe_list.append(ni_s[i] / eq_s[i] * 100)
+
+    if roe_list:
+        avg_roe = sum(roe_list) / len(roe_list)
+        criteria["C2_ROE_gt15"] = 1 if avg_roe > 15 else 0
+        details["ROE_avg_%"] = round(avg_roe, 2)
+        details["ROE_min_%"] = round(min(roe_list), 2)
+    else:
+        criteria["C2_ROE_gt15"] = 0
+        details["ROE_avg_%"] = "N/A"
+
+
+def _cc_debt(info: dict, bal, eq_s, criteria: dict, details: dict) -> None:
+    """C3: debt/equity < 1."""
+    # ── C3: Debt/Equity < 1 ──────────────────────────────────────────────────
+    # yfinance info.debtToEquity is in percent in some builds (45.2 means 0.452×).
+    de_raw = info.get("debtToEquity")
+    if de_raw is not None:
+        de = de_raw / 100 if de_raw > 10 else de_raw
+        criteria["C3_LowDebt"] = 1 if de < 1 else 0
+        details["Debt_to_Equity"] = round(de, 2)
+    else:
+        ltd_s = _series(bal, "Long Term Debt")
+        if ltd_s and eq_s and eq_s[0] != 0:
+            de = ltd_s[0] / abs(eq_s[0])
+            criteria["C3_LowDebt"] = 1 if de < 1 else 0
+            details["Debt_to_Equity"] = round(de, 2)
+        else:
+            criteria["C3_LowDebt"] = 0
+            details["Debt_to_Equity"] = "N/A"
+
+
+def _cc_market_cap(ticker, info: dict, criteria: dict, details: dict) -> None:
+    """C4: market cap >= $1B."""
+    # ── C4: Market Cap ≥ $1B ─────────────────────────────────────────────────
+    mcap = info.get("marketCap")
+    try:
+        mcap_fi = ticker.fast_info.market_cap
+        mcap = mcap or mcap_fi
+    except Exception:
+        pass
+    criteria["C4_MCap_ge1B"] = 1 if (mcap and mcap >= 1e9) else 0
+    details["Market_Cap"] = fmt_large(mcap) if mcap else "N/A"
+
+
+def _cc_no_loss(ni_s, criteria: dict, details: dict) -> None:
+    """C5: no loss-making year."""
+    # ── C5: No loss year ─────────────────────────────────────────────────────
+    if ni_s:
+        all_profit = all(n > 0 for n in ni_s)
+        criteria["C5_NoProfitLoss"] = 1 if all_profit else 0
+        details["Loss_years"] = sum(1 for n in ni_s if n <= 0)
+        details["Years_analysed"] = len(ni_s)
+    else:
+        criteria["C5_NoProfitLoss"] = 0
+
+
+def _cc_free_cash_flow(cf, criteria: dict, details: dict) -> None:
+    """C6: free cash flow > 0 (US bonus criterion)."""
+    # ── C6: Free Cash Flow > 0 (US bonus criterion) ───────────────────────────
+    # Free Cash Flow = Operating Cash Flow − Capital Expenditure
+    fcf_s = _series(cf, "Free Cash Flow")
+    if fcf_s:
+        criteria["C6_FreeCashFlow_pos"] = 1 if fcf_s[0] > 0 else 0
+        details["FCF_latest_$M"] = round(fcf_s[0] / 1e6, 1)
+    else:
+        # Compute OCF - CapEx if FCF row not directly available
+        ocf_s = _series(cf, "Operating Cash Flow", "Total Cash From Operating Activities")
+        capex_s = _series(cf, "Capital Expenditure", "Capital Expenditures")
+        if ocf_s and capex_s:
+            fcf = ocf_s[0] - abs(capex_s[0])
+            criteria["C6_FreeCashFlow_pos"] = 1 if fcf > 0 else 0
+            details["FCF_latest_$M"] = round(fcf / 1e6, 1)
+        else:
+            criteria["C6_FreeCashFlow_pos"] = 0
+            details["FCF_latest_$M"] = "N/A"
+
+
 def compute_coffee_can(ticker: yf.Ticker, symbol: str = "") -> dict:
     """
     US-adapted Coffee Can Portfolio screen.
@@ -754,103 +877,22 @@ def compute_coffee_can(ticker: yf.Ticker, symbol: str = "") -> dict:
     if inc is None or inc.empty:
         return {"symbol": symbol, "error": "No income statement data available"}
 
-    def series(df, *rows):
-        for name in rows:
-            if df is not None and name in df.index:
-                return [float(v) for v in df.loc[name].dropna() if pd.notna(v)]
-        return []
+    criteria: dict = {}
+    details: dict = {}
 
-    criteria = {}
-    details = {}
-
-    # ── C1: Revenue CAGR > 10% ───────────────────────────────────────────────
-    revs = series(inc, "Total Revenue")
-    if len(revs) >= 2:
-        years = len(revs) - 1
-        cagr = ((revs[0] / revs[-1]) ** (1 / years) - 1) * 100 if revs[-1] > 0 else None
-        criteria["C1_Revenue_CAGR_gt10"] = 1 if (cagr and cagr > 10) else 0
-        details["Revenue_CAGR_%"] = round(cagr, 2) if cagr else "N/A"
-        details["Revenue_years"] = years
-    else:
-        criteria["C1_Revenue_CAGR_gt10"] = 0
-        details["Revenue_CAGR_%"] = "N/A"
-
-    # ── C2: Return on Equity > 15% avg ───────────────────────────────────────
-    # ROE = Net Income / Shareholders' Equity
-    ni_s = series(inc, "Net Income")
-    eq_s = series(
+    ni_s = _series(inc, "Net Income")
+    eq_s = _series(
         bal,
         "Stockholders Equity",
         "Total Stockholder Equity",
         "Total Equity Gross Minority Interest",
     )
-    roe_list = []
-    for i in range(min(len(ni_s), len(eq_s))):
-        if eq_s[i] > 0:
-            roe_list.append(ni_s[i] / eq_s[i] * 100)
-
-    if roe_list:
-        avg_roe = sum(roe_list) / len(roe_list)
-        criteria["C2_ROE_gt15"] = 1 if avg_roe > 15 else 0
-        details["ROE_avg_%"] = round(avg_roe, 2)
-        details["ROE_min_%"] = round(min(roe_list), 2)
-    else:
-        criteria["C2_ROE_gt15"] = 0
-        details["ROE_avg_%"] = "N/A"
-
-    # ── C3: Debt/Equity < 1 ──────────────────────────────────────────────────
-    # yfinance info.debtToEquity is in percent in some builds (45.2 means 0.452×).
-    de_raw = info.get("debtToEquity")
-    if de_raw is not None:
-        de = de_raw / 100 if de_raw > 10 else de_raw
-        criteria["C3_LowDebt"] = 1 if de < 1 else 0
-        details["Debt_to_Equity"] = round(de, 2)
-    else:
-        ltd_s = series(bal, "Long Term Debt")
-        if ltd_s and eq_s and eq_s[0] != 0:
-            de = ltd_s[0] / abs(eq_s[0])
-            criteria["C3_LowDebt"] = 1 if de < 1 else 0
-            details["Debt_to_Equity"] = round(de, 2)
-        else:
-            criteria["C3_LowDebt"] = 0
-            details["Debt_to_Equity"] = "N/A"
-
-    # ── C4: Market Cap ≥ $1B ─────────────────────────────────────────────────
-    mcap = info.get("marketCap")
-    try:
-        mcap_fi = ticker.fast_info.market_cap
-        mcap = mcap or mcap_fi
-    except Exception:
-        pass
-    criteria["C4_MCap_ge1B"] = 1 if (mcap and mcap >= 1e9) else 0
-    details["Market_Cap"] = fmt_large(mcap) if mcap else "N/A"
-
-    # ── C5: No loss year ─────────────────────────────────────────────────────
-    if ni_s:
-        all_profit = all(n > 0 for n in ni_s)
-        criteria["C5_NoProfitLoss"] = 1 if all_profit else 0
-        details["Loss_years"] = sum(1 for n in ni_s if n <= 0)
-        details["Years_analysed"] = len(ni_s)
-    else:
-        criteria["C5_NoProfitLoss"] = 0
-
-    # ── C6: Free Cash Flow > 0 (US bonus criterion) ───────────────────────────
-    # Free Cash Flow = Operating Cash Flow − Capital Expenditure
-    fcf_s = series(cf, "Free Cash Flow")
-    if fcf_s:
-        criteria["C6_FreeCashFlow_pos"] = 1 if fcf_s[0] > 0 else 0
-        details["FCF_latest_$M"] = round(fcf_s[0] / 1e6, 1)
-    else:
-        # Compute OCF - CapEx if FCF row not directly available
-        ocf_s = series(cf, "Operating Cash Flow", "Total Cash From Operating Activities")
-        capex_s = series(cf, "Capital Expenditure", "Capital Expenditures")
-        if ocf_s and capex_s:
-            fcf = ocf_s[0] - abs(capex_s[0])
-            criteria["C6_FreeCashFlow_pos"] = 1 if fcf > 0 else 0
-            details["FCF_latest_$M"] = round(fcf / 1e6, 1)
-        else:
-            criteria["C6_FreeCashFlow_pos"] = 0
-            details["FCF_latest_$M"] = "N/A"
+    _cc_revenue(inc, criteria, details)
+    _cc_roe(ni_s, eq_s, criteria, details)
+    _cc_debt(info, bal, eq_s, criteria, details)
+    _cc_market_cap(ticker, info, criteria, details)
+    _cc_no_loss(ni_s, criteria, details)
+    _cc_free_cash_flow(cf, criteria, details)
 
     total = sum(criteria.values())
     max_pts = len(criteria)
