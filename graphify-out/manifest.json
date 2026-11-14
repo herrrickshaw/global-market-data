@@ -194,7 +194,7 @@
   "fetch_and_analyze_cricket_data.R": {
     "mtime": 1783953095.763415,
     "seen": 1789193327.985573,
-    "ast_hash": "d13ffc467c02935ae554f3d512187ff1",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   "fetch_market_ohlc.py": {
@@ -572,7 +572,7 @@
   "stock_daily_report.R": {
     "mtime": 1783953095.775047,
     "seen": 1789968828.5341692,
-    "ast_hash": "74538632b9a5e16315e10f6dcbf36975",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   "stock_daily_report_improved.py": {
@@ -794,7 +794,7 @@
   "us_stock_daily_report.R": {
     "mtime": 1783953095.780167,
     "seen": 1789968828.5380301,
-    "ast_hash": "0be3cfd0dcd0840fe1943bdc123b5ca3",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   "us_stock_daily_report.py": {
@@ -924,9 +924,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1789384985.700802,
-    "seen": 1789968828.5384881,
-    "ast_hash": "d4f2b2322579f3ad3ad4dd44c160f328",
+    "mtime": 1792912370.966999,
+    "seen": 1792992815.3877618,
+    "ast_hash": "b6653142cf144c59d66a22cae2b39619",
     "semantic_hash": ""
   },
   "DATA_ACCESS.md": {
@@ -1056,9 +1056,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1783953509.837856,
-    "seen": 1789968828.539039,
-    "ast_hash": "1afedf02c9caadaf0d00d9d895454a35",
+    "mtime": 1792234265.818793,
+    "seen": 1792992815.389298,
+    "ast_hash": "4c000d61e23363cb9984a2aa0dd76b29",
     "semantic_hash": ""
   },
   "REPO_INDEX.md": {
@@ -1116,9 +1116,9 @@
     "semantic_hash": ""
   },
   "reports/ETL_AUDIT.md": {
-    "mtime": 1791777654.7545893,
-    "seen": 1791783273.62576,
-    "ast_hash": "5b1efb822c12fd59c9caab3361d3299d",
+    "mtime": 1793592027.917159,
+    "seen": 1794005646.836193,
+    "ast_hash": "8b9e7f36b345d021e7527101d3dd8d3a",
     "semantic_hash": ""
   },
   "requirements-ddd.txt": {
@@ -1161,6 +1161,30 @@
     "mtime": 1783953095.663703,
     "seen": 1789968828.539428,
     "ast_hash": "7dcd7de88a0e6cca74ee438f841229ea",
+    "semantic_hash": ""
+  },
+  "ecb_fx.py": {
+    "mtime": 1792234229.88171,
+    "seen": 1792992815.378453,
+    "ast_hash": "43da31a2a385677fc882fe3817558b0a",
+    "semantic_hash": ""
+  },
+  "french_regional.py": {
+    "mtime": 1792234229.884068,
+    "seen": 1792992815.37902,
+    "ast_hash": "004bf078c3bb5712a46a983c421aa26d",
+    "semantic_hash": ""
+  },
+  "DATA_SOURCES.md": {
+    "mtime": 1792234265.791172,
+    "seen": 1792992815.3880901,
+    "ast_hash": "e9a70aa920b96bbdc67a184846ba37fc",
+    "semantic_hash": ""
+  },
+  "DATA_SOURCES.proposed.md": {
+    "mtime": 1794101854.2917655,
+    "seen": 1794202642.128573,
+    "ast_hash": "71b1f24b3fd76956aa5c94d13e2f39ac",
     "semantic_hash": ""
   }
 }
