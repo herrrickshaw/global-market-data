@@ -205,6 +205,11 @@ class MarketCache:
             # Cache exists but may be stale — incremental update
             existing = pd.read_parquet(path)
             last_date = self._last_cached_date(key)
+            if last_date is None and not existing.empty:
+                # Parquet on disk but no meta entry (index deleted/corrupt):
+                # rebuild the entry from the file itself instead of returning None.
+                last_date = pd.Timestamp(existing.index.max()).date()
+                self._update_meta(key, path, existing)
             if last_date:
                 # Only fetch from the day after last cached date
                 start = last_date + timedelta(days=1)
@@ -225,21 +230,21 @@ class MarketCache:
                         )
                     return combined
                 return existing
-        else:
-            # Cold start — download full history
-            start = date.today() - timedelta(days=OHLC_YEARS * 365 + 30)
-            df = self._yf_download_single(ticker, start=start)
-            if df.empty:
-                return df
-            df = self._clean_ohlc(df)
-            self._write_parquet(path, df)
-            self._update_meta(key, path, df)
-            if self.verbose:
-                print(
-                    f"  Cache created: {ticker} {len(df)} rows "
-                    f"({df.index.min().date()} – {df.index.max().date()})"
-                )
+
+        # Cold start (or empty orphan file) — download full history
+        start = date.today() - timedelta(days=OHLC_YEARS * 365 + 30)
+        df = self._yf_download_single(ticker, start=start)
+        if df.empty:
             return df
+        df = self._clean_ohlc(df)
+        self._write_parquet(path, df)
+        self._update_meta(key, path, df)
+        if self.verbose:
+            print(
+                f"  Cache created: {ticker} {len(df)} rows "
+                f"({df.index.min().date()} – {df.index.max().date()})"
+            )
+        return df
 
     def get_ohlc_bulk(self, tickers: list, force: bool = False, workers: int = 1) -> dict:
         """

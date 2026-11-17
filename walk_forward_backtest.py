@@ -785,10 +785,13 @@ def compute_filing_trend(symbol: str, suffix: str) -> dict:
 
     n_qtrs = len(inc_q.columns)
 
-    def q_val(df, row, col):
+    def q_val(df, *rows, col=None):
+        # last positional argument is the column index; the rest are candidate row names
+        if col is None:
+            *rows, col = rows
         if df is None or col >= len(df.columns):
             return None
-        return _row(df, row, col=col)
+        return _row(df, *rows, col=col)
 
     # Revenue streak: consecutive quarters where YoY revenue growth > 10%
     rev_streak = 0
