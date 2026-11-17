@@ -28,7 +28,7 @@ vaderSentiment>=3.3  # sentiment scoring
 investpy>=1.0.8
 
 # analytics & progress (Colab ships scipy/matplotlib; tqdm used by some scanners)
-scipy>=1.10
+scipy>=1.18.1
 matplotlib>=3.7
 tqdm>=4.65
 # note: deoldify.py (image experiment) needs torch/fastai — install separately if used.
