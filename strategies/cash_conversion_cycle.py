@@ -36,7 +36,10 @@ def screen(s: StockData) -> Result | None:
         dio = _days(inv, cogs)
         dso = _days(rec, rev)
         dpo = _days(pay, cogs)
-        if dio is None and dso is None and dpo is None:
+        if dso is None:
+            # Without receivables/revenue, coercing DSO to 0 understates CCC, so a
+            # name reporting only payables scored CCC = -DPO and passed. DIO may be
+            # 0 (no inventory = services); a missing DPO only overstates CCC.
             return None
         ccc = (dio or 0) + (dso or 0) - (dpo or 0)
     passed = ccc <= CCC_MAX

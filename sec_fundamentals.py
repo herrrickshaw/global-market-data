@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import warnings
+from datetime import date
 from functools import lru_cache
 from typing import Dict, List, Optional
 
@@ -34,27 +35,53 @@ def _ticker_cik() -> Dict[str, str]:
     return {v["ticker"].upper(): str(v["cik_str"]).zfill(10) for v in r.json().values()}
 
 
-def _annual(facts: dict, concept: str, n: int = 4) -> List[float]:
-    """Latest n ANNUAL (10-K / FY) values for a us-gaap concept, newest first."""
+def _is_annual_period(rec) -> bool:
+    """True for a ~1-year duration fact or an instant (balance-sheet) fact.
+
+    `form == "10-K" and fp == "FY"` does NOT mean annual: a 10-K also carries
+    quarterly breakouts tagged fp=FY, and the Q4 row shares the annual row's
+    period-end (see sec_history_collector._is_annual_period, ADM 2023)."""
+    start = rec.get("start")
+    if not start:
+        return True  # instant fact (Assets, LiabilitiesCurrent, ...)
+    try:
+        days = (date.fromisoformat(rec["end"]) - date.fromisoformat(start)).days
+    except Exception:
+        return False  # unparseable period -> do not guess
+    return 300 <= days <= 400  # 52/53-week filers land at 364-371
+
+
+def _annual(facts: dict, concept: str, n: int = 4, as_of=None) -> List[float]:
+    """Latest n ANNUAL (10-K / FY) values for a us-gaap concept, newest first.
+
+    as_of=None  -> the latest filed value per fiscal period (restated numbers).
+    as_of=date  -> point-in-time: only facts FILED on or before `as_of`, and per
+                   period the latest of those (what an investor could see that day).
+    """
     node = facts.get("us-gaap", {}).get(concept)
     if not node:
         return []
-    rows = []
+    cutoff = str(as_of)[:10] if as_of is not None else None
+    by_end = {}  # period-end -> (filed, val); the latest eligible filing wins
     for unit_vals in node.get("units", {}).values():
         for r in unit_vals:
-            if r.get("form") == "10-K" and r.get("fp") == "FY" and r.get("val") is not None:
-                rows.append((r.get("end"), r["val"]))
-    # dedup by period-end (keep last), newest first
-    by_end = {}
-    for end, val in rows:
-        by_end[end] = val
-    out = [by_end[k] for k in sorted(by_end, reverse=True)]
+            if r.get("form") != "10-K" or r.get("fp") != "FY" or r.get("val") is None:
+                continue
+            if not r.get("end") or not _is_annual_period(r):
+                continue
+            filed = r.get("filed") or ""
+            if cutoff is not None and (not filed or filed > cutoff):
+                continue  # not yet public at as_of (or undated: cannot prove it was)
+            prev = by_end.get(r["end"])
+            if prev is None or filed >= prev[0]:
+                by_end[r["end"]] = (filed, r["val"])
+    out = [by_end[k][1] for k in sorted(by_end, reverse=True)]
     return out[:n]
 
 
-def _first(facts, *concepts, n=4):
+def _first(facts, *concepts, n=4, as_of=None):
     for c in concepts:
-        v = _annual(facts, c, n)
+        v = _annual(facts, c, n, as_of=as_of)
         if v:
             return v
     return []
@@ -80,45 +107,57 @@ def _ratio(a, b):
     return (a / b) if (a is not None and b not in (None, 0)) else None
 
 
-def fundamentals(ticker: str) -> Dict:
-    """Return a fundamentals dict (strategy-ready) for a US ticker, or {}."""
+def fundamentals(ticker: str, as_of=None) -> Dict:
+    """Return a fundamentals dict (strategy-ready) for a US ticker, or {}.
+
+    Pass `as_of` (date or 'YYYY-MM-DD') for a point-in-time view that only uses
+    facts filed on or before that date; omit it for the latest (restated) view."""
     f = companyfacts(ticker)
     if not f:
         return {}
-    ni = _first(f, "NetIncomeLoss")
-    rev = _first(
-        f,
+    return fundamentals_from_facts(f, as_of=as_of)
+
+
+def fundamentals_from_facts(f: dict, as_of=None) -> Dict:
+    """Strategy-ready fundamentals from a companyfacts `facts` dict (pure, no I/O)."""
+    if not f:
+        return {}
+
+    def first(*concepts, n=4):  # every lookup shares the same as_of cutoff
+        return _first(f, *concepts, n=n, as_of=as_of)
+
+    ni = first("NetIncomeLoss")
+    rev = first(
         "RevenueFromContractWithCustomerExcludingAssessedTax",
         "RevenueFromContractWithCustomerIncludingAssessedTax",
         "Revenues",
         "SalesRevenueNet",
+        n=6,  # revenue[5] = the base for the 5-year CAGR (Coffee Can)
     )
-    assets = _first(f, "Assets")
-    liab = _first(f, "Liabilities")
-    equity = _first(f, "StockholdersEquity")
-    cur_a = _first(f, "AssetsCurrent")
-    cur_l = _first(f, "LiabilitiesCurrent")
-    cfo = _first(
-        f,
+    assets = first("Assets")
+    liab = first("Liabilities")
+    equity = first("StockholdersEquity")
+    cur_a = first("AssetsCurrent")
+    cur_l = first("LiabilitiesCurrent")
+    cfo = first(
         "NetCashProvidedByUsedInOperatingActivities",
         "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
     )
-    ebit = _first(f, "OperatingIncomeLoss")
-    gp = _first(f, "GrossProfit")
-    shares = _first(
-        f,
+    ebit = first("OperatingIncomeLoss")
+    gp = first("GrossProfit")
+    shares = first(
         "CommonStockSharesOutstanding",
         "WeightedAverageNumberOfSharesOutstandingBasic",
         "dei:EntityCommonStockSharesOutstanding",
     )
-    eps = _first(f, "EarningsPerShareBasic", "EarningsPerShareDiluted")
-    debt = _first(f, "LongTermDebtNoncurrent", "LongTermDebt", "DebtCurrent")
-    capex = _first(f, "PaymentsToAcquirePropertyPlantAndEquipment")
-    div = _first(f, "PaymentsOfDividendsCommonStock", "PaymentsOfDividends")
-    inv = _first(f, "InventoryNet", "InventoryFinishedGoodsNetOfReserves")
-    recv = _first(f, "AccountsReceivableNetCurrent", "ReceivablesNetCurrent")
-    pay = _first(f, "AccountsPayableCurrent", "AccountsPayableTradeCurrent")
-    cogs = _first(f, "CostOfGoodsAndServicesSold", "CostOfRevenue", "CostOfGoodsSold")
+    eps = first("EarningsPerShareBasic", "EarningsPerShareDiluted")
+    debt = first("LongTermDebtNoncurrent", "LongTermDebt", "DebtCurrent")
+    capex = first("PaymentsToAcquirePropertyPlantAndEquipment")
+    div = first("PaymentsOfDividendsCommonStock", "PaymentsOfDividends")
+    inv = first("InventoryNet", "InventoryFinishedGoodsNetOfReserves")
+    recv = first("AccountsReceivableNetCurrent", "ReceivablesNetCurrent")
+    pay = first("AccountsPayableCurrent", "AccountsPayableTradeCurrent")
+    cogs = first("CostOfGoodsAndServicesSold", "CostOfRevenue", "CostOfGoodsSold")
 
     def g(lst, i=0):
         return lst[i] if len(lst) > i else None
@@ -130,7 +169,7 @@ def fundamentals(ticker: str) -> Dict:
         "net_income": g(ni),
         "net_income_prev": g(ni, 1),
         "revenue": g(rev),
-        "revenue_5y_ago": g(rev, 3) or g(rev, -1) if rev else None,
+        "revenue_5y_ago": g(rev, 5),  # 5 fiscal years back; None if history is shorter
         "roa": roa * 100 if roa is not None else None,
         "roa_prev": roa_p * 100 if roa_p is not None else None,
         "roe": (_ratio(g(ni), g(equity)) or 0) * 100 if g(equity) else None,
@@ -159,7 +198,8 @@ def fundamentals(ticker: str) -> Dict:
         "payables": g(pay),
         "cogs": g(cogs),
     }
-    return {k: v for k, v in out.items() if v is not None}
+    out = {k: v for k, v in out.items() if v is not None}
+    return out if len(out) > 1 else {}  # only "source" left = nothing known
 
 
 def _margin(gp, rev):
