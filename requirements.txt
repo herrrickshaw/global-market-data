@@ -37,4 +37,4 @@ tqdm>=4.65
 pytest>=8.0
 # linting/formatting (dev):  ruff check .  &&  black .
 ruff>=0.6
-black>=24.0
+black>=26.10.1
