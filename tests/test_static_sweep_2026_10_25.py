@@ -7,13 +7,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
 # ── walk_forward_backtest.compute_filing_trend: q_val called with 4 args ──────
 
 
 def _qdf(rows: dict, n_cols: int = 8) -> pd.DataFrame:
     cols = pd.date_range("2025-12-31", periods=n_cols, freq="-1QE")
-    return pd.DataFrame({c: [rows[k][i] for k in rows] for i, c in enumerate(cols)}, index=list(rows))
+    return pd.DataFrame(
+        {c: [rows[k][i] for k in rows] for i, c in enumerate(cols)}, index=list(rows)
+    )
 
 
 class _FakeTicker:
