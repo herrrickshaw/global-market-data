@@ -34,7 +34,11 @@ def test_source_registry():
 
 def _ohlc(n=100, **over):
     base = {
-        "open": 10.0, "high": 12.0, "low": 9.0, "close": np.linspace(10, 11, n), "volume": 100.0,
+        "open": 10.0,
+        "high": 12.0,
+        "low": 9.0,
+        "close": np.linspace(10, 11, n),
+        "volume": 100.0,
         "date": pd.date_range("2024-01-01", periods=n),
     }
     base.update(over)
@@ -110,21 +114,31 @@ NOW = datetime.now()
         ("INTRADAY_SCREENER", timedelta(minutes=16), False),
         ("DAILY_SCREENER", timedelta(hours=23), True),
         ("DAILY_SCREENER", timedelta(hours=25), False),
-        ("WEEKLY_ANALYSIS", timedelta(days=7, hours=2), True),  # .days truncates -> 7 days is still fresh
+        (
+            "WEEKLY_ANALYSIS",
+            timedelta(days=7, hours=2),
+            True,
+        ),  # .days truncates -> 7 days is still fresh
         ("WEEKLY_ANALYSIS", timedelta(days=8), False),
         ("BACKTEST_HISTORICAL", timedelta(days=364), True),
         ("BACKTEST_HISTORICAL", timedelta(days=366), False),
     ],
 )
 def test_check_freshness_boundaries(req, age, fresh):
-    ok, msg = dc.FreshnessRequirements.check_freshness(datetime.now() - age, getattr(dc.FreshnessRequirements, req))
+    ok, msg = dc.FreshnessRequirements.check_freshness(
+        datetime.now() - age, getattr(dc.FreshnessRequirements, req)
+    )
     assert ok is fresh and msg.startswith("Age: ")
 
 
 def test_check_freshness_messages_and_unknown_requirement():
-    ok, msg = dc.FreshnessRequirements.check_freshness(datetime.now() - timedelta(minutes=5), dc.FreshnessRequirements.INTRADAY_SCREENER)
+    ok, msg = dc.FreshnessRequirements.check_freshness(
+        datetime.now() - timedelta(minutes=5), dc.FreshnessRequirements.INTRADAY_SCREENER
+    )
     assert "min (max: 15 min)" in msg
-    ok, msg = dc.FreshnessRequirements.check_freshness(datetime.now() - timedelta(hours=2), dc.FreshnessRequirements.DAILY_SCREENER)
+    ok, msg = dc.FreshnessRequirements.check_freshness(
+        datetime.now() - timedelta(hours=2), dc.FreshnessRequirements.DAILY_SCREENER
+    )
     assert "hours (max: 24 hours)" in msg
     ok, msg = dc.FreshnessRequirements.check_freshness(datetime.now(), {"purpose": "x"})
     assert ok is True and msg == "Unknown freshness requirement"
@@ -132,8 +146,16 @@ def test_check_freshness_messages_and_unknown_requirement():
 
 @pytest.mark.parametrize(
     "a,b,tol,expected",
-    [(100.0, 98.0, 2.0, True), (100.0, 97.9, 2.0, False), (0.0, 0.005, 5.0, True), (0.0, 0.02, 5.0, False),
-     (-100.0, -98.0, 2.0, True), (100.0, 100.0, 0.0, True), (200.0, 100.0, 50.0, True), (200.0, 99.0, 50.0, False)],
+    [
+        (100.0, 98.0, 2.0, True),
+        (100.0, 97.9, 2.0, False),
+        (0.0, 0.005, 5.0, True),
+        (0.0, 0.02, 5.0, False),
+        (-100.0, -98.0, 2.0, True),
+        (100.0, 100.0, 0.0, True),
+        (200.0, 100.0, 50.0, True),
+        (200.0, 99.0, 50.0, False),
+    ],
 )
 def test_acceptable_difference(a, b, tol, expected):
     assert dc.ConsistencyRules.acceptable_difference(a, b, tol) is expected
@@ -145,13 +167,19 @@ def test_data_config_split_for_purpose():
     assert cfg.get_split_for_purpose("validation") == dc.DateSplits.get_validation_range()
     assert cfg.get_split_for_purpose("training") == dc.DateSplits.get_train_range()
     assert cfg.get_split_for_purpose("anything else") == dc.DateSplits.get_test_range()
-    assert cfg.consistency.PRICE_DISCREPANCY_PCT == 2.0 and cfg.validation.MIN_RECORDS_PER_SYMBOL == 252
+    assert (
+        cfg.consistency.PRICE_DISCREPANCY_PCT == 2.0
+        and cfg.validation.MIN_RECORDS_PER_SYMBOL == 252
+    )
 
 
 def test_filter_data_by_split_inclusive_bounds():
     dates = ["2022-12-31", "2023-01-01", "2024-06-30", "2024-07-01", "2021-12-31", "2022-01-01"]
     df = pd.DataFrame({"d": dates, "v": range(6)})
-    assert list(dc.filter_data_by_split(df.copy(), "d")["v"]) == [1, 2]  # default = test split, both ends inclusive
+    assert list(dc.filter_data_by_split(df.copy(), "d")["v"]) == [
+        1,
+        2,
+    ]  # default = test split, both ends inclusive
     assert list(dc.filter_data_by_split(df.copy(), "d", "validation")["v"]) == [0, 5]
     assert list(dc.filter_data_by_split(df.copy(), "d", "train")["v"]) == [4]
     with pytest.raises(ValueError, match="Unknown split: holdout"):
@@ -169,4 +197,6 @@ def test_validate_universe_consistency():
     assert dc.validate_universe_consistency(bad, df) == ["Only 3/5 defined symbols found in data"]
     assert dc.validate_universe_consistency({"symbols": None}, df) == []
     assert dc.validate_universe_consistency({"min_market_cap_usd": 1}, df) == []
-    assert dc.validate_universe_consistency({"symbols": ["A", "B"]}, pd.DataFrame({"symbol": []})) == ["Only 0/2 defined symbols found in data"]
+    assert dc.validate_universe_consistency(
+        {"symbols": ["A", "B"]}, pd.DataFrame({"symbol": []})
+    ) == ["Only 0/2 defined symbols found in data"]

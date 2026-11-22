@@ -64,7 +64,9 @@ def test_compute_metrics_full_set_values():
     assert m["dist_52w_high"] == pytest.approx(round((200 * 1.01 - 200) / (200 * 1.01) * 100, 2))
     assert m["dist_52w_low"] > 0
     assert m["avg_vol_20"] == 1000.0 and m["vol_ratio"] == 3.0
-    assert m["atr14_pct"] == pytest.approx(round(float(((df["High"] - df["Low"]).tail(14).mean()) / 200 * 100), 1), abs=0.5)
+    assert m["atr14_pct"] == pytest.approx(
+        round(float(((df["High"] - df["Low"]).tail(14).mean()) / 200 * 100), 1), abs=0.5
+    )
 
 
 def test_compute_metrics_short_history_and_no_data():
@@ -74,7 +76,10 @@ def test_compute_metrics_short_history_and_no_data():
     m = cs.compute_metrics(StockData("T", ohlcv=_px(np.linspace(1, 2, 5))))
     assert "vol_ann" not in m and "max_drawdown" not in m  # len must exceed 5
     assert cs.compute_metrics(StockData("T", fundamentals={"a": 1})) == {"a": 1}
-    assert cs.compute_metrics(StockData("T", ohlcv=pd.DataFrame(), fundamentals={"ccc": 5}))["ccc"] == 5.0
+    assert (
+        cs.compute_metrics(StockData("T", ohlcv=pd.DataFrame(), fundamentals={"ccc": 5}))["ccc"]
+        == 5.0
+    )
 
 
 def test_compute_metrics_ccc_exposed_and_boundaries():
@@ -135,7 +140,12 @@ def test_screen_rank_top_show_ascending():
     assert list(cs.screen(_stocks(), {})["Symbol"]) == ["A", "B", "C", "D"]  # input order kept
     assert list(cs.screen(_stocks(), {}, rank_by="nope")["Symbol"]) == ["A", "B", "C", "D"]
     assert cs.screen(_stocks(), {"roe": (">", 99)}).empty
-    assert list(cs.screen(_stocks(), {}, top=0)["Symbol"]) == ["A", "B", "C", "D"]  # falsy top = all
+    assert list(cs.screen(_stocks(), {}, top=0)["Symbol"]) == [
+        "A",
+        "B",
+        "C",
+        "D",
+    ]  # falsy top = all
     assert list(cs.screen([], {}).columns) == []
 
 
@@ -155,8 +165,13 @@ def _seed(path, syms=("A", "B")):
 
 
 def test_seed_name_and_live_path_precedence(kit):
-    assert kit._seed_name("IN") == "cleaned_long.parquet" and kit._seed_name("US") == "cleaned_long_US.parquet"
-    assert kit._live_path("US") == kit.SEED_DIR / "cleaned_long_US.parquet"  # nothing exists -> seed path
+    assert (
+        kit._seed_name("IN") == "cleaned_long.parquet"
+        and kit._seed_name("US") == "cleaned_long_US.parquet"
+    )
+    assert (
+        kit._live_path("US") == kit.SEED_DIR / "cleaned_long_US.parquet"
+    )  # nothing exists -> seed path
     (kit.SEED_DIR / "cleaned_long_US.parquet").write_bytes(b"s")
     assert kit._live_path("US") == kit.SEED_DIR / "cleaned_long_US.parquet"
     (kit.CACHE / "cleaned_long_US.parquet").write_bytes(b"l")
@@ -206,7 +221,11 @@ def test_load_fallback_liquidity_filter(kit, monkeypatch):
     fake_module(monkeypatch, "datalink", load_market=lambda m, t: 1 / 0)
     _seed(kit.SEED_DIR / "cleaned_long_US.parquet", ("A", "B"))
     seen = {}
-    fake_module(monkeypatch, "liquidity", liquid_symbols=lambda m, min_usd: seen.update(m=m, u=min_usd) or ["B"])
+    fake_module(
+        monkeypatch,
+        "liquidity",
+        liquid_symbols=lambda m, min_usd: seen.update(m=m, u=min_usd) or ["B"],
+    )
     assert set(kit.load("US", 1e6)) == {"B"} and seen == {"m": "US", "u": 1e6}
     assert set(kit.load("US", 0)) == {"A", "B"}  # zero threshold: no filter
     fake_module(monkeypatch, "liquidity", liquid_symbols=lambda m, min_usd: 1 / 0)
@@ -219,7 +238,11 @@ def test_get_prefers_store_then_scans_markets(kit, monkeypatch):
     assert kit.get("X") is df
     loaded = []
     monkeypatch.setattr(kit, "load", lambda m: loaded.append(m) or ({"Y": df} if m == "JP" else {}))
-    assert kit.get("Y") is df and loaded == ["IN", "US", "JP"]  # stops at the first market holding it
+    assert kit.get("Y") is df and loaded == [
+        "IN",
+        "US",
+        "JP",
+    ]  # stops at the first market holding it
     assert kit.get("NOPE") is None
     fake_module(monkeypatch, "bhavcopy_store", get=lambda s: 1 / 0)
     assert kit.get("Y") is df
@@ -228,7 +251,9 @@ def test_get_prefers_store_then_scans_markets(kit, monkeypatch):
 def test_update_in_delegates_to_bhavcopy(kit, monkeypatch):
     seen = []
     fake_module(monkeypatch, "bhavcopy_history", fetch_history=lambda verbose: seen.append(verbose))
-    assert kit.update("IN", verbose=False) == {"market": "IN", "source": "bhavcopy"} and seen == [False]
+    assert kit.update("IN", verbose=False) == {"market": "IN", "source": "bhavcopy"} and seen == [
+        False
+    ]
 
 
 def test_update_without_seed_reports_error(kit, monkeypatch):
@@ -237,16 +262,30 @@ def test_update_without_seed_reports_error(kit, monkeypatch):
     assert kit.update("US") == {"market": "US", "error": "no seed; run a full fetch first"}
 
 
-@pytest.mark.parametrize("gap,expected", [(0, "5d"), (7, "5d"), (8, "1mo"), (35, "1mo"), (36, "3mo")])
+@pytest.mark.parametrize(
+    "gap,expected", [(0, "5d"), (7, "5d"), (8, "1mo"), (35, "1mo"), (36, "3mo")]
+)
 def test_update_fetch_period_by_staleness(kit, monkeypatch, gap, expected):
     last = pd.Timestamp.today().normalize() - pd.Timedelta(days=gap)
-    base = {"A": pd.DataFrame({"Open": [1.0], "High": [1.0], "Low": [1.0], "Close": [1.0], "Volume": [1]}, index=[last])}
+    base = {
+        "A": pd.DataFrame(
+            {"Open": [1.0], "High": [1.0], "Low": [1.0], "Close": [1.0], "Volume": [1]},
+            index=[last],
+        )
+    }
     monkeypatch.setattr(kit, "load", lambda m: base)
     seen = {}
-    fake_module(monkeypatch, "data_sources", fetch=lambda syms, **kw: seen.update(kw=kw, syms=syms) or {})
+    fake_module(
+        monkeypatch, "data_sources", fetch=lambda syms, **kw: seen.update(kw=kw, syms=syms) or {}
+    )
     fake_module(monkeypatch, "bhavcopy_store", build=lambda verbose: None)
     kit.update("US", verbose=False)
-    assert seen["kw"] == {"order": ("yahoo", "stooq"), "period": expected, "min_bars": 1, "verbose": False}
+    assert seen["kw"] == {
+        "order": ("yahoo", "stooq"),
+        "period": expected,
+        "min_bars": 1,
+        "verbose": False,
+    }
     assert seen["syms"] == ["A"]
 
 
@@ -272,7 +311,9 @@ def test_update_unchanged_symbols_are_rewritten_and_counted(kit, monkeypatch, ca
 def test_update_merges_fresh_bars_into_seed(kit, monkeypatch):
     old = _px(np.linspace(10, 11, 5))
     new = _px(np.linspace(11, 12, 3))
-    new.index = old.index[-1:] .append(pd.date_range(old.index[-1] + pd.Timedelta(days=1), periods=2))
+    new.index = old.index[-1:].append(
+        pd.date_range(old.index[-1] + pd.Timedelta(days=1), periods=2)
+    )
     monkeypatch.setattr(kit, "load", lambda m: {"A": old})
     fake_module(monkeypatch, "data_sources", fetch=lambda *a, **k: {"A": new})
     fake_module(monkeypatch, "bhavcopy_store", build=lambda verbose: None)
@@ -296,7 +337,11 @@ def test_stocks_attach_ccc_only_for_india(kit, monkeypatch):
     monkeypatch.setattr(kit, "load", lambda m, t=0.0: seen.append((m, t)) or data)
     monkeypatch.setattr(kit, "_india_ccc", lambda: {"A": 12.0})
     ins = {s.symbol: s for s in kit._stocks("IN", 5.0)}
-    assert ins["A"].fundamentals == {"ccc": 12.0} and ins["B"].fundamentals == {} and ins["A"].market == "IN"
+    assert (
+        ins["A"].fundamentals == {"ccc": 12.0}
+        and ins["B"].fundamentals == {}
+        and ins["A"].market == "IN"
+    )
     assert seen == [("IN", 5.0)]
     monkeypatch.setattr(kit, "_india_ccc", lambda: 1 / 0)
     assert all(s.fundamentals == {} for s in kit._stocks("US"))  # CCC never consulted for non-IN
@@ -320,8 +365,14 @@ class _R:
 
 def _fake_strategies(monkeypatch, kit, fn):
     monkeypatch.setattr(kit.st, "STRATEGIES", {"s1": _Mod(fn)})
-    monkeypatch.setattr(kit, "_stocks", lambda m, t=0.0: [StockData(s, m) for s in ("A", "B", "C", "D")])
-    fake_module(monkeypatch, "liquidity", annotate=lambda df: df.assign(Liquidity="High") if not df.empty else df)
+    monkeypatch.setattr(
+        kit, "_stocks", lambda m, t=0.0: [StockData(s, m) for s in ("A", "B", "C", "D")]
+    )
+    fake_module(
+        monkeypatch,
+        "liquidity",
+        annotate=lambda df: df.assign(Liquidity="High") if not df.empty else df,
+    )
 
 
 def test_screen_unknown_strategy(kit):
@@ -363,11 +414,26 @@ def test_screen_keeps_order_without_score_column(kit, monkeypatch):
 def test_custom_screen_passthrough_and_liquidity_failure(kit, monkeypatch):
     seen = {}
     monkeypatch.setattr(kit, "_stocks", lambda m, t=0.0: seen.update(m=m, t=t) or [])
-    monkeypatch.setattr(kit.cs, "screen", lambda stocks, crit, **kw: seen.update(kw=kw, crit=crit) or pd.DataFrame({"Symbol": ["A"]}))
+    monkeypatch.setattr(
+        kit.cs,
+        "screen",
+        lambda stocks, crit, **kw: seen.update(kw=kw, crit=crit) or pd.DataFrame({"Symbol": ["A"]}),
+    )
     fake_module(monkeypatch, "liquidity", annotate=lambda df: 1 / 0)
-    out = kit.custom_screen({"roe": (">", 1)}, market="US", rank_by="roe", top=3, ascending=True, show=["roe"], min_turnover_usd=7.0)
+    out = kit.custom_screen(
+        {"roe": (">", 1)},
+        market="US",
+        rank_by="roe",
+        top=3,
+        ascending=True,
+        show=["roe"],
+        min_turnover_usd=7.0,
+    )
     assert list(out["Symbol"]) == ["A"]  # annotate failure -> frame returned unchanged
     assert seen["m"] == "US" and seen["t"] == 7.0
     assert seen["kw"] == {"rank_by": "roe", "top": 3, "ascending": True, "show": ["roe"]}
     kit.custom_screen({})
-    assert seen["kw"] == {"rank_by": None, "top": 50, "ascending": False, "show": None} and seen["m"] == "IN"
+    assert (
+        seen["kw"] == {"rank_by": None, "top": 50, "ascending": False, "show": None}
+        and seen["m"] == "IN"
+    )

@@ -11,7 +11,9 @@ from tests.w4_helpers import fake_module
 def _ohlcv(close, vol=100.0):
     c = np.asarray(close, float)
     v = np.broadcast_to(np.asarray(vol, float), c.shape).copy()
-    return pd.DataFrame({"Close": c, "Volume": v}, index=pd.date_range("2023-01-01", periods=len(c)))
+    return pd.DataFrame(
+        {"Close": c, "Volume": v}, index=pd.date_range("2023-01-01", periods=len(c))
+    )
 
 
 def test_metrics_guards():
@@ -36,7 +38,12 @@ def test_metrics_values_on_ramp():
     assert m["RSI"] == 100.0  # no down moves
     assert m["High52"] == 300.0 and m["Low52"] == close[-252:].min() == 49.0
     assert m["PctFromHigh"] == 0.0 and m["PctFromLow"] == pytest.approx((300 / 49 - 1) * 100)
-    assert m["Vol"] == 100.0 and m["WeekVol"] == 500.0 and m["WeekVolAvg"] == 50.0 and m["VolSpike"] == 10.0
+    assert (
+        m["Vol"] == 100.0
+        and m["WeekVol"] == 500.0
+        and m["WeekVolAvg"] == 50.0
+        and m["VolSpike"] == 10.0
+    )
     assert m["Ret63"] == pytest.approx((300 / close[-63] - 1) * 100)
     assert m["Ret252"] == pytest.approx((300 / close[-252] - 1) * 100)
     assert m["Turnover"] == (close[-20:] * vol[-20:]).mean()
@@ -46,7 +53,9 @@ def test_metrics_short_history_nans_and_rsi_mix():
     c = np.array([100.0, 102.0] * 30)  # 60 bars alternating +2 / -2
     m = sm._metrics(_ohlcv(c))
     assert np.isnan(m["DMA200"]) and np.isnan(m["Ret126"]) and np.isnan(m["Ret252"])
-    assert m["RSI"] == pytest.approx(50.0, abs=8)  # roughly balanced gains/losses over last 14 deltas
+    assert m["RSI"] == pytest.approx(
+        50.0, abs=8
+    )  # roughly balanced gains/losses over last 14 deltas
     assert np.isnan(m["DMA200_prev"]) and not np.isnan(m["DMA50_prev"])
     # ret(63) needs n > 63
     assert np.isnan(m["Ret63"])
@@ -68,8 +77,18 @@ def test_rsi_value_with_losses():
 
 
 def _frame(**cols):
-    base = {"Close": 100.0, "DMA50": 100.0, "DMA200": 100.0, "DMA50_prev": 100.0, "DMA200_prev": 100.0, "RSI": 50.0,
-            "High52": 100.0, "Low52": 100.0, "VolSpike": 1.0, "Ret252": 0.0}
+    base = {
+        "Close": 100.0,
+        "DMA50": 100.0,
+        "DMA200": 100.0,
+        "DMA50_prev": 100.0,
+        "DMA200_prev": 100.0,
+        "RSI": 50.0,
+        "High52": 100.0,
+        "Low52": 100.0,
+        "VolSpike": 1.0,
+        "Ret252": 0.0,
+    }
     base.update(cols)
     return pd.DataFrame([base])
 
@@ -79,24 +98,39 @@ def _frame(**cols):
     [
         ("golden_crossover", dict(DMA50=101.0, DMA50_prev=100.0), True),
         ("golden_crossover", dict(DMA50=101.0, DMA50_prev=99.0), True),
-        ("golden_crossover", dict(DMA50=101.0, DMA50_prev=100.5, DMA200_prev=100.0), False),  # already above
+        (
+            "golden_crossover",
+            dict(DMA50=101.0, DMA50_prev=100.5, DMA200_prev=100.0),
+            False,
+        ),  # already above
         ("golden_crossover", dict(DMA50=100.0), False),  # equal is not above
         ("bearish_crossover", dict(DMA50=99.0, DMA50_prev=100.0), True),
         ("bearish_crossover", dict(DMA50=99.0, DMA50_prev=99.5), False),
         ("golden_state", dict(DMA50=100.1), True),
         ("golden_state", dict(), False),
-        ("rsi_oversold", dict(RSI=29.99), True), ("rsi_oversold", dict(RSI=30.0), False),
-        ("rsi_overbought", dict(RSI=70.01), True), ("rsi_overbought", dict(RSI=70.0), False),
-        ("companies_creating_new_high", dict(Close=98.0), True), ("companies_creating_new_high", dict(Close=97.99), False),
-        ("at_52w_high", dict(Close=99.9), True), ("at_52w_high", dict(Close=99.89), False),
-        ("near_52w_low", dict(Close=105.0, Low52=100.0), True), ("near_52w_low", dict(Close=105.1, Low52=100.0), False),
-        ("near_200dma", dict(Close=102.9), True), ("near_200dma", dict(Close=97.1), True), ("near_200dma", dict(Close=103.5), False),
-        ("price_volume_action", dict(VolSpike=5.0), True), ("price_volume_action", dict(VolSpike=4.99), False),
-        ("breakout_stocks", dict(Close=98.0, VolSpike=2.0), True), ("breakout_stocks", dict(Close=98.0, VolSpike=1.99), False),
+        ("rsi_oversold", dict(RSI=29.99), True),
+        ("rsi_oversold", dict(RSI=30.0), False),
+        ("rsi_overbought", dict(RSI=70.01), True),
+        ("rsi_overbought", dict(RSI=70.0), False),
+        ("companies_creating_new_high", dict(Close=98.0), True),
+        ("companies_creating_new_high", dict(Close=97.99), False),
+        ("at_52w_high", dict(Close=99.9), True),
+        ("at_52w_high", dict(Close=99.89), False),
+        ("near_52w_low", dict(Close=105.0, Low52=100.0), True),
+        ("near_52w_low", dict(Close=105.1, Low52=100.0), False),
+        ("near_200dma", dict(Close=102.9), True),
+        ("near_200dma", dict(Close=97.1), True),
+        ("near_200dma", dict(Close=103.5), False),
+        ("price_volume_action", dict(VolSpike=5.0), True),
+        ("price_volume_action", dict(VolSpike=4.99), False),
+        ("breakout_stocks", dict(Close=98.0, VolSpike=2.0), True),
+        ("breakout_stocks", dict(Close=98.0, VolSpike=1.99), False),
         ("breakout_stocks", dict(Close=97.0, VolSpike=9.0), False),
-        ("darvas_scan", dict(Close=97.0, DMA50=101.0), True), ("darvas_scan", dict(Close=96.9, DMA50=101.0), False),
+        ("darvas_scan", dict(Close=97.0, DMA50=101.0), True),
+        ("darvas_scan", dict(Close=96.9, DMA50=101.0), False),
         ("darvas_scan", dict(Close=100.0, DMA50=100.0), False),
-        ("multibagger_momentum", dict(Ret252=100.1, DMA50=101.0), True), ("multibagger_momentum", dict(Ret252=100.0, DMA50=101.0), False),
+        ("multibagger_momentum", dict(Ret252=100.1, DMA50=101.0), True),
+        ("multibagger_momentum", dict(Ret252=100.0, DMA50=101.0), False),
         ("multibagger_momentum", dict(Ret252=200.0), False),
     ],
 )
@@ -140,7 +174,11 @@ def _universe(monkeypatch):
     }
     _patch_data(monkeypatch, {"ltm": data})
     turnover = {"UP": 5e6, "FLAT": 2e6, "ILLIQ": 10.0}
-    fake_module(monkeypatch, "liquidity", annotate=lambda df: df.assign(Turnover_USD=df["Symbol"].map(turnover), Liquidity="High"))
+    fake_module(
+        monkeypatch,
+        "liquidity",
+        annotate=lambda df: df.assign(Turnover_USD=df["Symbol"].map(turnover), Liquidity="High"),
+    )
 
 
 def test_run_screen_filters_turnover_sorts_and_tops(monkeypatch):
@@ -178,7 +216,11 @@ def test_run_all_counts_and_report(monkeypatch, capsys):
 def test_run_all_report_sorted_by_count_desc(monkeypatch, capsys):
     _universe(monkeypatch)
     sm.run_all("IN", min_turnover_usd=0)
-    lines = [l for l in capsys.readouterr().out.splitlines() if l.startswith("  ") and "fundamental" not in l]
+    lines = [
+        l
+        for l in capsys.readouterr().out.splitlines()
+        if l.startswith("  ") and "fundamental" not in l
+    ]
     nums = [int(l.split()[1]) for l in lines]
     assert nums == sorted(nums, reverse=True)
 

@@ -38,16 +38,22 @@ def repo(monkeypatch, tmp_path):
     monkeypatch.setattr(integrity, "HERE", tmp_path)
     monkeypatch.setattr(integrity, "MANIFEST", tmp_path / "cache_seed" / "CHECKSUMS.sha256")
     monkeypatch.setattr(integrity.subprocess, "run", run)
-    integrity.tracked = tracked  # noqa: attribute only used by these tests
+    integrity.tracked = tracked  # test-only handle so tests can add phantom git entries
     yield tmp_path
     del integrity.tracked
 
 
 def test_tracked_files_skips_manifest_and_volatile_dirs(repo):
     got = integrity._tracked_files()
-    assert "cache_seed/CHECKSUMS.sha256" not in got and "cache_seed/serving/volatile.parquet" not in got
+    assert (
+        "cache_seed/CHECKSUMS.sha256" not in got
+        and "cache_seed/serving/volatile.parquet" not in got
+    )
     assert got == sorted(got) and "a.txt" in got and "reference_seed/ref.csv" in got
-    assert integrity._tracked_files(data_only=True) == ["cache_seed/data.parquet", "reference_seed/ref.csv"]
+    assert integrity._tracked_files(data_only=True) == [
+        "cache_seed/data.parquet",
+        "reference_seed/ref.csv",
+    ]
 
 
 def test_sha256_streams_large_files(repo):
@@ -61,13 +67,17 @@ def test_generate_skips_files_deleted_on_disk(repo):
     integrity.tracked.append("deleted.txt")  # tracked by git, absent from the working tree
     assert integrity.generate(verbose=False) == 3
     assert "deleted.txt" not in integrity.MANIFEST.read_text()
-    assert integrity.verify(verbose=False) == 1  # ...which then shows up as drift (not in the manifest)
+    assert (
+        integrity.verify(verbose=False) == 1
+    )  # ...which then shows up as drift (not in the manifest)
 
 
 def test_generate_roundtrips(repo, capsys):
     n = integrity.generate()
     lines = integrity.MANIFEST.read_text().splitlines()
-    assert n == len(lines) == 3 and lines == sorted(lines, key=lambda l: l.split("  ", 1)[1])  # sorted by path
+    assert n == len(lines) == 3 and lines == sorted(
+        lines, key=lambda l: l.split("  ", 1)[1]
+    )  # sorted by path
     assert lines[0] == f"{hashlib.sha256(b'alpha').hexdigest()}  a.txt"
     assert "wrote CHECKSUMS.sha256: 3 file checksums" in capsys.readouterr().out
     assert integrity.generate(verbose=False) == 3 and capsys.readouterr().out == ""
@@ -76,8 +86,13 @@ def test_generate_roundtrips(repo, capsys):
 
 def test_load_manifest_missing_and_malformed(repo):
     assert integrity._load_manifest() == {}
-    integrity.MANIFEST.write_text("abc  a.txt\nno-double-space-line\n\ndef  path with  spaces.txt\n")
-    assert integrity._load_manifest() == {"a.txt": "abc", "path with  spaces.txt": "def"}  # splits on the first gap only
+    integrity.MANIFEST.write_text(
+        "abc  a.txt\nno-double-space-line\n\ndef  path with  spaces.txt\n"
+    )
+    assert integrity._load_manifest() == {
+        "a.txt": "abc",
+        "path with  spaces.txt": "def",
+    }  # splits on the first gap only
 
 
 def test_verify_ok_and_each_failure_kind(repo, capsys):
@@ -150,7 +165,12 @@ class _Run:
         ("pattern", "IN", 0, ["pattern_discovery.py", "--market", "IN"]),
         ("pattern", "IN", 50, ["pattern_discovery.py", "--market", "IN", "--max", "50"]),
         ("sector", "US", 10, ["sector_analysis.py", "--market", "US", "--max", "10"]),
-        ("dl", "IN", 0, ["dl_strategy_eval.py", "--market", "IN", "--max", "0"]),  # dl always passes --max
+        (
+            "dl",
+            "IN",
+            0,
+            ["dl_strategy_eval.py", "--market", "IN", "--max", "0"],
+        ),  # dl always passes --max
         ("link", "IN", 0, ["sentiment_price_link.py", "--market", "IN"]),
         ("link", "IN", 7, ["sentiment_price_link.py", "--market", "IN", "--max", "7"]),
     ],
@@ -160,7 +180,11 @@ def test_run_stage_builds_command(ph, monkeypatch, stage, market, max_stocks, ex
     monkeypatch.setattr(ph.subprocess, "run", run)
     res = ph.run_stage(stage, market, max_stocks, 4)
     cmd, timeout = run.cmds[0]
-    assert cmd[0] == sys.executable and Path(cmd[1]).name == expected_tail[0] and cmd[2:] == expected_tail[1:]
+    assert (
+        cmd[0] == sys.executable
+        and Path(cmd[1]).name == expected_tail[0]
+        and cmd[2:] == expected_tail[1:]
+    )
     assert Path(cmd[1]).parent == ph.HERE and timeout == 10800
     assert res["stage"] == stage and res["ok"] is True and res["seconds"] >= 0
 
@@ -175,21 +199,38 @@ def test_run_stage_outcomes(ph, monkeypatch, capsys):
     monkeypatch.setattr(ph.subprocess, "run", _Run(rc=1, out="boom"))
     assert ph.run_stage("sector", "IN", 0, 1)["ok"] is False
     monkeypatch.setattr(ph.subprocess, "run", _Run(exc=subprocess.TimeoutExpired("x", 1)))
-    assert ph.run_stage("dl", "IN", 0, 1)["ok"] is False and "stage timed out" in capsys.readouterr().out
+    assert (
+        ph.run_stage("dl", "IN", 0, 1)["ok"] is False
+        and "stage timed out" in capsys.readouterr().out
+    )
     monkeypatch.setattr(ph.subprocess, "run", _Run(exc=OSError("nope")))
-    assert ph.run_stage("link", "IN", 0, 1)["ok"] is False and "stage error: nope" in capsys.readouterr().out
-    monkeypatch.setattr(ph.subprocess, "run", lambda *a, **k: pytest.fail("unknown stages must not run"))
+    assert (
+        ph.run_stage("link", "IN", 0, 1)["ok"] is False
+        and "stage error: nope" in capsys.readouterr().out
+    )
+    monkeypatch.setattr(
+        ph.subprocess, "run", lambda *a, **k: pytest.fail("unknown stages must not run")
+    )
     assert ph.run_stage("bogus", "IN", 0, 1) == {"stage": "bogus", "ok": False}
 
 
 @pytest.mark.parametrize(
     "argv,expected",
-    [([], ["pattern", "sector", "dl", "link"]), (["--stages", "full"], ["scan", "backtest", "pattern", "sector", "dl", "link"]),
-     (["--stages", "analytics"], ["pattern", "sector", "dl", "link"]), (["--stages", "scan, link"], ["scan", "link"])],
+    [
+        ([], ["pattern", "sector", "dl", "link"]),
+        (["--stages", "full"], ["scan", "backtest", "pattern", "sector", "dl", "link"]),
+        (["--stages", "analytics"], ["pattern", "sector", "dl", "link"]),
+        (["--stages", "scan, link"], ["scan", "link"]),
+    ],
 )
 def test_pipeline_historical_main_stage_selection(ph, monkeypatch, capsys, argv, expected):
     seen = []
-    monkeypatch.setattr(ph, "run_stage", lambda s, m, mx, w: seen.append((s, m, mx, w)) or {"stage": s, "ok": s != "dl", "seconds": 1.4})
+    monkeypatch.setattr(
+        ph,
+        "run_stage",
+        lambda s, m, mx, w: seen.append((s, m, mx, w))
+        or {"stage": s, "ok": s != "dl", "seconds": 1.4},
+    )
     monkeypatch.setattr("sys.argv", ["ph", "--market", "US", "--max", "9", "--workers", "3", *argv])
     ph.main()
     assert [s[0] for s in seen] == expected and all(s[1:] == ("US", 9, 3) for s in seen)
@@ -203,7 +244,9 @@ def test_pipeline_historical_main_stage_selection(ph, monkeypatch, capsys, argv,
 # ---------------- full_report ----------------
 @pytest.fixture
 def fr(monkeypatch, tmp_path):
-    fake_module(monkeypatch, "screener_kit", MARKETS=["IN", "US", "JP"], load=lambda m, t: {}, screen=None)
+    fake_module(
+        monkeypatch, "screener_kit", MARKETS=["IN", "US", "JP"], load=lambda m, t: {}, screen=None
+    )
     return fresh_import(monkeypatch, "full_report")
 
 
@@ -226,15 +269,27 @@ def _fundamentals_sheet(path_glob_result, monkeypatch, fr, sheets):
 
 def test_india_fundamentals_picks_newest_valid_sheet_and_ccc(fr, monkeypatch):
     sheet = pd.DataFrame(
-        {"Symbol": [" TCS ", "", "INFY"], "Piotroski_Score": [8, 9, 3], "Piotroski_Strong": ["yes", "YES", "no"], "CoffeeCan": ["pass", "PASS", "fail"]}
+        {
+            "Symbol": [" TCS ", "", "INFY"],
+            "Piotroski_Score": [8, 9, 3],
+            "Piotroski_Strong": ["yes", "YES", "no"],
+            "CoffeeCan": ["pass", "PASS", "fail"],
+        }
     )
     _fundamentals_sheet(
-        ["/old.xlsx", "/new_nosheet.xlsx", "/bad.xlsx"], monkeypatch, fr,
+        ["/old.xlsx", "/new_nosheet.xlsx", "/bad.xlsx"],
+        monkeypatch,
+        fr,
         {"/old.xlsx": (["Fundamentals"], sheet), "/new_nosheet.xlsx": (["Other"], None)},
     )
     fake_module(monkeypatch, "screener_in", ccc_map=lambda: {"TCS": 12.0, "NEW": 5.0})
     f = fr._india_fundamentals()
-    assert f["TCS"] == {"piotroski_score": 8, "piotroski_strong": True, "coffee_can": True, "ccc": 12.0}
+    assert f["TCS"] == {
+        "piotroski_score": 8,
+        "piotroski_strong": True,
+        "coffee_can": True,
+        "ccc": 12.0,
+    }
     assert f["INFY"]["piotroski_strong"] is False and f["INFY"]["coffee_can"] is False
     assert f["NEW"] == {"ccc": 5.0} and "" not in f  # blank symbol skipped, CCC-only symbol added
     # glob results are visited newest first (reverse-sorted names)
@@ -254,12 +309,19 @@ def test_india_fundamentals_no_files_and_ccc_failure(fr, monkeypatch):
 def test_enrich_authenticated_merges_or_skips(fr, monkeypatch, capsys):
     seen = {}
     auth = fake_module(
-        monkeypatch, "screener_in_auth", session=lambda: None,
-        fundamentals_batch=lambda syms, verbose: seen.update(syms=syms) or {"A": {"roe": 20}, "Z": {"roe": 5}},
+        monkeypatch,
+        "screener_in_auth",
+        session=lambda: None,
+        fundamentals_batch=lambda syms, verbose: seen.update(syms=syms)
+        or {"A": {"roe": 20}, "Z": {"roe": 5}},
     )
     fmap = {"A": {"ccc": 1.0}}
     out = fr._enrich_authenticated(fmap, ["A", "B", "C"], limit=2)
-    assert seen["syms"] == ["A", "B"] and out["A"] == {"ccc": 1.0, "roe": 20} and out["Z"] == {"roe": 5}
+    assert (
+        seen["syms"] == ["A", "B"]
+        and out["A"] == {"ccc": 1.0, "roe": 20}
+        and out["Z"] == {"roe": 5}
+    )
     assert "enriched 2 India symbols" in capsys.readouterr().out
 
     class AuthError(Exception):
@@ -271,7 +333,9 @@ def test_enrich_authenticated_merges_or_skips(fr, monkeypatch, capsys):
 
 
 def _stock_frame(n=60):
-    return pd.DataFrame({"Close": np.linspace(10, 20, n)}, index=pd.date_range("2024-01-01", periods=n))
+    return pd.DataFrame(
+        {"Close": np.linspace(10, 20, n)}, index=pd.date_range("2024-01-01", periods=n)
+    )
 
 
 class _Mod:
@@ -290,14 +354,27 @@ class _Mod:
 
 
 def test_india_all_screeners_runs_every_strategy(fr, monkeypatch):
-    monkeypatch.setattr(fr.kit, "load", lambda m, t: {"A": _stock_frame(), "B": _stock_frame(), "NONE": _stock_frame()})
-    monkeypatch.setattr(fr, "_india_fundamentals", lambda: {"A": {"piotroski_strong": True, "coffee_can": False}, "B": {"piotroski_strong": False, "coffee_can": True}})
+    monkeypatch.setattr(
+        fr.kit,
+        "load",
+        lambda m, t: {"A": _stock_frame(), "B": _stock_frame(), "NONE": _stock_frame()},
+    )
+    monkeypatch.setattr(
+        fr,
+        "_india_fundamentals",
+        lambda: {
+            "A": {"piotroski_strong": True, "coffee_can": False},
+            "B": {"piotroski_strong": False, "coffee_can": True},
+        },
+    )
     monkeypatch.setattr(fr, "_enrich_authenticated", lambda fmap, syms, limit: fmap)
     monkeypatch.setattr(fr.st, "STRATEGIES", {"s1": _Mod({"A", "B"}), "s2": _Mod(set())})
     fake_module(monkeypatch, "liquidity", liquid_symbols=lambda m, t: ["B", "A"])
     monkeypatch.setattr(fr.liq, "annotate", lambda df: df.assign(Liquidity="High"))
     out = fr.india_all_screeners()
-    assert list(out["s1"]["Symbol"]) == ["B", "A"] and set(out["s1"]["Market"]) == {"IN"}  # sorted by score desc, tagged
+    assert list(out["s1"]["Symbol"]) == ["B", "A"] and set(out["s1"]["Market"]) == {
+        "IN"
+    }  # sorted by score desc, tagged
     assert out["s2"].empty
     assert out["_scan_piotroski_strong"] == ["A"] and out["_scan_coffee_can"] == ["B"]
 
@@ -307,11 +384,17 @@ def test_india_all_screeners_auth_options(fr, monkeypatch):
     monkeypatch.setattr(fr.kit, "load", lambda m, t: data)
     monkeypatch.setattr(fr, "_india_fundamentals", lambda: {})
     calls = []
-    monkeypatch.setattr(fr, "_enrich_authenticated", lambda fmap, syms, limit: calls.append((list(syms), limit)) or fmap)
+    monkeypatch.setattr(
+        fr,
+        "_enrich_authenticated",
+        lambda fmap, syms, limit: calls.append((list(syms), limit)) or fmap,
+    )
     monkeypatch.setattr(fr.st, "STRATEGIES", {})
     fake_module(monkeypatch, "liquidity", liquid_symbols=lambda m, t: ["B", "ZZZ", "A"])
     out = fr.india_all_screeners(auth_limit=7)
-    assert calls == [(["B", "A"], 7)] and out == {}  # liquid order kept, symbols without data dropped
+    assert (
+        calls == [(["B", "A"], 7)] and out == {}
+    )  # liquid order kept, symbols without data dropped
     calls.clear()
     fr.india_all_screeners(use_auth=False)
     assert calls == []
@@ -323,13 +406,26 @@ def test_india_all_screeners_auth_options(fr, monkeypatch):
 def test_top150_others_filters_artifacts_and_limits(fr, monkeypatch, capsys):
     def load(m, t):
         n = 300
-        up = pd.DataFrame({"Open": 1.0, "High": 1.0, "Low": 1.0, "Close": 100 + 0.5 * np.arange(n) + (np.arange(n) % 2) * 2.0, "Volume": 1e6}, index=pd.date_range("2023-01-01", periods=n))
+        up = pd.DataFrame(
+            {
+                "Open": 1.0,
+                "High": 1.0,
+                "Low": 1.0,
+                "Close": 100 + 0.5 * np.arange(n) + (np.arange(n) % 2) * 2.0,
+                "Volume": 1e6,
+            },
+            index=pd.date_range("2023-01-01", periods=n),
+        )
         return {f"{m}{i}": up * (1 + 0.1 * i) for i in range(3)} if m == "US" else {}
 
     monkeypatch.setattr(fr.kit, "load", load)
     monkeypatch.setattr(fr.liq, "annotate", lambda df: df.assign(Liquidity="High"))
     out = fr.top150_others(top=2)
-    assert len(out) == 2 and out["ret_126"].is_monotonic_decreasing and set(out["Liquidity"]) == {"High"}
+    assert (
+        len(out) == 2
+        and out["ret_126"].is_monotonic_decreasing
+        and set(out["Liquidity"]) == {"High"}
+    )
     txt = capsys.readouterr().out
     assert "US: 3 pass momentum" in txt and "JP: 0 pass momentum" in txt
     monkeypatch.setattr(fr.kit, "load", lambda m, t: {})
@@ -338,11 +434,24 @@ def test_top150_others_filters_artifacts_and_limits(fr, monkeypatch, capsys):
 
 def test_top150_others_drops_bad_prints(fr, monkeypatch):
     n = 300
-    base = pd.DataFrame({"Open": 1.0, "High": 1.0, "Low": 1.0, "Close": 100 + 0.5 * np.arange(n) + (np.arange(n) % 2) * 2.0, "Volume": 1e6}, index=pd.date_range("2023-01-01", periods=n))
+    base = pd.DataFrame(
+        {
+            "Open": 1.0,
+            "High": 1.0,
+            "Low": 1.0,
+            "Close": 100 + 0.5 * np.arange(n) + (np.arange(n) % 2) * 2.0,
+            "Volume": 1e6,
+        },
+        index=pd.date_range("2023-01-01", periods=n),
+    )
     glitch = base.copy()
-    glitch["Close"] = glitch["Close"].where(np.arange(n) < n - 126, glitch["Close"] * 20)  # 126-bar return > 900%
+    glitch["Close"] = glitch["Close"].where(
+        np.arange(n) < n - 126, glitch["Close"] * 20
+    )  # 126-bar return > 900%
     glitch["High"] = glitch["Close"]
-    monkeypatch.setattr(fr.kit, "load", lambda m, t: {"OK": base, "GLITCH": glitch} if m == "US" else {})
+    monkeypatch.setattr(
+        fr.kit, "load", lambda m, t: {"OK": base, "GLITCH": glitch} if m == "US" else {}
+    )
     monkeypatch.setattr(fr.liq, "annotate", lambda df: df)
     out = fr.top150_others()
     assert "GLITCH" not in set(out["Symbol"])
@@ -361,22 +470,57 @@ def bt():
 
 
 def test_bt_run_all_sorts_by_edge(bt, monkeypatch, capsys):
-    edges = {"golden_state": 1.0, "golden_crossover": 5.0, "near_high": -2.0, "rsi_oversold": 3.0, "momentum": 0.0}
-    monkeypatch.setattr(bt, "backtest_screen", lambda m, s, h: {"screen": s, "trades": 1, "avg_ret": 1.0, "mkt_ret": 0.0, "edge": edges[s], "win_rate": 0.5})
+    edges = {
+        "golden_state": 1.0,
+        "golden_crossover": 5.0,
+        "near_high": -2.0,
+        "rsi_oversold": 3.0,
+        "momentum": 0.0,
+    }
+    monkeypatch.setattr(
+        bt,
+        "backtest_screen",
+        lambda m, s, h: {
+            "screen": s,
+            "trades": 1,
+            "avg_ret": 1.0,
+            "mkt_ret": 0.0,
+            "edge": edges[s],
+            "win_rate": 0.5,
+        },
+    )
     df = bt.run_all("IN", horizon=10)
-    assert list(df["screen"]) == ["golden_crossover", "rsi_oversold", "golden_state", "momentum", "near_high"]
+    assert list(df["screen"]) == [
+        "golden_crossover",
+        "rsi_oversold",
+        "golden_state",
+        "momentum",
+        "near_high",
+    ]
     out = capsys.readouterr().out
-    assert "Walk-forward backtest — IN (10d hold)" in out and "edge = screen avg forward return" in out
+    assert (
+        "Walk-forward backtest — IN (10d hold)" in out and "edge = screen avg forward return" in out
+    )
     bt.run_all("IN", verbose=False)
     assert capsys.readouterr().out == ""
 
 
 def test_bt_main_single_screen_and_all(bt, monkeypatch, capsys):
     seen = {}
-    monkeypatch.setattr(bt, "backtest_screen", lambda m, s, h: seen.update(a=(m, s, h)) or {"trades": 4, "avg_ret": 3.5, "mkt_ret": 1.0, "edge": 2.5, "win_rate": 0.75})
-    monkeypatch.setattr("sys.argv", ["bt", "--screen", "near_high", "--market", "US", "--horizon", "5"])
+    monkeypatch.setattr(
+        bt,
+        "backtest_screen",
+        lambda m, s, h: seen.update(a=(m, s, h))
+        or {"trades": 4, "avg_ret": 3.5, "mkt_ret": 1.0, "edge": 2.5, "win_rate": 0.75},
+    )
+    monkeypatch.setattr(
+        "sys.argv", ["bt", "--screen", "near_high", "--market", "US", "--horizon", "5"]
+    )
     assert bt.main() == 0 and seen["a"] == ("US", "near_high", 5)
-    assert "near_high on US: 4 trades, avg 3.5% vs mkt 1.0% → edge 2.5%, win 75%" in capsys.readouterr().out
+    assert (
+        "near_high on US: 4 trades, avg 3.5% vs mkt 1.0% → edge 2.5%, win 75%"
+        in capsys.readouterr().out
+    )
     called = []
     monkeypatch.setattr(bt, "run_all", lambda m, h: called.append((m, h)))
     monkeypatch.setattr("sys.argv", ["bt", "--all", "--screen", "near_high"])

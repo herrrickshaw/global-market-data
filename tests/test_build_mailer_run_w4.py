@@ -30,7 +30,10 @@ def bm(monkeypatch, tmp_path):
         tmap = {"AAA": 25e6, "BBB": 3e6, "CCC": 0.1e6}
         if "Turnover_USD" not in df:
             df["Turnover_USD"] = df["Symbol"].map(tmap)
-        df["Liquidity"] = ["High" if (t or 0) > 10e6 else "Medium" if (t or 0) > 1e6 else "Low" for t in df["Turnover_USD"]]
+        df["Liquidity"] = [
+            "High" if (t or 0) > 10e6 else "Medium" if (t or 0) > 1e6 else "Low"
+            for t in df["Turnover_USD"]
+        ]
         return df
 
     fake_module(monkeypatch, "liquidity", annotate=annotate)
@@ -58,7 +61,9 @@ def _write_combined(tmp_path, picks, mood=None, name="combined_IN_20260309.json"
     d = tmp_path / "combined_report_results"
     d.mkdir(exist_ok=True)
     (d / name).write_text(
-        json.dumps({"mood": mood or {"mood": "Bullish", "score": 0.256, "n_articles": 7}, "picks": picks})
+        json.dumps(
+            {"mood": mood or {"mood": "Bullish", "score": 0.256, "n_articles": 7}, "picks": picks}
+        )
     )
 
 
@@ -96,7 +101,11 @@ def test_build_picks_sorted_by_tier_then_liquidity_and_capped(bm, tmp_path):
     _, text, html = bm.build()
     order = [html.index(f"<b>{s}</b>") for s in ("AAA", "BBB", "MULTI", "CCC")]
     assert order == sorted(order)  # triple (High before Medium), multi, then single
-    shown = [s for s in ["AAA", "BBB", "MULTI", "CCC", "WEIRD"] + [f"X{i}" for i in range(10)] if f"<b>{s}</b>" in html]
+    shown = [
+        s
+        for s in ["AAA", "BBB", "MULTI", "CCC", "WEIRD"] + [f"X{i}" for i in range(10)]
+        if f"<b>{s}</b>" in html
+    ]
     assert len(shown) == 12  # head(12)
     assert "WEIRD" not in shown  # unknown tier ranks last, so it is cut by the cap
     assert "$25.0M" in html and "#1b7f37" in html  # High liquidity colour
@@ -106,8 +115,16 @@ def test_build_picks_sorted_by_tier_then_liquidity_and_capped(bm, tmp_path):
 
 
 def test_build_uses_latest_combined_file(bm, tmp_path):
-    _write_combined(tmp_path, [{"Symbol": "OLDX", "Tier": "Triple Hit", "Screens": 3}], name="combined_IN_20250101.json")
-    _write_combined(tmp_path, [{"Symbol": "NEWX", "Tier": "Triple Hit", "Screens": 3}], name="combined_IN_20260101.json")
+    _write_combined(
+        tmp_path,
+        [{"Symbol": "OLDX", "Tier": "Triple Hit", "Screens": 3}],
+        name="combined_IN_20250101.json",
+    )
+    _write_combined(
+        tmp_path,
+        [{"Symbol": "NEWX", "Tier": "Triple Hit", "Screens": 3}],
+        name="combined_IN_20260101.json",
+    )
     _, _, html = bm.build()
     assert "NEWX" in html and "OLDX" not in html
 
@@ -115,11 +132,21 @@ def test_build_uses_latest_combined_file(bm, tmp_path):
 def test_build_ccc_filters_liquidity_sorts_and_caps(bm, tmp_path):
     (tmp_path / "cache_seed").mkdir()
     rows = [
-        {"Symbol": f"S{i:02d}", "Name": f"n{i}", "Cash_Cycle": str(i - 3), "ROCE": "9", "Liquidity": "High"}
+        {
+            "Symbol": f"S{i:02d}",
+            "Name": f"n{i}",
+            "Cash_Cycle": str(i - 3),
+            "ROCE": "9",
+            "Liquidity": "High",
+        }
         for i in range(12)
     ]
-    rows.append({"Symbol": "LOWQ", "Name": "x", "Cash_Cycle": "-99", "ROCE": "1", "Liquidity": "Low"})
-    rows.append({"Symbol": "BADCC", "Name": "x", "Cash_Cycle": "oops", "ROCE": "1", "Liquidity": "Medium"})
+    rows.append(
+        {"Symbol": "LOWQ", "Name": "x", "Cash_Cycle": "-99", "ROCE": "1", "Liquidity": "Low"}
+    )
+    rows.append(
+        {"Symbol": "BADCC", "Name": "x", "Cash_Cycle": "oops", "ROCE": "1", "Liquidity": "Medium"}
+    )
     pd.DataFrame(rows).to_parquet(tmp_path / "cache_seed" / "india_ccc_screen.parquet")
     _, _, html = bm.build()
     sec = html.split("Cash Conversion Cycle")[1].split("Global Momentum")[0]
@@ -176,7 +203,9 @@ class Kit:
 
 def _setup(monkeypatch, info=None, info_raises=False):
     kit = Kit()
-    fake_module(monkeypatch, "screener_kit", MARKETS=Kit.MARKETS, bootstrap=kit.bootstrap, screen=kit.screen)
+    fake_module(
+        monkeypatch, "screener_kit", MARKETS=Kit.MARKETS, bootstrap=kit.bootstrap, screen=kit.screen
+    )
 
     def _info():
         if info_raises:
@@ -234,7 +263,8 @@ def test_main_strategy_writes_csv_and_defaults(run, monkeypatch, capsys, tmp_pat
     out = capsys.readouterr().out
     assert "AAA" in out and "NOT investment advice" in out
     monkeypatch.setattr(
-        "sys.argv", ["run", "--strategy", "garp", "--market", "US", "--top", "5", "--min-turnover", "0"]
+        "sys.argv",
+        ["run", "--strategy", "garp", "--market", "US", "--top", "5", "--min-turnover", "0"],
     )
     run.main()
     assert kit.screens[-1] == ("garp", "US", 5, 0.0)
@@ -280,7 +310,11 @@ def test_main_global_leaderboard(run, monkeypatch, capsys, tmp_path, argv):
 
 def test_main_global_empty_writes_nothing(run, monkeypatch, tmp_path, capsys):
     _setup(monkeypatch, info={"symbols": 1})
-    fake_module(monkeypatch, "run_global_analysis", analyse=lambda min_turnover_usd: {"global": pd.DataFrame()})
+    fake_module(
+        monkeypatch,
+        "run_global_analysis",
+        analyse=lambda min_turnover_usd: {"global": pd.DataFrame()},
+    )
     monkeypatch.setattr("sys.argv", ["run", "--global"])
     run.main()
     assert not list(tmp_path.glob("*.csv")) and capsys.readouterr().out == ""

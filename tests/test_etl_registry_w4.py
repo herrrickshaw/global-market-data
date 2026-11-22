@@ -3,7 +3,7 @@
 import os
 import sqlite3
 import subprocess
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import pytest
 
@@ -82,7 +82,9 @@ def test_scan_changed_content_supersedes_and_bumps_version(er, capsys):
     assert rows == [(1, 1, 1), (2, 0, 4)]
     today = date.today().strftime("%Y%m%d")
     assert f"BATCH-alpha-{today}-02: 1 files, 0 new, 1 changed" in capsys.readouterr().out
-    b2 = _q(er, "select n_new, n_changed, bytes_new from batches order by started_at, batch_id desc")
+    b2 = _q(
+        er, "select n_new, n_changed, bytes_new from batches order by started_at, batch_id desc"
+    )
     assert (0, 1, 0) in b2  # changed files add no "new bytes"
 
 
@@ -173,7 +175,9 @@ def test_audit_pass_writes_report_and_row(er, monkeypatch, capsys):
     assert run.calls[0][1:3] == ["check", str(er.root)] and "--size-only" in run.calls[0]
     assert run.calls[0][3] == "dropbox:market-data-backup/current/ds/alpha"
     assert run.calls[1][3] == "googledrive:market-data-backup/current/ds/alpha"
-    row = _q(er, "select files_checked, missing_local, sha_mismatch, cloud_missing, result from audits")
+    row = _q(
+        er, "select files_checked, missing_local, sha_mismatch, cloud_missing, result from audits"
+    )
     assert row == [(1, 0, 0, 0, "PASS")]
     assert "PASS:" in capsys.readouterr().out
 
@@ -210,7 +214,9 @@ def test_audit_each_failure_alone_fails(er, monkeypatch):
 
 
 def test_audit_skips_sources_without_dataset_or_root(er, monkeypatch):
-    monkeypatch.setattr(er, "SOURCES", {"nods": (str(er.root), None), "noroot": (str(er.root / "x"), "d")})
+    monkeypatch.setattr(
+        er, "SOURCES", {"nods": (str(er.root), None), "noroot": (str(er.root / "x"), "d")}
+    )
     run = _Run()
     monkeypatch.setattr(er.subprocess, "run", run)
     assert er.audit() == 0 and run.calls == []
@@ -230,7 +236,10 @@ def test_audit_dupe_groups_wasted_bytes_and_stale_sources(er, monkeypatch):
     er.audit()
     row = _q(er, "select dupe_groups, wasted_bytes, stale_sources from audits")
     assert row == [(1, 8, "alpha")]  # (3-1 copies) * 4 bytes
-    assert "| stale sources (no batch in 7d) | alpha |" in open(os.path.join(er.REPORT, "ETL_AUDIT.md")).read()
+    assert (
+        "| stale sources (no batch in 7d) | alpha |"
+        in open(os.path.join(er.REPORT, "ETL_AUDIT.md")).read()
+    )
 
 
 def test_audit_staleness_boundary(er, monkeypatch):
@@ -238,13 +247,17 @@ def test_audit_staleness_boundary(er, monkeypatch):
     er.scan()
     monkeypatch.setattr(er.subprocess, "run", _Run())
     c = sqlite3.connect(er.DB)
-    c.execute("update batches set batch_date=?", ((date.today() - timedelta(days=7)).strftime("%Y%m%d"),))
+    c.execute(
+        "update batches set batch_date=?", ((date.today() - timedelta(days=7)).strftime("%Y%m%d"),)
+    )
     c.commit()
     c.close()
     er.audit()
     assert _q(er, "select stale_sources from audits")[-1] == ("",)  # exactly 7d old is not stale
     c = sqlite3.connect(er.DB)
-    c.execute("update batches set batch_date=?", ((date.today() - timedelta(days=8)).strftime("%Y%m%d"),))
+    c.execute(
+        "update batches set batch_date=?", ((date.today() - timedelta(days=8)).strftime("%Y%m%d"),)
+    )
     c.commit()
     c.close()
     er.audit()

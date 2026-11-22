@@ -61,7 +61,9 @@ def test_stm_path_prefers_live_then_seed(dl):
 def test_stm_path_derives_from_ltm_when_missing(dl, monkeypatch):
     (dl.LTM_DIR / "US.parquet").write_bytes(b"x")
     calls = []
-    fake_module(monkeypatch, "market_memory", ensure_stm_seeds=lambda m, verbose: calls.append((m, verbose)))
+    fake_module(
+        monkeypatch, "market_memory", ensure_stm_seeds=lambda m, verbose: calls.append((m, verbose))
+    )
     assert dl._stm_path("US") == dl.SEED_DIR / "cleaned_long_US.parquet"
     assert calls == [(["US"], False)]
     # no LTM -> no derive attempt
@@ -165,7 +167,11 @@ def test_ccc_map_cached_stale_refetches_and_boundary(dl, monkeypatch):
     assert dl.ccc_map_cached(max_age_days=1.0) == {"NEW": 7.0}
     dl._CCC_CACHE = None
     os.utime(dl.CCC_PARQUET, (time.time() - 3600, time.time() - 3600))
-    fake_module(monkeypatch, "screener_in", ccc_screen=lambda: pd.DataFrame({"Symbol": ["Z"], "Cash_Cycle": [2.0]}))
+    fake_module(
+        monkeypatch,
+        "screener_in",
+        ccc_screen=lambda: pd.DataFrame({"Symbol": ["Z"], "Cash_Cycle": [2.0]}),
+    )
     assert dl.ccc_map_cached(max_age_days=1 / 48) == {"Z": 2.0}  # 1h old > 30 min
 
 
@@ -213,7 +219,10 @@ def test_build_manifest_and_read(dl, capsys):
     (dl.REF_DIR / "skip.csv").write_bytes(b"1")
     man = dl.build_manifest()
     assert [(a["market"], a["tier"]) for a in man["markets"]] == [("US", "stm"), ("US", "ltm")]
-    assert [r["path"] for r in man["reference"]] == [str(Path("ref") / "a.parquet"), str(Path("ref") / "b.parquet")]
+    assert [r["path"] for r in man["reference"]] == [
+        str(Path("ref") / "a.parquet"),
+        str(Path("ref") / "b.parquet"),
+    ]
     out = capsys.readouterr().out
     assert "skip cleaned_long_JP.parquet" in out and "2 market assets, 2 reference" in out
     assert dl.read_manifest() == json.loads(dl.MANIFEST.read_text()) and "generated" in man
@@ -308,9 +317,7 @@ def sv(monkeypatch, tmp_path):
 def _px(n, start=100.0, step=1.0, vol=1000.0):
     idx = pd.date_range("2023-01-01", periods=n)
     c = start + step * np.arange(n, dtype=float)
-    return pd.DataFrame(
-        {"Open": c, "High": c, "Low": c, "Close": c, "Volume": vol}, index=idx
-    )
+    return pd.DataFrame({"Open": c, "High": c, "Low": c, "Close": c, "Volume": vol}, index=idx)
 
 
 def test_features_short_history_none(sv):
@@ -352,9 +359,7 @@ def test_features_boundary_bar_counts(sv):
 def test_features_rsi_matches_wilder_recursion(sv):
     rng = np.random.default_rng(3)
     close = 100 + np.cumsum(rng.normal(0, 1, 80))
-    d = pd.DataFrame(
-        {"Close": close, "Volume": 1.0}, index=pd.date_range("2023-01-01", periods=80)
-    )
+    d = pd.DataFrame({"Close": close, "Volume": 1.0}, index=pd.date_range("2023-01-01", periods=80))
     up = dn = None
     a = 1 / 14
     for i in range(1, 80):
@@ -442,7 +447,9 @@ def test_capture_deltas_uses_latest_value_per_key(sv):
     _view(sv, {"A": 2.0})
     sv.capture_deltas("US", verbose=False)
     _view(sv, {"A": 2.0})
-    assert sv.capture_deltas("US", verbose=False) == 0  # compared against the newest logged value, not the first
+    assert (
+        sv.capture_deltas("US", verbose=False) == 0
+    )  # compared against the newest logged value, not the first
     _view(sv, {"A": 1.0})
     assert sv.capture_deltas("US", verbose=False) == 1
 
@@ -505,7 +512,9 @@ def test_refresh_only_changed_or_missing(sv, monkeypatch, capsys):
     built = []
     monkeypatch.setattr(sv, "build_serving", lambda m, v: built.append(m) or 1)
     sv.refresh(verbose=False)
-    assert "US" in built and "IN" in built and len(built) == len(sv.MARKETS)  # all lack views except US (changed)
+    assert (
+        "US" in built and "IN" in built and len(built) == len(sv.MARKETS)
+    )  # all lack views except US (changed)
     built.clear()
     for m in sv.MARKETS:
         _view(sv, {"A": 1.0}, m)

@@ -1,8 +1,6 @@
 """market_performance, screener_in, send_mailer, india_public, public_screens, build_mailer, run."""
 
-import datetime as dt
 import json
-import smtplib
 from pathlib import Path
 
 import numpy as np
@@ -100,7 +98,9 @@ def test_analyse_ranks_by_cagr_and_saves(mp, monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(mp, "multi_fetch", fetch)
     monkeypatch.setattr(mp, "OUT_PARQUET", tmp_path / "perf.parquet")
-    monkeypatch.setattr(pd.DataFrame, "to_excel", lambda self, p, index=False: Path(p).write_text("x"))
+    monkeypatch.setattr(
+        pd.DataFrame, "to_excel", lambda self, p, index=False: Path(p).write_text("x")
+    )
     res = mp.analyse()
     assert seen["kw"] == {
         "order": ("yahoo", "stooq"),
@@ -109,7 +109,9 @@ def test_analyse_ranks_by_cagr_and_saves(mp, monkeypatch, tmp_path, capsys):
         "verbose": False,
     }
     assert len(seen["tickers"]) == 20
-    assert list(res["Market"]) == sorted(res["Market"], key=lambda m: -res.set_index("Market").loc[m, "CAGR%"])
+    assert list(res["Market"]) == sorted(
+        res["Market"], key=lambda m: -res.set_index("Market").loc[m, "CAGR%"]
+    )
     assert set(res["Market"]) == {"US", "IN"}
     assert (tmp_path / "perf.parquet").exists() and (tmp_path / "perf.xlsx").exists()
     out = capsys.readouterr().out
@@ -128,7 +130,11 @@ def test_analyse_quiet_and_empty(mp, monkeypatch, tmp_path, capsys):
 
 
 def test_analyse_too_short_history_is_dropped(mp, monkeypatch, tmp_path):
-    short = {"^GSPC": pd.DataFrame({"Close": np.arange(1, 30.0)}, index=pd.date_range("2024-01-01", periods=29))}
+    short = {
+        "^GSPC": pd.DataFrame(
+            {"Close": np.arange(1, 30.0)}, index=pd.date_range("2024-01-01", periods=29)
+        )
+    }
     monkeypatch.setattr(mp, "multi_fetch", lambda *a, **k: short)
     monkeypatch.setattr(mp, "OUT_PARQUET", tmp_path / "p.parquet")
     assert mp.analyse(verbose=False).empty
@@ -153,7 +159,11 @@ def _row(sym, sno, *rest):
 
 
 def test_header_cleans_markup_and_caps_at_15():
-    html = "<tr><th> A  <b>b</b> </th><th></th>" + "".join(f"<th>h{i}</th>" for i in range(20)) + "</tr>"
+    html = (
+        "<tr><th> A  <b>b</b> </th><th></th>"
+        + "".join(f"<th>h{i}</th>" for i in range(20))
+        + "</tr>"
+    )
     names = si._header(html)
     assert names[0] == "A b" and len(names) == 15  # blank skipped, capped
     assert names[1] == "h0"
@@ -178,7 +188,9 @@ def test_fetch_screen_pages_dedup_and_padding(monkeypatch, capsys):
     assert all(c[1] == 25 and c[2] for c in calls)
     assert list(df["Symbol"]) == ["AAA", "M&M", "CCC"]
     assert list(df.columns[:5]) == ["Symbol", "S.No.", "Name", "CMP Rs.", "Cash Cycle"]
-    assert df.shape[1] == 6 and df.columns[5] == "c5"  # widest row (sym + 5 cells) -> extra col named
+    assert (
+        df.shape[1] == 6 and df.columns[5] == "c5"
+    )  # widest row (sym + 5 cells) -> extra col named
     assert df.loc[df.Symbol == "AAA", "Cash Cycle"].iloc[0] == "5"
     assert df.loc[df.Symbol == "AAA", "c5"].iloc[0] == ""  # short rows padded
     assert df.loc[df.Symbol == "M&M", "CMP Rs."].iloc[0] == ""
@@ -342,7 +354,9 @@ def ip(monkeypatch, tmp_path):
 
 def test_load_config_override_and_bad_json(ip, tmp_path):
     assert ip._load_config() == ip.PUBLIC_SCREENS
-    (tmp_path / "public_screens.json").write_text(json.dumps({"x": "http://u", "cash_conversion_cycle": "http://v"}))
+    (tmp_path / "public_screens.json").write_text(
+        json.dumps({"x": "http://u", "cash_conversion_cycle": "http://v"})
+    )
     cfg = ip._load_config()
     assert cfg["x"] == "http://u" and cfg["cash_conversion_cycle"] == "http://v"
     assert ip.PUBLIC_SCREENS["cash_conversion_cycle"].startswith("https://www.screener.in")
@@ -362,7 +376,9 @@ def test_run_price_failure_isolated_and_fundamental_annotated(ip, monkeypatch, c
     assert set(ccc["Market"]) == {"IN"} and set(ccc["Liquidity"]) == {"High"}
     txt = capsys.readouterr().out
     assert "golden_crossover: price-screen failed (" in txt
-    assert "darvas" in txt and "AAA, BBB" in txt and "—" not in txt.split("darvas")[1].split("\n")[0]
+    assert (
+        "darvas" in txt and "AAA, BBB" in txt and "—" not in txt.split("darvas")[1].split("\n")[0]
+    )
     assert "=== India — all screeners (public data) ===" in txt
 
 
@@ -419,11 +435,15 @@ def test_ps_fetch_caches_skips_and_sleeps(ps, monkeypatch, tmp_path, capsys):
         return pd.DataFrame()
 
     monkeypatch.setattr(ps.si, "fetch_screen", fs)
-    got = ps.fetch(only=["magic_formula", "coffee_can", "multibagger", "value_stocks", "bogus"], pause=0.25)
+    got = ps.fetch(
+        only=["magic_formula", "coffee_can", "multibagger", "value_stocks", "bogus"], pause=0.25
+    )
     assert got == {"magic_formula": 2}
     assert (tmp_path / "magic_formula.parquet").exists()
     assert not (tmp_path / "coffee_can.parquet").exists()
-    assert ps._slept == [0.25] * 2  # pause only after a cached or raised key; empty `continue`s skip it
+    assert (
+        ps._slept == [0.25] * 2
+    )  # pause only after a cached or raised key; empty `continue`s skip it
     out = capsys.readouterr().out
     assert "magic_formula: 2 symbols cached" in out
     assert "coffee_can: empty/invalid — skipped" in out
@@ -432,7 +452,9 @@ def test_ps_fetch_caches_skips_and_sleeps(ps, monkeypatch, tmp_path, capsys):
 
 def test_ps_fetch_quiet_default_all_keys(ps, monkeypatch, capsys):
     seen = []
-    monkeypatch.setattr(ps.si, "fetch_screen", lambda url, verbose: seen.append(url) or pd.DataFrame())
+    monkeypatch.setattr(
+        ps.si, "fetch_screen", lambda url, verbose: seen.append(url) or pd.DataFrame()
+    )
     assert ps.fetch(verbose=False) == {}
     assert len(seen) == len(ps.PUBLIC_URLS)
     assert capsys.readouterr().out == ""

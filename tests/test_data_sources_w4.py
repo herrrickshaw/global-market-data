@@ -121,7 +121,9 @@ def test_stooq_fetch_hits_misses_and_min_bars(monkeypatch, capsys):
     assert set(out) == {"AAPL", "EXA"}
     assert list(out["AAPL"].columns) == ["Open", "High", "Low", "Close", "Volume"]
     assert len(s.calls) == 7  # .NS unsupported -> no request
-    assert s.calls[0][0] == "https://stooq.com/q/d/l/?s=aapl.us&i=d" and s.calls[0][1]["timeout"] == 20
+    assert (
+        s.calls[0][0] == "https://stooq.com/q/d/l/?s=aapl.us&i=d" and s.calls[0][1]["timeout"] == 20
+    )
     assert s.headers["User-Agent"].startswith("Mozilla")
     assert "stooq: 2/8 fetched" in capsys.readouterr().out
     ds.stooq_fetch(["AAPL"], verbose=False)
@@ -160,7 +162,11 @@ def test_eodhd_fetch_params_and_results(monkeypatch, capsys):
     assert set(out) == {"AAPL"} and len(s.calls) == 2  # unsupported symbol never requested
     url, kw = s.calls[0]
     assert url == "https://eodhd.com/api/eod/AAPL.US" and kw["timeout"] == 20
-    assert kw["params"]["api_token"] == "k" and kw["params"]["fmt"] == "csv" and kw["params"]["period"] == "d"
+    assert (
+        kw["params"]["api_token"] == "k"
+        and kw["params"]["fmt"] == "csv"
+        and kw["params"]["period"] == "d"
+    )
     assert kw["params"]["from"] == ds._period_to_from("3mo")
     assert "eodhd: 1/3 fetched" in capsys.readouterr().out
     ds.eodhd_fetch(["AAPL"], period="max", verbose=False)
@@ -209,20 +215,41 @@ def test_fetch_fallback_chain_and_stats(monkeypatch, capsys):
 
         return fn
 
-    monkeypatch.setattr(ds, "SOURCES", {"a": make("a", {"X"}), "yahoo": make("yahoo", {"Y"}), "stooq": make("stooq", {"Z"})})
-    out = ds.fetch(["X", "Y", "Z", "W", "X"], order=("a", "bogus", "yahoo", "stooq"), period="2y", min_bars=9)
+    monkeypatch.setattr(
+        ds,
+        "SOURCES",
+        {"a": make("a", {"X"}), "yahoo": make("yahoo", {"Y"}), "stooq": make("stooq", {"Z"})},
+    )
+    out = ds.fetch(
+        ["X", "Y", "Z", "W", "X"], order=("a", "bogus", "yahoo", "stooq"), period="2y", min_bars=9
+    )
     assert set(out) == {"X", "Y", "Z"}
-    assert [c[1] for c in calls] == [["X", "Y", "Z", "W"], ["Y", "Z", "W"], ["Z", "W"]]  # deduped, shrinking
+    assert [c[1] for c in calls] == [
+        ["X", "Y", "Z", "W"],
+        ["Y", "Z", "W"],
+        ["Z", "W"],
+    ]  # deduped, shrinking
     assert calls[0][2] == {"min_bars": 9, "verbose": True}  # 'a' is not period-aware
     assert calls[1][2] == {"min_bars": 9, "verbose": True, "period": "2y"}
     assert calls[2][2] == {"min_bars": 9, "verbose": True}  # stooq: no period kwarg
-    assert ds.get_last_stats() == {"requested": 4, "filled": 3, "by_source": {"a": 1, "yahoo": 1, "stooq": 1}}
+    assert ds.get_last_stats() == {
+        "requested": 4,
+        "filled": 3,
+        "by_source": {"a": 1, "yahoo": 1, "stooq": 1},
+    }
     assert "multi-source total: 3/5 (1 unresolved)" in capsys.readouterr().out
 
 
 def test_fetch_stops_when_nothing_pending_and_defaults(monkeypatch):
     calls = []
-    monkeypatch.setattr(ds, "SOURCES", {"yahoo": lambda t, **kw: calls.append(kw) or {x: pd.DataFrame() for x in t}, "stooq": lambda t, **kw: 1 / 0})
+    monkeypatch.setattr(
+        ds,
+        "SOURCES",
+        {
+            "yahoo": lambda t, **kw: calls.append(kw) or {x: pd.DataFrame() for x in t},
+            "stooq": lambda t, **kw: 1 / 0,
+        },
+    )
     out = ds.fetch(["A"], order=("yahoo", "stooq"), verbose=False)
     assert list(out) == ["A"] and calls == [{"min_bars": 60, "verbose": False, "period": "1y"}]
     assert ds.get_last_stats()["by_source"] == {"yahoo": 1}
@@ -234,7 +261,14 @@ def test_fetch_stops_when_nothing_pending_and_defaults(monkeypatch):
 
 def test_fetch_groww_gets_period(monkeypatch):
     seen = {}
-    monkeypatch.setattr(ds, "SOURCES", {"groww": lambda t, **kw: seen.update(kw) or {}, "eodhd": lambda t, **kw: seen.setdefault("eod", kw) and {}})
+    monkeypatch.setattr(
+        ds,
+        "SOURCES",
+        {
+            "groww": lambda t, **kw: seen.update(kw) or {},
+            "eodhd": lambda t, **kw: seen.setdefault("eod", kw) and {},
+        },
+    )
     ds.fetch(["A"], order=("groww", "eodhd"), period="5y", verbose=False)
     assert seen["period"] == "5y" and seen["eod"]["period"] == "5y"
 
@@ -252,9 +286,19 @@ class Resp:
 
 
 def test_us_sec_uppercases_and_dedups(monkeypatch):
-    data = {"0": {"ticker": "brk.b"}, "1": {"ticker": "AAPL"}, "2": {"ticker": ""}, "3": {}, "4": {"ticker": "aapl"}}
+    data = {
+        "0": {"ticker": "brk.b"},
+        "1": {"ticker": "AAPL"},
+        "2": {"ticker": ""},
+        "3": {},
+        "4": {"ticker": "aapl"},
+    }
     seen = {}
-    monkeypatch.setattr(us.requests, "get", lambda url, headers, timeout: seen.update(h=headers, t=timeout) or Resp(data))
+    monkeypatch.setattr(
+        us.requests,
+        "get",
+        lambda url, headers, timeout: seen.update(h=headers, t=timeout) or Resp(data),
+    )
     assert us.us_sec() == ["AAPL", "BRK-B"]
     assert seen["t"] == 30 and "User-Agent" in seen["h"]
 
@@ -309,10 +353,16 @@ def test_cn_eastmoney_host_fallback_and_stop_conditions(monkeypatch):
         return Resp({"data": {"total": 1, "diff": [{"f12": "600519", "f13": 1}]}})
 
     monkeypatch.setattr(us.requests, "get", get)
-    assert us.cn_eastmoney() == ["600519.SS"] and hosts[0] == "https://push2.eastmoney.com" and hosts[1] == "https://82.push2.eastmoney.com"
+    assert (
+        us.cn_eastmoney() == ["600519.SS"]
+        and hosts[0] == "https://push2.eastmoney.com"
+        and hosts[1] == "https://82.push2.eastmoney.com"
+    )
     monkeypatch.setattr(us.requests, "get", lambda *a, **k: 1 / 0)
     assert us.cn_eastmoney() == []  # every host failing -> no data -> stop
-    monkeypatch.setattr(us.requests, "get", lambda *a, **k: Resp({"data": {"total": 5, "diff": []}}))
+    monkeypatch.setattr(
+        us.requests, "get", lambda *a, **k: Resp({"data": {"total": 5, "diff": []}})
+    )
     assert us.cn_eastmoney() == []  # empty diff stops pagination
     monkeypatch.setattr(us.requests, "get", lambda *a, **k: Resp({"data": None}))
     assert us.cn_eastmoney() == []
@@ -333,12 +383,21 @@ def test_jp_and_kr(monkeypatch):
         fetch_tse_universe_kabupy=lambda: [{"code": "9984"}],
     )
     assert us.jp_jpx() == ["9984.T"]  # primary failing -> fallback
-    fake_module(monkeypatch, "full_japan_market_scan", fetch_tse_universe_jpx=lambda: [], fetch_tse_universe_kabupy=lambda: [{"code": "1111"}])
+    fake_module(
+        monkeypatch,
+        "full_japan_market_scan",
+        fetch_tse_universe_jpx=lambda: [],
+        fetch_tse_universe_kabupy=lambda: [{"code": "1111"}],
+    )
     assert us.jp_jpx() == ["1111.T"]  # empty primary -> fallback
     fake_module(
         monkeypatch,
         "full_korea_market_scan",
-        build_krx_universe=lambda: [{"code": "005930"}, {"code": "035720", "yf_suffix": ".KQ"}, {"x": 1}],
+        build_krx_universe=lambda: [
+            {"code": "005930"},
+            {"code": "035720", "yf_suffix": ".KQ"},
+            {"x": 1},
+        ],
     )
     assert us.kr_krx() == ["005930.KS", "035720.KQ"]
 
@@ -366,7 +425,12 @@ def test_euronext_equities_maps_venue_suffix(monkeypatch):
         "G;FR1;MC;Euronext Paris\n"
     )
     seen = {}
-    monkeypatch.setattr(us.requests, "get", lambda url, headers, timeout: seen.update(u=url, h=headers, t=timeout) or Resp(content=csv.encode("utf-8-sig")))
+    monkeypatch.setattr(
+        us.requests,
+        "get",
+        lambda url, headers, timeout: seen.update(u=url, h=headers, t=timeout)
+        or Resp(content=csv.encode("utf-8-sig")),
+    )
     assert us.euronext_equities() == ["ASML.AS", "ENI.MI", "EQNR.OL", "MC.PA"]
     assert "mics=XPAR,XAMS" in seen["u"] and seen["t"] == 40 and "Referer" in seen["h"]
     us.euronext_equities(mics="XPAR")
@@ -392,7 +456,9 @@ def test_investpy_universe(monkeypatch):
 
 
 def test_eu_universe_union(monkeypatch):
-    fake_module(monkeypatch, "full_european_market_scan", EURO_STOXX_50_META={"ZZZ.PA": 1, "HSBA.L": 2})
+    fake_module(
+        monkeypatch, "full_european_market_scan", EURO_STOXX_50_META={"ZZZ.PA": 1, "HSBA.L": 2}
+    )
     cur = us.eu_curated()
     assert "ZZZ.PA" in cur and cur.count("HSBA.L") == 1 and cur == sorted(cur)
     monkeypatch.setattr(us, "euronext_equities", lambda: ["NEW.PA"])
@@ -413,7 +479,10 @@ def _damo():
 
 def test_from_damodaran(monkeypatch):
     fake_module(monkeypatch, "reference_data", damodaran_companies=_damo)
-    assert us.from_damodaran("Hong Kong", {"SEHK"}) == ["0005.HK", "0700.HK"]  # zero-padded, filtered
+    assert us.from_damodaran("Hong Kong", {"SEHK"}) == [
+        "0005.HK",
+        "0700.HK",
+    ]  # zero-padded, filtered
     assert us.from_damodaran("Hong Kong") == ["0005.HK", "0700.HK"]  # NYSE has no suffix mapping
     assert us.from_damodaran("Sweden") == ["VOLV-B.ST"]  # country suffix, deduped
     assert us.from_damodaran("Japan") == []  # unmapped exchange
@@ -552,7 +621,9 @@ def test_client_constructor_failure(groww, api, monkeypatch):
     assert groww._client() is None
 
 
-@pytest.mark.parametrize("t,expected", [("RELIANCE.NS", "NSE-RELIANCE"), ("tcs.BO", "NSE-TCS"), ("INFY", "NSE-INFY")])
+@pytest.mark.parametrize(
+    "t,expected", [("RELIANCE.NS", "NSE-RELIANCE"), ("tcs.BO", "NSE-TCS"), ("INFY", "NSE-INFY")]
+)
 def test_groww_symbol(groww, t, expected):
     assert groww._groww_symbol(t) == expected
 
@@ -564,12 +635,19 @@ def _candles(n, t0=1_700_000_000):
 def test_fetch_candles_period_window_and_results(groww, api, monkeypatch, capsys):
     monkeypatch.setenv("GROWW_API_KEY", "k")
     monkeypatch.setenv("GROWW_API_SECRET", "s")
-    api.candles = {"NSE-AAA": {"candles": _candles(60)}, "NSE-BBB": _candles(59), "NSE-CCC": None, "NSE-DDD": {"candles": []}}
+    api.candles = {
+        "NSE-AAA": {"candles": _candles(60)},
+        "NSE-BBB": _candles(59),
+        "NSE-CCC": None,
+        "NSE-DDD": {"candles": []},
+    }
     api.fail = {"NSE-EEE"}
     out = groww.fetch(["AAA.NS", "BBB", "CCC", "DDD", "EEE"], period="3mo", min_bars=60)
     assert set(out) == {"AAA.NS"}
     df = out["AAA.NS"]
-    assert list(df.columns) == ["Open", "High", "Low", "Close", "Volume"] and df.index.name == "Date"
+    assert (
+        list(df.columns) == ["Open", "High", "Low", "Close", "Volume"] and df.index.name == "Date"
+    )
     assert df.index[0] == pd.Timestamp(1_700_000_000, unit="s")
     assert "groww: 1/5 fetched" in capsys.readouterr().out
     # request window: (3*31 + 5) days back, market hours stamps
@@ -599,7 +677,11 @@ def test_fetch_request_arguments(groww, api, monkeypatch):
     assert kw["candle_interval"] == "1day"
     created.clear()
     groww.fetch(["AAA"], period="weird", verbose=False)
-    assert created[0].calls[0]["start_time"].startswith((today - dt.timedelta(days=366)).strftime("%Y-%m-%d"))
+    assert (
+        created[0]
+        .calls[0]["start_time"]
+        .startswith((today - dt.timedelta(days=366)).strftime("%Y-%m-%d"))
+    )
 
 
 def test_fetch_without_client_or_sdk(groww, api, monkeypatch):
@@ -619,4 +701,6 @@ def test_groww_main(groww, api, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["g", "--instruments", "--ohlc", "AAA", "BBB"])
     groww.main()
     out = capsys.readouterr().out
-    assert "auth: OK (token minted)" in out and "instruments: 2 rows" in out and "0/2 fetched" in out
+    assert (
+        "auth: OK (token minted)" in out and "instruments: 2 rows" in out and "0/2 fetched" in out
+    )

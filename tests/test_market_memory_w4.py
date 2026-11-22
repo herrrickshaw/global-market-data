@@ -187,10 +187,12 @@ def test_fetch_new_other_market_uses_tracked_symbols(mem, monkeypatch, capsys):
 
     def fetch(syms, period, min_bars, verbose):
         calls.update(syms=syms, period=period, min_bars=min_bars, verbose=verbose)
-        return {"A": pd.DataFrame(
-            {"Open": [1.0], "High": [1.0], "Low": [1.0], "Close": [1.0], "Volume": [1]},
-            index=pd.to_datetime([TODAY]),
-        )}
+        return {
+            "A": pd.DataFrame(
+                {"Open": [1.0], "High": [1.0], "Low": [1.0], "Close": [1.0], "Volume": [1]},
+                index=pd.to_datetime([TODAY]),
+            )
+        }
 
     fake_module(monkeypatch, "data_sources", fetch=fetch)
     out = mem._fetch_new("US", "5d", True)
@@ -201,7 +203,9 @@ def test_fetch_new_other_market_uses_tracked_symbols(mem, monkeypatch, capsys):
 
 def test_fetch_new_falls_back_to_universe_or_skips(mem, monkeypatch, capsys):
     seen = {}
-    fake_module(monkeypatch, "data_sources", fetch=lambda syms, **k: seen.setdefault("s", syms) and {})
+    fake_module(
+        monkeypatch, "data_sources", fetch=lambda syms, **k: seen.setdefault("s", syms) and {}
+    )
     fake_module(monkeypatch, "universe_sources", get_universe=lambda m: ["X", "Y"])
     out = mem._fetch_new("JP", "5d", False)
     assert seen["s"] == ["X", "Y"] and out.empty
@@ -212,13 +216,18 @@ def test_fetch_new_falls_back_to_universe_or_skips(mem, monkeypatch, capsys):
     fake_module(monkeypatch, "universe_sources", get_universe=nope)
     out = mem._fetch_new("JP", "5d", True)
     assert out.empty and list(out.columns) == ["Date", *frames.OHLCV, "Symbol"]
-    assert "JP: no universe (" + ("no universe available " * 5)[:40] + ") — skipped" in capsys.readouterr().out
+    assert (
+        "JP: no universe (" + ("no universe available " * 5)[:40] + ") — skipped"
+        in capsys.readouterr().out
+    )
     mem._fetch_new("JP", "5d", False)
     assert capsys.readouterr().out == ""
 
 
 def test_update_bootstraps_thin_ltm_from_seed(mem, monkeypatch):
-    frames.write_seed(frames.long_to_dict(_long("OLD", 200, 150)), mem.SEED_DIR / "cleaned_long_US.parquet")
+    frames.write_seed(
+        frames.long_to_dict(_long("OLD", 200, 150)), mem.SEED_DIR / "cleaned_long_US.parquet"
+    )
     monkeypatch.setattr(mem, "_fetch_new", lambda m, period, verbose: _long("NEW", 3, 2))
     r = mem.update("US", verbose=False)
     assert r["ltm_symbols"] == 2
@@ -228,19 +237,25 @@ def test_update_bootstraps_thin_ltm_from_seed(mem, monkeypatch):
 def test_update_no_bootstrap_when_ltm_has_history_or_market_in(mem, monkeypatch):
     mem.commit("US", _long("HIST", 100, 61, close0=1.0), verbose=False)  # span = 60 days
     # the "committed seed" is the same file the STM tier is derived into, so write it afterwards
-    frames.write_seed(frames.long_to_dict(_long("SEEDED", 200, 5)), mem.SEED_DIR / "cleaned_long_US.parquet")
+    frames.write_seed(
+        frames.long_to_dict(_long("SEEDED", 200, 5)), mem.SEED_DIR / "cleaned_long_US.parquet"
+    )
     monkeypatch.setattr(mem, "_fetch_new", lambda m, period, verbose: _long("NEW", 3, 2))
     mem.update("US", verbose=False)
     assert "SEEDED" not in mem.read("US", "ltm")  # span 60 >= 60: no bootstrap
     # IN never bootstraps
-    frames.write_seed(frames.long_to_dict(_long("INSEED", 200, 5)), mem.SEED_DIR / "cleaned_long_IN.parquet")
+    frames.write_seed(
+        frames.long_to_dict(_long("INSEED", 200, 5)), mem.SEED_DIR / "cleaned_long_IN.parquet"
+    )
     mem.update("IN", verbose=False)
     assert "INSEED" not in mem.read("IN", "ltm")
 
 
 def test_update_bootstraps_when_span_just_under_60(mem, monkeypatch):
     mem.commit("US", _long("HIST", 100, 60, close0=1.0), verbose=False)  # span = 59 days
-    frames.write_seed(frames.long_to_dict(_long("SEEDED", 200, 3)), mem.SEED_DIR / "cleaned_long_US.parquet")
+    frames.write_seed(
+        frames.long_to_dict(_long("SEEDED", 200, 3)), mem.SEED_DIR / "cleaned_long_US.parquet"
+    )
     monkeypatch.setattr(mem, "_fetch_new", lambda m, period, verbose: _long("NEW", 3, 2))
     mem.update("US", verbose=False)
     assert "SEEDED" in mem.read("US", "ltm")
@@ -248,7 +263,9 @@ def test_update_bootstraps_when_span_just_under_60(mem, monkeypatch):
 
 def test_init_uses_ltm_years_period(mem, monkeypatch):
     seen = {}
-    monkeypatch.setattr(mem, "update", lambda m, period, verbose: seen.update(m=m, p=period, v=verbose) or {"ok": 1})
+    monkeypatch.setattr(
+        mem, "update", lambda m, period, verbose: seen.update(m=m, p=period, v=verbose) or {"ok": 1}
+    )
     assert mem.init("US", verbose=False) == {"ok": 1}
     assert seen == {"m": "US", "p": "10y", "v": False}
 

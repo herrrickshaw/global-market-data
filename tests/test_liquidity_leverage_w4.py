@@ -138,9 +138,7 @@ def test_build_index(monkeypatch, idx_path, capsys):
         "IN": {"INX": _ohlc(50.0, 100)},  # no FX rate -> whole market skipped
     }
     fake_module(monkeypatch, "screener_kit", MARKETS=["US", "UK", "IN"], load=lambda m: data[m])
-    monkeypatch.setattr(
-        liq, "_fx_rates", lambda ccys: {"USD": 1.0, "GBP": 0.5, "INR": None}
-    )
+    monkeypatch.setattr(liq, "_fx_rates", lambda ccys: {"USD": 1.0, "GBP": 0.5, "INR": None})
     idx = liq.build_index()
     rows = idx.set_index("Symbol")
     assert set(idx["Symbol"]) == {"AAA", "UKX"}

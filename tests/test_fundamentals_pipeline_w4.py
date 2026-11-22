@@ -1,7 +1,5 @@
 """fundamental_metrics (fetch routing, Piotroski/ROCE maths, screens), validation.report, pipeline CRUD."""
 
-import json
-import sys
 import time
 
 import numpy as np
@@ -17,27 +15,42 @@ from tests.w4_helpers import fake_module
 # ---------------- fundamental_metrics: pure maths ----------------
 def _good_piotroski():
     return {
-        "net_income": 5, "roa": 1, "cfo": 9,
-        "debt_to_assets": 0.1, "debt_to_assets_prev": 0.2,
-        "current_ratio": 2, "current_ratio_prev": 1,
-        "shares": 10, "shares_prev": 10,
-        "gross_margin": 5, "gross_margin_prev": 4,
-        "asset_turnover": 2, "asset_turnover_prev": 1,
+        "net_income": 5,
+        "roa": 1,
+        "cfo": 9,
+        "debt_to_assets": 0.1,
+        "debt_to_assets_prev": 0.2,
+        "current_ratio": 2,
+        "current_ratio_prev": 1,
+        "shares": 10,
+        "shares_prev": 10,
+        "gross_margin": 5,
+        "gross_margin_prev": 4,
+        "asset_turnover": 2,
+        "asset_turnover_prev": 1,
     }
 
 
 def test_piotroski_all_nine_and_each_point_toggles():
     assert fm._piotroski(_good_piotroski()) == 9
     flips = {
-        "net_income": 0, "roa": 0, "cfo": 0,  # cfo=0 also kills accrual -> separate check below
-        "debt_to_assets": 0.3, "current_ratio": 0, "shares": 11, "gross_margin": 3, "asset_turnover": 0,
+        "net_income": 0,
+        "roa": 0,
+        "cfo": 0,  # cfo=0 also kills accrual -> separate check below
+        "debt_to_assets": 0.3,
+        "current_ratio": 0,
+        "shares": 11,
+        "gross_margin": 3,
+        "asset_turnover": 0,
     }
     base = _good_piotroski()
     for k, v in flips.items():
         r = dict(base, **{k: v})
         expected = 9 - (2 if k == "cfo" else 1)
         assert fm._piotroski(r) == expected, k
-    assert fm._piotroski(dict(base, cfo=4)) == 8  # accrual needs cfo > net_income (4 < 5), cfo still > 0
+    assert (
+        fm._piotroski(dict(base, cfo=4)) == 8
+    )  # accrual needs cfo > net_income (4 < 5), cfo still > 0
 
 
 def test_piotroski_missing_or_nan_never_scores():
@@ -47,7 +60,9 @@ def test_piotroski_missing_or_nan_never_scores():
     r["cfo"] = None
     assert fm._piotroski(r) == 9 - 3  # roa, cfo>0, accrual all lost
     assert fm._piotroski(dict(_good_piotroski(), shares=10, shares_prev=None)) == 8
-    assert fm._piotroski(dict(_good_piotroski(), shares=10.0, shares_prev=10.0)) == 9  # <= (equal passes)
+    assert (
+        fm._piotroski(dict(_good_piotroski(), shares=10.0, shares_prev=10.0)) == 9
+    )  # <= (equal passes)
     assert fm._piotroski({"net_income": 0, "roa": 0}) == 0  # strictly positive
 
 
@@ -61,7 +76,11 @@ def test_roce_variants():
 
 
 def test_first_val_variants():
-    assert fm._first_val([3, 4]) == 3 and fm._first_val((5,)) == 5 and fm._first_val(np.array([7, 8])) == 7
+    assert (
+        fm._first_val([3, 4]) == 3
+        and fm._first_val((5,)) == 5
+        and fm._first_val(np.array([7, 8])) == 7
+    )
     assert fm._first_val([]) is None and fm._first_val(np.array([])) is None
     assert fm._first_val(None) is None and fm._first_val(float("nan")) is None
     assert fm._first_val(9.5) == 9.5 and fm._first_val(0) == 0
@@ -74,8 +93,15 @@ def test_yield_helpers():
     assert fm._fcf_yield({"cfo": 30, "capex_history": [10], "market_cap": 100}) == 20.0
     assert fm._fcf_yield({"cfo": 30, "market_cap": 100}) == 30.0  # no capex
     assert fm._fcf_yield({"cfo": 30, "capex_history": [], "market_cap": 100}) == 30.0
-    assert fm._fcf_yield({"cfo": -5, "capex_history": [5], "market_cap": 100}) == -10.0  # negative cfo allowed
-    for bad in ({"market_cap": 100}, {"cfo": 1, "market_cap": 0}, {"cfo": 1, "market_cap": None}, {"cfo": 1, "market_cap": float("nan")}):
+    assert (
+        fm._fcf_yield({"cfo": -5, "capex_history": [5], "market_cap": 100}) == -10.0
+    )  # negative cfo allowed
+    for bad in (
+        {"market_cap": 100},
+        {"cfo": 1, "market_cap": 0},
+        {"cfo": 1, "market_cap": None},
+        {"cfo": 1, "market_cap": float("nan")},
+    ):
         assert fm._fcf_yield(bad) is None
     assert fm._dividend_yield({"dividend_history": [-3.0], "market_cap": 100}) == 3.0  # abs()
     assert fm._dividend_yield({"dividend_history": [0], "market_cap": 100}) is None
@@ -84,7 +110,19 @@ def test_yield_helpers():
 
 
 def test_enrich_adds_columns_without_mutating():
-    df = pd.DataFrame([dict(_good_piotroski(), Symbol="A", ebit=20, total_assets=100, market_cap=200, capex_history=[1], dividend_history=[4])])
+    df = pd.DataFrame(
+        [
+            dict(
+                _good_piotroski(),
+                Symbol="A",
+                ebit=20,
+                total_assets=100,
+                market_cap=200,
+                capex_history=[1],
+                dividend_history=[4],
+            )
+        ]
+    )
     out = fm._enrich(df)
     assert out.loc[0, "piotroski"] == 9 and out.loc[0, "roce"] == 20.0
     assert out.loc[0, "earnings_yield"] == 10.0 and out.loc[0, "div_yield"] == 2.0
@@ -150,7 +188,11 @@ def test_run_screen_on_frame_missing_the_screen_column(monkeypatch):
 
 # ---------------- fundamental_metrics: fetch routing ----------------
 def test_fetch_one_routes_by_market(monkeypatch):
-    fake_module(monkeypatch, "sec_fundamentals", fundamentals=lambda s: {"src": "sec", "s": s} if s != "NONE" else None)
+    fake_module(
+        monkeypatch,
+        "sec_fundamentals",
+        fundamentals=lambda s: {"src": "sec", "s": s} if s != "NONE" else None,
+    )
     assert fm._fetch_one("US", "AAPL") == {"src": "sec", "s": "AAPL"}
     assert fm._fetch_one("US", "NONE") == {}
     monkeypatch.setattr(fm, "_yf_fundamentals", lambda m, s: {"src": "yf", "m": m})
@@ -175,10 +217,17 @@ def test_fetch_one_india_source_order(monkeypatch):
 def test_in_trendlyne_and_screener_wrappers(monkeypatch):
     monkeypatch.setattr(fm, "_TL_SESSION", None)
     made = []
-    fake_module(monkeypatch, "trendlyne_auth", session=lambda: made.append(1) or "SESS", fundamentals=lambda s, sess: {"s": s, "sess": sess} if s != "E" else None)
+    fake_module(
+        monkeypatch,
+        "trendlyne_auth",
+        session=lambda: made.append(1) or "SESS",
+        fundamentals=lambda s, sess: {"s": s, "sess": sess} if s != "E" else None,
+    )
     assert fm._in_trendlyne("A") == {"s": "A", "sess": "SESS"} and fm._in_trendlyne("E") == {}
     assert made == [1]  # session minted once
-    fake_module(monkeypatch, "screener_in_auth", company_financials=lambda s: {"x": s} if s != "E" else None)
+    fake_module(
+        monkeypatch, "screener_in_auth", company_financials=lambda s: {"x": s} if s != "E" else None
+    )
     assert fm._in_screener("A") == {"x": "A"} and fm._in_screener("E") == {}
 
 
@@ -201,16 +250,31 @@ def _yf_with(monkeypatch, info, record=None):
 def test_yf_fundamentals_mapping_and_suffix(monkeypatch):
     seen = []
     info = {
-        "trailingPE": float("nan"), "forwardPE": 18.0, "returnOnEquity": 0.25, "debtToEquity": 150.0,
-        "netIncomeToCommon": 5, "totalRevenue": 100, "trailingEps": 2.0, "marketCap": 1e9,
-        "grossMargins": 0.4, "earningsGrowth": 0.12,
+        "trailingPE": float("nan"),
+        "forwardPE": 18.0,
+        "returnOnEquity": 0.25,
+        "debtToEquity": 150.0,
+        "netIncomeToCommon": 5,
+        "totalRevenue": 100,
+        "trailingEps": 2.0,
+        "marketCap": 1e9,
+        "grossMargins": 0.4,
+        "earningsGrowth": 0.12,
     }
     _yf_with(monkeypatch, info, seen)
     out = fm._yf_fundamentals("JP", "7203")
     assert seen == ["7203.T"]
     assert out == {
-        "source": "yfinance", "pe": 18.0, "roe": 25.0, "debt_to_equity": 1.5, "net_income": 5,
-        "revenue": 100, "eps_ttm": 2.0, "market_cap": 1e9, "gross_margin": 40.0, "profit_growth": 12.0,
+        "source": "yfinance",
+        "pe": 18.0,
+        "roe": 25.0,
+        "debt_to_equity": 1.5,
+        "net_income": 5,
+        "revenue": 100,
+        "eps_ttm": 2.0,
+        "market_cap": 1e9,
+        "gross_margin": 40.0,
+        "profit_growth": 12.0,
     }
     seen.clear()
     fm._yf_fundamentals("ZZ", "X")
@@ -220,7 +284,10 @@ def test_yf_fundamentals_mapping_and_suffix(monkeypatch):
 def test_yf_fundamentals_edge_values(monkeypatch):
     _yf_with(monkeypatch, {"debtToEquity": 5.0, "returnOnEquity": "n/a", "trailingPE": ""})
     out = fm._yf_fundamentals("IN", "X")
-    assert out == {"source": "yfinance", "debt_to_equity": 5.0}  # exactly 5 is NOT rescaled; blanks dropped
+    assert out == {
+        "source": "yfinance",
+        "debt_to_equity": 5.0,
+    }  # exactly 5 is NOT rescaled; blanks dropped
     _yf_with(monkeypatch, {"debtToEquity": 5.01})
     assert fm._yf_fundamentals("IN", "X")["debt_to_equity"] == pytest.approx(0.0501)
     _yf_with(monkeypatch, {"trailingPE": 0.0})
@@ -244,7 +311,9 @@ def _serving(monkeypatch, df):
 
 
 def test_liquid_symbols_and_prices(monkeypatch):
-    df = pd.DataFrame({"Symbol": ["A", "B", "C"], "Close": [1.0, 2.0, 3.0], "Turnover_USD": [5.0, 9.0, 1.0]})
+    df = pd.DataFrame(
+        {"Symbol": ["A", "B", "C"], "Close": [1.0, 2.0, 3.0], "Turnover_USD": [5.0, 9.0, 1.0]}
+    )
     _serving(monkeypatch, df)
     assert fm._liquid_symbols("US", 2) == ["B", "A"]
     assert fm._prices("US") == {"A": 1.0, "B": 2.0, "C": 3.0}
@@ -255,7 +324,10 @@ def test_liquid_symbols_and_prices(monkeypatch):
 
 
 def test_load_fundamentals_fetches_only_missing_and_limits(monkeypatch, cache, capsys):
-    _serving(monkeypatch, pd.DataFrame({"Symbol": ["A", "B", "C", "D"], "Close": [10.0, 20.0, 30.0, 40.0]}))
+    _serving(
+        monkeypatch,
+        pd.DataFrame({"Symbol": ["A", "B", "C", "D"], "Close": [10.0, 20.0, 30.0, 40.0]}),
+    )
     pd.DataFrame({"Symbol": ["A"], "pe": [9.0]}).to_parquet(cache / "US.parquet")
     calls = []
 
@@ -278,7 +350,11 @@ def test_load_fundamentals_default_pool_and_checkpoint(monkeypatch, cache, capsy
     flushes = []
     monkeypatch.setattr(fm, "_fetch_one", lambda m, s: {"pe": 1.0})
     real = pd.DataFrame.to_parquet
-    monkeypatch.setattr(pd.DataFrame, "to_parquet", lambda self, p, **k: flushes.append(len(self)) or real(self, p, **k))
+    monkeypatch.setattr(
+        pd.DataFrame,
+        "to_parquet",
+        lambda self, p, **k: flushes.append(len(self)) or real(self, p, **k),
+    )
     out = fm.load_fundamentals("IN", limit=30)
     assert len(out) == 30 and "market_cap" not in out  # no shares column -> no market cap
     assert flushes[0] == 25 and flushes[-1] == 30  # checkpoint at 25, final flush merges the rest
@@ -306,7 +382,18 @@ def test_load_fundamentals_nothing_cached_returns_empty(monkeypatch, cache):
 
 def test_run_all_counts_and_empty(monkeypatch, capsys):
     frame = pd.DataFrame(
-        [dict(_good_piotroski(), Symbol="A", roe=30, debt_to_equity=0.0, ebit=20, total_assets=50, market_cap=100, eps_growth=40)]
+        [
+            dict(
+                _good_piotroski(),
+                Symbol="A",
+                roe=30,
+                debt_to_equity=0.0,
+                ebit=20,
+                total_assets=50,
+                market_cap=100,
+                eps_growth=40,
+            )
+        ]
     )
     monkeypatch.setattr(fm, "load_fundamentals", lambda m, limit, verbose: frame)
     counts = fm.run_all("US", limit=5)
@@ -329,16 +416,48 @@ def test_run_all_isolates_screen_errors(monkeypatch):
 
 def test_run_screen_sorting_columns_and_top(monkeypatch):
     rows = [
-        {"Symbol": "A", "net_income": 1, "roe": 25.0, "ebit": 10, "total_assets": 100, "market_cap": 50},
-        {"Symbol": "B", "piotroski": 0, "roe": 30.0, "ebit": 40, "total_assets": 100, "market_cap": 50},
-        {"Symbol": "C", "piotroski": 0, "roe": 10.0, "ebit": 90, "total_assets": 100, "market_cap": 50},
+        {
+            "Symbol": "A",
+            "net_income": 1,
+            "roe": 25.0,
+            "ebit": 10,
+            "total_assets": 100,
+            "market_cap": 50,
+        },
+        {
+            "Symbol": "B",
+            "piotroski": 0,
+            "roe": 30.0,
+            "ebit": 40,
+            "total_assets": 100,
+            "market_cap": 50,
+        },
+        {
+            "Symbol": "C",
+            "piotroski": 0,
+            "roe": 10.0,
+            "ebit": 90,
+            "total_assets": 100,
+            "market_cap": 50,
+        },
     ]
     monkeypatch.setattr(fm, "load_fundamentals", lambda m, limit: pd.DataFrame(rows))
     out = fm.run_screen("high_roe", "US")
     assert list(out["Symbol"]) == ["A", "B"]  # non-roce screens sort by piotroski (A=1, B=0), desc
     mf = fm.run_screen("magic_formula", "US")
-    assert list(mf["Symbol"]) == ["C", "B"]  # sorted by roce desc: C 90, B 40 (A: ey 20 but roce 10)
-    assert list(mf.columns) == ["Symbol", "piotroski", "roce", "roe", "earnings_yield", "fcf_yield", "div_yield"]
+    assert list(mf["Symbol"]) == [
+        "C",
+        "B",
+    ]  # sorted by roce desc: C 90, B 40 (A: ey 20 but roce 10)
+    assert list(mf.columns) == [
+        "Symbol",
+        "piotroski",
+        "roce",
+        "roe",
+        "earnings_yield",
+        "fcf_yield",
+        "div_yield",
+    ]
     assert list(fm.run_screen("magic_formula", "US", top=1)["Symbol"]) == ["C"]
     assert len(fm.run_screen("magic_formula", "US", top=None)) == 2
     assert fm.run_screen("bogus", "US").empty
@@ -349,7 +468,9 @@ def test_fm_main(monkeypatch, capsys):
     monkeypatch.setattr(fm, "run_all", lambda m, limit: seen.update(all=(m, limit)))
     monkeypatch.setattr("sys.argv", ["fm", "--market", "IN", "--limit", "5"])
     assert fm.main() == 0 and seen["all"] == ("IN", 5)
-    monkeypatch.setattr(fm, "run_screen", lambda n, m, limit, top: pd.DataFrame({"Symbol": ["A"], "roce": [1.234]}))
+    monkeypatch.setattr(
+        fm, "run_screen", lambda n, m, limit, top: pd.DataFrame({"Symbol": ["A"], "roce": [1.234]})
+    )
     monkeypatch.setattr("sys.argv", ["fm", "--screen", "high_roce"])
     assert fm.main() == 0
     out = capsys.readouterr().out
@@ -371,9 +492,16 @@ def test_public_fundamental_only_india(monkeypatch):
 def test_local_screens_quality_filters(monkeypatch):
     df = pd.DataFrame(
         {
-            "Symbol": ["A", "B", "C"], "Close": [100.0, 100.0, 100.0], "SMA200": [100.0, 103.0, 104.0],
-            "RSI14": [50, 50, 50], "PctFromHigh": [0, 0, 0], "PctFromLow": [10, 10, 10], "Ret126": [0, 0, 0],
-            "Ret252": [0, 0, 0], "Above200DMA": [True, True, True], "GoldenCross": [True, True, True],
+            "Symbol": ["A", "B", "C"],
+            "Close": [100.0, 100.0, 100.0],
+            "SMA200": [100.0, 103.0, 104.0],
+            "RSI14": [50, 50, 50],
+            "PctFromHigh": [0, 0, 0],
+            "PctFromLow": [10, 10, 10],
+            "Ret126": [0, 0, 0],
+            "Ret252": [0, 0, 0],
+            "Above200DMA": [True, True, True],
+            "GoldenCross": [True, True, True],
             "Liquidity": ["High", "Low", "Medium"],
         }
     )
@@ -384,38 +512,65 @@ def test_local_screens_quality_filters(monkeypatch):
     assert scr["52w_high_breakout"] == {"A", "C"} and scr["steady_uptrend"] == {"A", "C"}
     df2 = df.assign(Close=[100.0, 100.0, 97.0], SMA200=[100.0, 100.0, 100.0])
     monkeypatch.setattr(val.sl, "serving", lambda m: df2)
-    assert val.local_screens("US")["stocks_near_200dma"] == {"A"}  # 3.0% boundary: 97/100-1 = -3% -> abs 0.03 <= 0.03 for C
+    assert val.local_screens("US")["stocks_near_200dma"] == {
+        "A"
+    }  # 3.0% boundary: 97/100-1 = -3% -> abs 0.03 <= 0.03 for C
     # (C has Medium liquidity so it is eligible; boundary is inclusive)
 
 
 def test_local_screens_bad_predicate_gives_empty_set(monkeypatch):
-    df = pd.DataFrame({"Symbol": ["A"], "GoldenCross": [True], "Liquidity": ["High"]})  # missing most columns
+    df = pd.DataFrame(
+        {"Symbol": ["A"], "GoldenCross": [True], "Liquidity": ["High"]}
+    )  # missing most columns
     monkeypatch.setattr(val.sl, "serving", lambda m: df)
     scr = val.local_screens("US")
-    assert scr["golden_crossover"] == {"A"} and scr["darvas_scan"] == set() and scr["rsi_oversold"] == set()
+    assert (
+        scr["golden_crossover"] == {"A"}
+        and scr["darvas_scan"] == set()
+        and scr["rsi_oversold"] == set()
+    )
     monkeypatch.setattr(val.sl, "serving", lambda m: pd.DataFrame())
     assert val.local_screens("US") == {} and val.known_universe("US") == set()
 
 
 def test_validate_empty_picks_and_per_screen_ordering(monkeypatch):
-    monkeypatch.setattr(val, "local_screens", lambda m: {"s1": {"A", "B"}, "s2": {"A"}, "s3": {"Z"}})
-    assert val.validate([], "IN") == {"n": 0, "grounded_pct": 0.0, "novel_pct": 0.0, "per_screen": {}}
+    monkeypatch.setattr(
+        val, "local_screens", lambda m: {"s1": {"A", "B"}, "s2": {"A"}, "s3": {"Z"}}
+    )
+    assert val.validate([], "IN") == {
+        "n": 0,
+        "grounded_pct": 0.0,
+        "novel_pct": 0.0,
+        "per_screen": {},
+    }
     r = val.validate(["A", "B", "X", "A"], "IN")  # duplicates collapse
-    assert r["n"] == 3 and r["grounded_pct"] == pytest.approx(0.667, abs=1e-3) and r["novel_pct"] == pytest.approx(0.333, abs=1e-3)
-    assert list(r["per_screen"].items()) == [("s1", 0.667), ("s2", 0.333)]  # s3 omitted, sorted desc
+    assert (
+        r["n"] == 3
+        and r["grounded_pct"] == pytest.approx(0.667, abs=1e-3)
+        and r["novel_pct"] == pytest.approx(0.333, abs=1e-3)
+    )
+    assert list(r["per_screen"].items()) == [
+        ("s1", 0.667),
+        ("s2", 0.333),
+    ]  # s3 omitted, sorted desc
     monkeypatch.setattr(val, "local_screens", lambda m: {})
     assert val.validate(["A"], "IN")["grounded_pct"] == 0.0
 
 
 def test_report_prints_and_handles_recommend_errors(monkeypatch, capsys):
     monkeypatch.setattr(val, "local_screens", lambda m: {"s1": {"A", "B"}, "s2": {"A"}})
-    fake_module(monkeypatch, "auto_screener", recommend=lambda market, verbose: {"picks": ["A", "Q"]})
+    fake_module(
+        monkeypatch, "auto_screener", recommend=lambda market, verbose: {"picks": ["A", "Q"]}
+    )
     out = val.report("IN")
     assert out["local_screens"] == {"s1": 2, "s2": 1} and out["validation"]["n"] == 2
     txt = capsys.readouterr().out
     assert "local popular screens computed: 2" in txt
     assert txt.index("s1") < txt.index("s2")  # larger screens first
-    assert "auto-screener recommendation (2 picks)" in txt and "grounded in popular screens: 50%" in txt
+    assert (
+        "auto-screener recommendation (2 picks)" in txt
+        and "grounded in popular screens: 50%" in txt
+    )
     assert "overlaps: s1 50%, s2 50%" in txt
     fake_module(monkeypatch, "auto_screener", recommend=lambda market, verbose: 1 / 0)
     out = val.report("IN", verbose=False)
@@ -452,14 +607,26 @@ def test_filter_clearers_unions_sources_and_isolates_failures(pipe, monkeypatch)
         calls.append((name, market, min_turnover_usd))
         if name == "breakout_stocks":
             raise RuntimeError("boom")  # aborts the remaining screens inside this try
-        return pd.DataFrame({"Symbol": ["A", "B"]}) if name == "golden_crossover" else pd.DataFrame()
+        return (
+            pd.DataFrame({"Symbol": ["A", "B"]}) if name == "golden_crossover" else pd.DataFrame()
+        )
 
     fake_module(monkeypatch, "screen_metrics", run_screen=run_screen)
     fake_module(monkeypatch, "auto_screener", fundamental_anchor=lambda m: ["A", "C"])
     fake_module(monkeypatch, "validation", known_universe=lambda m: {"A", "D"})
     hits = pipe.filter_clearers("IN", 5.0)
-    assert hits == {"A": ["fundamental", "golden_crossover", "popular"], "B": ["golden_crossover"], "C": ["fundamental"], "D": ["popular"]}
-    assert [c[0] for c in calls] == ["golden_crossover", "companies_creating_new_high", "price_volume_action", "breakout_stocks"]
+    assert hits == {
+        "A": ["fundamental", "golden_crossover", "popular"],
+        "B": ["golden_crossover"],
+        "C": ["fundamental"],
+        "D": ["popular"],
+    }
+    assert [c[0] for c in calls] == [
+        "golden_crossover",
+        "companies_creating_new_high",
+        "price_volume_action",
+        "breakout_stocks",
+    ]
     assert all(c[2] == 5.0 for c in calls)
 
 
@@ -482,7 +649,11 @@ def test_promote_counts_and_messages(pipe, capsys):
 def test_demote_counts_trim_and_failure(pipe, monkeypatch, capsys):
     pipe.promote("IN", {"A": ["x"], "B": ["y"]}, verbose=False)
     dropped = []
-    fake_module(monkeypatch, "market_memory", drop=lambda m, syms, verbose: dropped.append((m, syms, verbose)))
+    fake_module(
+        monkeypatch,
+        "market_memory",
+        drop=lambda m, syms, verbose: dropped.append((m, syms, verbose)),
+    )
     assert pipe.demote("IN", ["A", "ZZ"], trim_ltm=True) == 1
     assert dropped == [("IN", ["A"], False)]  # only symbols that were actually promoted
     assert "demote[IN]: -1, 1 remain" in capsys.readouterr().out
@@ -514,7 +685,9 @@ def test_fund_count_and_refresh(pipe, monkeypatch, tmp_path, capsys):
         seen.update(market=market, limit=limit, verbose=verbose, symbols=symbols)
         pd.DataFrame({"Symbol": ["A", "B", "C"]}).to_parquet(fcache / "IN.parquet")
 
-    fake_module(monkeypatch, "fundamental_metrics", CACHE=fcache, load_fundamentals=load_fundamentals)
+    fake_module(
+        monkeypatch, "fundamental_metrics", CACHE=fcache, load_fundamentals=load_fundamentals
+    )
     assert pipe._fund_count("IN") == 0
     out = pipe.refresh("IN", fund_limit=7)
     assert out == {"market": "IN", "promoted": 2, "fundamentals_fetched": 3}
@@ -531,9 +704,14 @@ def test_refresh_without_fetch_empty_watch_and_failure(pipe, monkeypatch, capsys
     fake_module(monkeypatch, "fundamental_metrics", CACHE=None, load_fundamentals=lambda **k: 1 / 0)
     capsys.readouterr()
     out = pipe.refresh("IN", fetch_fundamentals=False, verbose=False)
-    assert out["fundamentals_fetched"] == 0 and pipe.promoted("IN")["A"]["refreshed"] == pipe._today()
+    assert (
+        out["fundamentals_fetched"] == 0 and pipe.promoted("IN")["A"]["refreshed"] == pipe._today()
+    )
     out = pipe.refresh("IN")  # fetch attempted, fails -> message, still marks refreshed
-    assert "fundamentals fetch skipped (" in capsys.readouterr().out and out["fundamentals_fetched"] == 0
+    assert (
+        "fundamentals fetch skipped (" in capsys.readouterr().out
+        and out["fundamentals_fetched"] == 0
+    )
     assert pipe._fund_count("IN") == 0  # CACHE=None path swallowed
 
 
@@ -546,7 +724,11 @@ def test_status_table_and_main(pipe, monkeypatch, capsys):
     state["US"]["synced"] = "t"
     pipe._save(state)
     df = pipe.status().set_index("market")
-    assert df.loc["US", "watchlist"] == 2 and df.loc["US", "fund_refreshed"] == 1 and df.loc["US", "synced"] == "t"
+    assert (
+        df.loc["US", "watchlist"] == 2
+        and df.loc["US", "fund_refreshed"] == 1
+        and df.loc["US", "synced"] == "t"
+    )
     assert list(pipe.status(["IN"])["market"]) == ["IN"]
     monkeypatch.setattr("sys.argv", ["p", "--status"])
     assert pipe.main() == 0 and "US" in capsys.readouterr().out
@@ -567,7 +749,10 @@ def test_pipeline_main_dispatch(pipe, monkeypatch):
     pipe.main()
     assert calls == [("refresh", "US")]
     calls.clear()
-    monkeypatch.setattr("sys.argv", ["p", "--sync", "--refresh", "--market", "US", "--min-turnover", "5", "--min-filters", "3"])
+    monkeypatch.setattr(
+        "sys.argv",
+        ["p", "--sync", "--refresh", "--market", "US", "--min-turnover", "5", "--min-filters", "3"],
+    )
     pipe.main()
     assert calls == [("sync", "US", 5.0, 3), ("refresh", "US")]
     calls.clear()

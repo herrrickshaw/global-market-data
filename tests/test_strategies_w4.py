@@ -35,7 +35,14 @@ def test_stockdata_accessors():
 
 def test_result_row_layout():
     r = Result("A", "slug", True, 1.5, {"X": 1}, "n")
-    assert r.row() == {"Symbol": "A", "Strategy": "slug", "Pass": "YES", "Score": 1.5, "X": 1, "Note": "n"}
+    assert r.row() == {
+        "Symbol": "A",
+        "Strategy": "slug",
+        "Pass": "YES",
+        "Score": 1.5,
+        "X": 1,
+        "Note": "n",
+    }
     assert Result("A", "slug", False).row()["Pass"] == "NO"
 
 
@@ -44,10 +51,20 @@ def test_base_math_helpers():
     assert pct_change(90, -100) == pytest.approx(190.0)
     assert pct_change(None, 1) is None and pct_change(1, None) is None and pct_change(1, 0) is None
     assert cagr(400, 100, 2) == pytest.approx(100.0)
-    assert cagr(0, 100, 2) is None and cagr(100, 0, 2) is None and cagr(100, -1, 2) is None and cagr(1, 1, 0) is None
+    assert (
+        cagr(0, 100, 2) is None
+        and cagr(100, 0, 2) is None
+        and cagr(100, -1, 2) is None
+        and cagr(1, 1, 0) is None
+    )
     s = pd.Series([1.0, 2.0, 3.0, 4.0])
     assert sma(s, 2) == 3.5 and sma(s, 4) == 2.5 and sma(s, 5) is None and sma(None, 2) is None
-    assert safe("3.5") == 3.5 and safe(float("nan")) is None and safe(None) is None and safe("x") is None
+    assert (
+        safe("3.5") == 3.5
+        and safe(float("nan")) is None
+        and safe(None) is None
+        and safe("x") is None
+    )
 
 
 def test_run_all_filters_by_need_and_isolates_failures(monkeypatch):
@@ -61,7 +78,12 @@ def test_run_all_filters_by_need_and_isolates_failures(monkeypatch):
                 raise RuntimeError
             return self.result if self.result != "None" else None
 
-    mods = {"p": Mod("price", "pr"), "f": Mod("fundamentals", "fr"), "x": Mod("price", "boom", True), "n": Mod("price", "None")}
+    mods = {
+        "p": Mod("price", "pr"),
+        "f": Mod("fundamentals", "fr"),
+        "x": Mod("price", "boom", True),
+        "n": Mod("price", "None"),
+    }
     monkeypatch.setattr(st, "STRATEGIES", mods)
     assert st.run_all(sd()) == {"p": "pr", "f": "fr"}  # failure and None results omitted
     assert st.run_all(sd(), only_needs="price") == {"p": "pr"}
@@ -75,7 +97,13 @@ def test_get_returns_module():
 
 # ---------------- bluest_blue_chips ----------------
 def _bc(**over):
-    f = {"market_cap_cr": 3000.0, "roe": 15.0, "profit_growth": 10.0, "pe": 20.0, "industry_pe": 20.0}
+    f = {
+        "market_cap_cr": 3000.0,
+        "roe": 15.0,
+        "profit_growth": 10.0,
+        "pe": 20.0,
+        "industry_pe": 20.0,
+    }
     f.update(over)
     return bluest_blue_chips.screen(sd(**f))
 
@@ -111,13 +139,21 @@ def test_debt_reduction_pass_and_metrics():
 
 
 def test_debt_reduction_requires_falling_and_expanding():
-    assert not debt_reduction.screen(sd(debt_history=[100, 80], capex_history=[9, 5])).passed  # rising debt
-    assert not debt_reduction.screen(sd(debt_history=[50, 80], capex_history=[5, 9])).passed  # capex shrinking
-    assert not debt_reduction.screen(sd(debt_history=[50, 80], capex_history=[5, 5])).passed  # flat capex
+    assert not debt_reduction.screen(
+        sd(debt_history=[100, 80], capex_history=[9, 5])
+    ).passed  # rising debt
+    assert not debt_reduction.screen(
+        sd(debt_history=[50, 80], capex_history=[5, 9])
+    ).passed  # capex shrinking
+    assert not debt_reduction.screen(
+        sd(debt_history=[50, 80], capex_history=[5, 5])
+    ).passed  # flat capex
     assert not debt_reduction.screen(sd(debt_history=[80, 80])).passed  # flat debt is not falling
     r = debt_reduction.screen(sd(debt_history=[50, 80], gross_block_history=[200, 100]))
     assert r.passed and r.metrics["CapacityExpanding"] == 1  # gross block alternative
-    assert not debt_reduction.screen(sd(debt_history=[50, 80], gross_block_history=[100, 100])).passed
+    assert not debt_reduction.screen(
+        sd(debt_history=[50, 80], gross_block_history=[100, 100])
+    ).passed
 
 
 def test_debt_reduction_insufficient_and_zero_base():
@@ -145,7 +181,9 @@ def test_dividend_yield_counts_history_when_years_missing():
     assert r.metrics["PayYears"] == 3 and r.passed  # zero / NaN years do not count
     r = dividend_yield.screen(sd(dividend_yield=3, dividend_history=[1, 0, 0]))
     assert r.metrics["PayYears"] == 1 and not r.passed
-    r = dividend_yield.screen(sd(dividend_yield=3, dividend_pay_years=0, dividend_history=[1, 1, 1]))
+    r = dividend_yield.screen(
+        sd(dividend_yield=3, dividend_pay_years=0, dividend_history=[1, 1, 1])
+    )
     assert r.metrics["PayYears"] == 0  # explicit zero wins over history
     assert dividend_yield.screen(sd(dividend_yield=3)).metrics["PayYears"] == 0
 
@@ -154,9 +192,19 @@ def test_dividend_yield_counts_history_when_years_missing():
 def test_loss_to_profit_turnaround_window():
     r = loss_to_profit.screen(sd(quarterly_net_income=[10, -5, 3, 4]))
     assert r.passed and r.note == "turnaround" and r.score == 10
-    assert r.metrics == {"LatestQ_NI": 10.0, "PriorQ_NI": -5.0, "WasLoss": 1, "NowProfit": 1, "Swing%": 300.0}
-    assert loss_to_profit.screen(sd(quarterly_net_income=[10, 5, 3, -4])).passed  # loss 3 quarters back
-    assert not loss_to_profit.screen(sd(quarterly_net_income=[10, 5, 3, 4, -9])).passed  # 4th prior is outside window
+    assert r.metrics == {
+        "LatestQ_NI": 10.0,
+        "PriorQ_NI": -5.0,
+        "WasLoss": 1,
+        "NowProfit": 1,
+        "Swing%": 300.0,
+    }
+    assert loss_to_profit.screen(
+        sd(quarterly_net_income=[10, 5, 3, -4])
+    ).passed  # loss 3 quarters back
+    assert not loss_to_profit.screen(
+        sd(quarterly_net_income=[10, 5, 3, 4, -9])
+    ).passed  # 4th prior is outside window
     assert not loss_to_profit.screen(sd(quarterly_net_income=[0, -5])).passed  # zero is not profit
     assert not loss_to_profit.screen(sd(quarterly_net_income=[-1, -5])).passed
     assert not loss_to_profit.screen(sd(quarterly_net_income=[5, 3, 2])).passed
@@ -190,7 +238,13 @@ def test_magic_formula_derives_yield_and_falls_back_to_roce():
 
 # ---------------- coffee_can ----------------
 def _cc(**over):
-    f = {"roe": 15.0, "roe_history": [16, 15, 17], "revenue": 161.051, "revenue_5y_ago": 100.0, "debt_to_equity": 1.0}
+    f = {
+        "roe": 15.0,
+        "roe_history": [16, 15, 17],
+        "revenue": 161.051,
+        "revenue_5y_ago": 100.0,
+        "debt_to_equity": 1.0,
+    }
     f.update(over)
     return coffee_can.screen(sd(**f))
 
@@ -210,7 +264,12 @@ def test_coffee_can_consistency_flag_and_missing():
     assert r.metrics["ROE_consistent"] == 0
     assert _cc(roe_history=[]).metrics["ROE_consistent"] == 0
     assert coffee_can.screen(sd()) is None
-    assert coffee_can.screen(sd(roe_history=[16, 17], revenue=200, revenue_5y_ago=100, debt_to_equity=0.5)).metrics["ROE"] is None
+    assert (
+        coffee_can.screen(
+            sd(roe_history=[16, 17], revenue=200, revenue_5y_ago=100, debt_to_equity=0.5)
+        ).metrics["ROE"]
+        is None
+    )
 
 
 # ---------------- garp ----------------
@@ -227,8 +286,13 @@ def test_garp_derived_peg_and_guards():
     r = garp.screen(sd(earnings_growth=20, pe=20))
     assert r.metrics["PEG"] == 1.0 and r.passed  # earnings_growth fallback, peg = pe/growth
     assert garp.screen(sd(eps_growth=20)) is None and garp.screen(sd(pe=10)) is None
-    assert garp.screen(sd(eps_growth=20, pe=0)) is None and garp.screen(sd(eps_growth=20, pe=-3)) is None
-    assert garp.screen(sd(eps_growth=0, pe=10)) is None  # zero growth is falsy -> treated as missing
+    assert (
+        garp.screen(sd(eps_growth=20, pe=0)) is None
+        and garp.screen(sd(eps_growth=20, pe=-3)) is None
+    )
+    assert (
+        garp.screen(sd(eps_growth=0, pe=10)) is None
+    )  # zero growth is falsy -> treated as missing
     r = garp.screen(sd(eps_growth=-5, pe=10))
     assert r.metrics["PEG"] == -2.0 and not r.passed  # negative growth never passes
 
@@ -239,7 +303,10 @@ def _prices(n=100, vol=1000.0, last_vol=None, close=None):
     v = np.full(n, vol)
     if last_vol is not None:
         v[-1] = last_vol
-    return pd.DataFrame({"Open": c, "High": c, "Low": c, "Close": c, "Volume": v}, index=pd.date_range("2024-01-01", periods=len(c)))
+    return pd.DataFrame(
+        {"Open": c, "High": c, "Low": c, "Close": c, "Volume": v},
+        index=pd.date_range("2024-01-01", periods=len(c)),
+    )
 
 
 def test_darvas_volume_multiple_boundary():
@@ -289,9 +356,15 @@ def test_golden_crossover_detection():
     n = 260
     flat = StockData("T", ohlcv=_prices(n, close=_cross_series(n, "flat")))
     r = golden_crossover.screen(flat)
-    assert r is not None and not r.passed and r.note == "below" and r.score == 0.0  # 50 == 200: not above
-    cross = golden_crossover.screen(StockData("T", ohlcv=_prices(n, close=_cross_series(n, "cross"))))
-    assert cross.passed and cross.note == "GOLDEN_CROSS" and cross.metrics["DMA50_above_200"] is True
+    assert (
+        r is not None and not r.passed and r.note == "below" and r.score == 0.0
+    )  # 50 == 200: not above
+    cross = golden_crossover.screen(
+        StockData("T", ohlcv=_prices(n, close=_cross_series(n, "cross")))
+    )
+    assert (
+        cross.passed and cross.note == "GOLDEN_CROSS" and cross.metrics["DMA50_above_200"] is True
+    )
     c = np.full(n, 100.0)
     c[-3:] = 400.0  # 50dma already above 200dma yesterday -> not a *fresh* cross
     held = golden_crossover.screen(StockData("T", ohlcv=_prices(n, close=c)))
@@ -339,15 +412,36 @@ def _pio(n_true):
         ("asset_turnover", 2, "asset_turnover_prev", 1),
     ]
     f = {"net_income": 3, "roa": 1, "roa_prev": 0, "cfo": 5}
-    bad = {"debt_to_assets": 0.3, "debt_to_assets_prev": 0.2, "current_ratio": 1, "current_ratio_prev": 2,
-           "shares": 11, "shares_prev": 10, "gross_margin": 3, "gross_margin_prev": 4,
-           "asset_turnover": 1, "asset_turnover_prev": 2}
-    good = {"debt_to_assets": 0.1, "debt_to_assets_prev": 0.2, "current_ratio": 2, "current_ratio_prev": 1,
-            "shares": 10, "shares_prev": 10, "gross_margin": 5, "gross_margin_prev": 4,
-            "asset_turnover": 2, "asset_turnover_prev": 1}
+    bad = {
+        "debt_to_assets": 0.3,
+        "debt_to_assets_prev": 0.2,
+        "current_ratio": 1,
+        "current_ratio_prev": 2,
+        "shares": 11,
+        "shares_prev": 10,
+        "gross_margin": 3,
+        "gross_margin_prev": 4,
+        "asset_turnover": 1,
+        "asset_turnover_prev": 2,
+    }
+    good = {
+        "debt_to_assets": 0.1,
+        "debt_to_assets_prev": 0.2,
+        "current_ratio": 2,
+        "current_ratio_prev": 1,
+        "shares": 10,
+        "shares_prev": 10,
+        "gross_margin": 5,
+        "gross_margin_prev": 4,
+        "asset_turnover": 2,
+        "asset_turnover_prev": 1,
+    }
     groups = [
-        ("debt_to_assets", "debt_to_assets_prev"), ("current_ratio", "current_ratio_prev"),
-        ("shares", "shares_prev"), ("gross_margin", "gross_margin_prev"), ("asset_turnover", "asset_turnover_prev"),
+        ("debt_to_assets", "debt_to_assets_prev"),
+        ("current_ratio", "current_ratio_prev"),
+        ("shares", "shares_prev"),
+        ("gross_margin", "gross_margin_prev"),
+        ("asset_turnover", "asset_turnover_prev"),
     ]
     for i, (a, b) in enumerate(groups):
         src = good if i < n_true else bad

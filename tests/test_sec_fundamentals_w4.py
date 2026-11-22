@@ -28,8 +28,13 @@ def _clear_caches():
 
 def test_ticker_cik_zero_pads_uppercases_and_is_cached(monkeypatch):
     calls = []
-    data = {"0": {"ticker": "aapl", "cik_str": 320193}, "1": {"ticker": "MSFT", "cik_str": "789019"}}
-    monkeypatch.setattr(sf.requests, "get", lambda url, headers, timeout: calls.append((url, timeout)) or Resp(data))
+    data = {
+        "0": {"ticker": "aapl", "cik_str": 320193},
+        "1": {"ticker": "MSFT", "cik_str": "789019"},
+    }
+    monkeypatch.setattr(
+        sf.requests, "get", lambda url, headers, timeout: calls.append((url, timeout)) or Resp(data)
+    )
     m = sf._ticker_cik()
     assert m == {"AAPL": "0000320193", "MSFT": "0000789019"}
     sf._ticker_cik()
@@ -60,7 +65,11 @@ def test_companyfacts_unknown_ticker_and_http_failures(monkeypatch):
 def test_companyfacts_success_url_and_case(monkeypatch):
     _cik(monkeypatch, {"AAPL": "0000320193"})
     seen = []
-    monkeypatch.setattr(sf.requests, "get", lambda url, headers, timeout: seen.append(url) or Resp({"facts": {"us-gaap": {}}}))
+    monkeypatch.setattr(
+        sf.requests,
+        "get",
+        lambda url, headers, timeout: seen.append(url) or Resp({"facts": {"us-gaap": {}}}),
+    )
     assert sf.companyfacts("aapl") == {"us-gaap": {}}  # case-insensitive lookup
     assert seen == ["https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"]
     assert sf.companyfacts("aapl") == {"us-gaap": {}} and len(seen) == 1  # lru-cached
@@ -76,7 +85,9 @@ def test_fundamentals_wrapper_routes_as_of(monkeypatch):
     assert sf.fundamentals("AAPL") == {}
     seen = {}
     monkeypatch.setattr(sf, "companyfacts", lambda t: {"us-gaap": {}})
-    monkeypatch.setattr(sf, "fundamentals_from_facts", lambda f, as_of: seen.update(f=f, as_of=as_of) or {"ok": 1})
+    monkeypatch.setattr(
+        sf, "fundamentals_from_facts", lambda f, as_of: seen.update(f=f, as_of=as_of) or {"ok": 1}
+    )
     assert sf.fundamentals("AAPL", as_of="2024-01-01") == {"ok": 1}
     assert seen == {"f": {"us-gaap": {}}, "as_of": "2024-01-01"}
 
@@ -102,6 +113,8 @@ def test_roe_history_skips_zero_equity_and_truncates():
 def test_margin_bounds_and_pct():
     assert sf._margin(100, 100) == 100.0 and sf._margin(0, 100) == 0.0
     assert sf._margin(101, 100) is None and sf._margin(-1, 100) is None
-    assert sf._margin(None, 100) is None and sf._margin(5, 0) is None and sf._margin(5, None) is None
+    assert (
+        sf._margin(None, 100) is None and sf._margin(5, 0) is None and sf._margin(5, None) is None
+    )
     assert sf._pct(110, 100) == pytest.approx(10.0) and sf._pct(-90, -100) == pytest.approx(10.0)
     assert sf._pct(5, 0) is None and sf._pct(None, 5) is None and sf._pct(5, None) is None

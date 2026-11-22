@@ -3,7 +3,7 @@
 import io
 import sys
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -71,7 +71,9 @@ def test_news_source_decorator_variants(tr):
         return []
 
     src = tr.get_news_source("rss")
-    assert src.feeds == ["http://f"] and src.market == "US" and src.fn is None  # default RSS fetcher
+    assert (
+        src.feeds == ["http://f"] and src.market == "US" and src.fn is None
+    )  # default RSS fetcher
 
     @tr.news_source("custom", feeds=["http://f"])
     def fetch(ticker, market):
@@ -84,7 +86,9 @@ def test_news_source_decorator_variants(tr):
     def _(ticker, market):
         return []
 
-    assert tr.get_news_source("nofeeds").feeds == [] and tr.get_news_source("nofeeds").fn is not None
+    assert (
+        tr.get_news_source("nofeeds").feeds == [] and tr.get_news_source("nofeeds").fn is not None
+    )
     assert tr.get_news_source("nope") is None
     assert tr.list_news_sources() == ["rss", "custom", "nofeeds"]
 
@@ -100,7 +104,10 @@ def test_analysis_registry(tr):
 
     assert tr.run_analysis("count", [1, 2]) == 2
     assert tr.run_analysis("missing", 1) is None
-    assert tr._ANALYSES["nodoc"].description == "docs here" and tr._ANALYSES["count"].description == "counts"
+    assert (
+        tr._ANALYSES["nodoc"].description == "docs here"
+        and tr._ANALYSES["count"].description == "counts"
+    )
     assert tr.list_analyses() == ["count", "nodoc"]
 
 
@@ -112,7 +119,14 @@ def test_register_builtin_screeners_wires_specs(tr, monkeypatch):
         def is_satisfied_by(self, c):
             return True
 
-    names = ["BullCartelSpec", "CoffeeCanSpec", "DarvasBoxSpec", "GoldenCrossSpec", "MagicFormulaSpec", "PiotroskiSpec"]
+    names = [
+        "BullCartelSpec",
+        "CoffeeCanSpec",
+        "DarvasBoxSpec",
+        "GoldenCrossSpec",
+        "MagicFormulaSpec",
+        "PiotroskiSpec",
+    ]
     specs = fake_module(monkeypatch, "domain.screening.specifications", **{n: Spec for n in names})
     fake_module(monkeypatch, "domain.screening")
     fake_module(monkeypatch, "domain")
@@ -202,7 +216,12 @@ def test_nse_names_skips_failures_and_takes_first_good_day(sm, tmp_path, monkeyp
     fake_module(monkeypatch, "nse", NSE=nse)
     rows = sm._nse_names()
     assert [r["symbol"] for r in rows] == ["TCS", "INFY"]  # EQ only, stripped
-    assert rows[0] == {"symbol": "TCS", "name": "TATA CONSULTANCY", "exchange": "NSE", "suffix": ".NS"}
+    assert rows[0] == {
+        "symbol": "TCS",
+        "name": "TATA CONSULTANCY",
+        "exchange": "NSE",
+        "suffix": ".NS",
+    }
     assert len(nse.calls) == 2  # stopped at the first success
 
 
@@ -211,7 +230,9 @@ def test_nse_names_tries_seven_days_then_empty(sm, monkeypatch):
     fake_module(monkeypatch, "nse", NSE=nse)
     assert sm._nse_names() == []
     assert len(nse.calls) == 7
-    assert round((nse.calls[0] - nse.calls[6]).total_seconds() / 86400) == 6  # one day back per attempt
+    assert (
+        round((nse.calls[0] - nse.calls[6]).total_seconds() / 86400) == 6
+    )  # one day back per attempt
 
 
 def test_nse_and_bse_names_without_library(sm, monkeypatch):
@@ -286,7 +307,11 @@ def test_us_names_exchange_and_ticker_filters(sm, monkeypatch):
         ]
     }
     seen = {}
-    monkeypatch.setattr(requests, "get", lambda url, timeout, headers: seen.update(url=url, t=timeout, h=headers) or _Resp(data))
+    monkeypatch.setattr(
+        requests,
+        "get",
+        lambda url, timeout, headers: seen.update(url=url, t=timeout, h=headers) or _Resp(data),
+    )
     rows = sm._us_names()
     assert [(r["symbol"], r["exchange"]) for r in rows] == [
         ("AAPL", "NASDAQ"),
@@ -306,15 +331,35 @@ def test_us_names_failure_is_empty(sm, monkeypatch):
 
 def test_build_master_merges_dedupes_and_saves(sm, monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(sm, "MASTER", tmp_path / "m.parquet")
-    nse = [{"symbol": "TCS", "name": "TATA CONSULTANCY SERVICES LIMITED", "exchange": "NSE", "suffix": ".NS"}] * 2
+    nse = [
+        {
+            "symbol": "TCS",
+            "name": "TATA CONSULTANCY SERVICES LIMITED",
+            "exchange": "NSE",
+            "suffix": ".NS",
+        }
+    ] * 2
     monkeypatch.setattr(sm, "_nse_names", lambda: nse)
     got = {}
-    monkeypatch.setattr(sm, "_bse_names", lambda s: got.setdefault("nse", s) and [{"symbol": "500001", "name": "X LTD", "exchange": "BSE", "suffix": ".BO"}])
-    monkeypatch.setattr(sm, "_us_names", lambda: [{"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ", "suffix": ""}])
+    monkeypatch.setattr(
+        sm,
+        "_bse_names",
+        lambda s: got.setdefault("nse", s)
+        and [{"symbol": "500001", "name": "X LTD", "exchange": "BSE", "suffix": ".BO"}],
+    )
+    monkeypatch.setattr(
+        sm,
+        "_us_names",
+        lambda: [{"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ", "suffix": ""}],
+    )
     df = sm.build_master()
     assert got["nse"] == {"TCS"} and len(df) == 3  # NSE duplicate dropped
     assert list(df.columns) == ["symbol", "name", "name_clean", "exchange", "suffix", "yf_symbol"]
-    assert dict(zip(df["symbol"], df["yf_symbol"])) == {"TCS": "TCS.NS", "500001": "500001.BO", "AAPL": "AAPL"}
+    assert dict(zip(df["symbol"], df["yf_symbol"])) == {
+        "TCS": "TCS.NS",
+        "500001": "500001.BO",
+        "AAPL": "AAPL",
+    }
     assert df.set_index("symbol").loc["TCS", "name_clean"] == "TATA CONSULTANCY SERVICES"
     assert (tmp_path / "m.parquet").exists()
     assert "NSE: 2 | BSE-only: 1 | US: 1" in capsys.readouterr().out
@@ -333,7 +378,16 @@ def test_build_master_nothing_fetched(sm, monkeypatch, tmp_path, capsys):
 
 def _master_df(name="X LTD"):
     return pd.DataFrame(
-        [{"symbol": "TCS", "name": name, "name_clean": "X", "exchange": "NSE", "suffix": ".NS", "yf_symbol": "TCS.NS"}]
+        [
+            {
+                "symbol": "TCS",
+                "name": name,
+                "name_clean": "X",
+                "exchange": "NSE",
+                "suffix": ".NS",
+                "yf_symbol": "TCS.NS",
+            }
+        ]
     )
 
 
@@ -349,7 +403,9 @@ def test_load_master_fresh_stale_missing_corrupt(sm, monkeypatch, tmp_path):
     old = datetime.now().timestamp() - (sm.STALE_HOURS + 1) * 3600
     os.utime(sm.MASTER, (old, old))
     assert sm.load_master()["name"].iloc[0] == "BUILT" and len(built) == 2  # stale -> rebuild
-    assert sm.load_master(auto_refresh=False)["name"].iloc[0] == "DISK"  # stale tolerated when disabled
+    assert (
+        sm.load_master(auto_refresh=False)["name"].iloc[0] == "DISK"
+    )  # stale tolerated when disabled
     sm.MASTER.write_text("corrupt")
     os.utime(sm.MASTER, (datetime.now().timestamp(),) * 2)
     assert sm.load_master()["name"].iloc[0] == "BUILT" and len(built) == 3  # unreadable -> rebuild
@@ -396,7 +452,9 @@ def test_cached_get_downloads_once(rd, monkeypatch):
         def raise_for_status(self):
             pass
 
-    monkeypatch.setattr(rd.requests, "get", lambda url, headers, timeout: calls.append((url, timeout)) or R())
+    monkeypatch.setattr(
+        rd.requests, "get", lambda url, headers, timeout: calls.append((url, timeout)) or R()
+    )
     assert rd._cached_get("http://x/f", "f.bin") == b"payload"
     assert rd._cached_get("http://x/f", "f.bin") == b"payload"
     assert calls == [("http://x/f", 45)] and (rd.CACHE / "f.bin").read_bytes() == b"payload"
@@ -422,6 +480,7 @@ class _FakeXL:
 
 def _patch_excel(monkeypatch, rd, sheets, probe_fail=()):
     """sheets: {name: (header_row_index, DataFrame-with-industry)}"""
+
     def excel_file(buf):
         if sheets is None:
             raise ValueError("bad xls")
@@ -445,7 +504,10 @@ def _ind_df(**cols):
 
 
 def test_read_damodaran_finds_header_sheet(rd, monkeypatch):
-    sheets = {"Notes": (0, pd.DataFrame({"x": [1]})), "Industry Averages": (7, _ind_df(**{"Current PE": [20.0, 8.0, 1.0]}))}
+    sheets = {
+        "Notes": (0, pd.DataFrame({"x": [1]})),
+        "Industry Averages": (7, _ind_df(**{"Current PE": [20.0, 8.0, 1.0]})),
+    }
     _patch_excel(monkeypatch, rd, sheets)
     df = rd._read_damodaran(b"raw")
     assert list(df["Industry"]) == ["Software", "Bank (Money Center)"]  # blank industry dropped
@@ -565,7 +627,13 @@ def test_damodaran_companies_builds_and_caches(rd, monkeypatch):
 
 
 def test_company_industry_lookup(rd, monkeypatch):
-    df = pd.DataFrame({"Ticker": ["ACM", "BTA"], "Company Name": ["Acme Corp", "Beta Inc"], "Industry Group": ["Software", "Auto"]})
+    df = pd.DataFrame(
+        {
+            "Ticker": ["ACM", "BTA"],
+            "Company Name": ["Acme Corp", "Beta Inc"],
+            "Industry Group": ["Software", "Auto"],
+        }
+    )
     monkeypatch.setattr(rd, "damodaran_companies", lambda: df)
     assert rd.company_industry("acm") == "Software" and rd.company_industry(" Beta Inc ") == "Auto"
     assert rd.company_industry("unknown") is None

@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 import stock_utils as su
-from tests.w4_helpers import fake_module
 
 
 def _stmt():
@@ -63,7 +62,10 @@ def _ohlcv(close, vol=1000.0, n=None):
 
 def test_clean_ohlcv_none_and_empty_and_no_close():
     assert su.clean_ohlcv(None) is None and su.clean_ohlcv(pd.DataFrame()) is None
-    assert su.clean_ohlcv(pd.DataFrame({"Open": [1.0]}, index=pd.date_range("2024-01-01", periods=1))) is None
+    assert (
+        su.clean_ohlcv(pd.DataFrame({"Open": [1.0]}, index=pd.date_range("2024-01-01", periods=1)))
+        is None
+    )
 
 
 def test_clean_ohlcv_integrity_repair_and_numeric_coercion():
@@ -144,9 +146,13 @@ def test_clean_ohlcv_keeps_only_ohlcv_columns():
 def test_clean_financials():
     assert su.clean_financials(None) is None and su.clean_financials(pd.DataFrame()) is None
     cols = pd.to_datetime(["2022-03-31", "2024-03-31", "2023-03-31"])
-    df = pd.DataFrame({cols[0]: [1, 2], cols[1]: ["3", "x"], cols[2]: [np.nan, np.nan]}, index=["a", "b"])
+    df = pd.DataFrame(
+        {cols[0]: [1, 2], cols[1]: ["3", "x"], cols[2]: [np.nan, np.nan]}, index=["a", "b"]
+    )
     out = su.clean_financials(df)
-    assert list(out.columns) == list(pd.to_datetime(["2024-03-31", "2022-03-31"]))  # empty col out, newest first
+    assert list(out.columns) == list(
+        pd.to_datetime(["2024-03-31", "2022-03-31"])
+    )  # empty col out, newest first
     assert out.iloc[0, 0] == 3.0 and np.isnan(out.iloc[1, 0])
     assert su.clean_financials(pd.DataFrame({"a": [np.nan]})) is None
 
@@ -183,12 +189,20 @@ def test_extract_ticker_df_multi_flat_missing_and_unclean():
     assert su.extract_ticker_df(dirty.iloc[0:0], "X") is None
     assert list(su.extract_ticker_df(flat.assign(Z=1), "X", clean=False).columns)[-1] == "Volume"
     only_x = pd.DataFrame({"Z": [1.0]}, index=pd.date_range("2024-01-01", periods=1))
-    assert su.extract_ticker_df(only_x, "X", clean=False).equals(only_x)  # no OHLCV cols -> unfiltered
+    assert su.extract_ticker_df(only_x, "X", clean=False).equals(
+        only_x
+    )  # no OHLCV cols -> unfiltered
 
 
 @pytest.mark.parametrize(
     "msg,expected",
-    [("Rate limited", True), ("HTTP 429", True), ("Too Many Requests", True), ("Invalid Crumb", True), ("boom", False)],
+    [
+        ("Rate limited", True),
+        ("HTTP 429", True),
+        ("Too Many Requests", True),
+        ("Invalid Crumb", True),
+        ("boom", False),
+    ],
 )
 def test_is_rate_limited(msg, expected):
     assert su.is_rate_limited(RuntimeError(msg)) is expected
@@ -238,7 +252,12 @@ def test_bulk_download_batches_period_start_and_suffix(yf_env, capsys):
     out = su.bulk_download(["A.NS", "B.NS", "C"], batch_size=2, sleep_between=0.7, min_bars=5)
     assert set(out) == {"A", "B", "C"}
     assert [c[0] for c in y.calls] == [["A.NS", "B.NS"], ["C"]]
-    assert y.calls[0][1] == {"auto_adjust": True, "threads": True, "progress": False, "period": "1y"}
+    assert y.calls[0][1] == {
+        "auto_adjust": True,
+        "threads": True,
+        "progress": False,
+        "period": "1y",
+    }
     assert sleeps == [0.7]  # between batches only, not after the last
     txt = capsys.readouterr().out
     assert "3 tickers, 2 batches (size=2, period=1y)" in txt and "OK (2/2)" in txt
@@ -301,7 +320,11 @@ def test_parallel_map_filters_none_and_swallows_errors(capsys):
 def test_math_helpers():
     assert su.pct_change(110, 100) == pytest.approx(10.0)
     assert su.pct_change(90, -100) == pytest.approx(190.0)  # abs(old) denominator
-    assert su.pct_change(5, 0) is None and su.pct_change(None, 5) is None and su.pct_change(5, None) is None
+    assert (
+        su.pct_change(5, 0) is None
+        and su.pct_change(None, 5) is None
+        and su.pct_change(5, None) is None
+    )
     assert su.pct_change(0, 5) == -100.0  # zero new is a valid value
     assert su.cagr(200, 100, 1) == pytest.approx(100.0)
     assert su.cagr(400, 100, 2) == pytest.approx(100.0)

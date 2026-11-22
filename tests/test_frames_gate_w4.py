@@ -8,7 +8,7 @@ import pytest
 
 import frames
 import ingest_gate
-from tests.w4_helpers import fake_module, fresh_import
+from tests.w4_helpers import fake_module
 
 
 def _hist(n=3, base=100.0, vol=1000):

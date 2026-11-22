@@ -142,7 +142,12 @@ def test_trading_days_filters_and_preserves_order(mc, monkeypatch):
     monkeypatch.setattr(mc, "get_holidays", lambda: {"2026-01-28"})
     days = [dt.date(2026, 1, d) for d in (30, 29, 28, 27, 26 + 0, 31)]
     out = mc.trading_days(days)
-    assert out == [dt.date(2026, 1, 30), dt.date(2026, 1, 29), dt.date(2026, 1, 27), dt.date(2026, 1, 26)]
+    assert out == [
+        dt.date(2026, 1, 30),
+        dt.date(2026, 1, 29),
+        dt.date(2026, 1, 27),
+        dt.date(2026, 1, 26),
+    ]
 
 
 # ---------------- market_holidays ----------------
@@ -187,7 +192,9 @@ def test_is_trading_day_explicit_hol_overrides(mh):
 
 
 def test_trading_days_filter(mh):
-    out = mh.trading_days("US", [dt.date(2025, 12, 24), dt.date(2025, 12, 25), dt.date(2025, 12, 26)])
+    out = mh.trading_days(
+        "US", [dt.date(2025, 12, 24), dt.date(2025, 12, 25), dt.date(2025, 12, 26)]
+    )
     assert out == [dt.date(2025, 12, 24), dt.date(2025, 12, 26)]
 
 

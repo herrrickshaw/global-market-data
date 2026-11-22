@@ -1,7 +1,6 @@
 """market_data_cache.MarketCache: parquet OHLC/index/fundamentals cache with a faked yfinance."""
 
 import json
-import time as _time
 from datetime import date, datetime, timedelta
 
 import numpy as np
@@ -141,7 +140,9 @@ def test_get_ohlc_fresh_reads_disk_once_then_memory(env, monkeypatch):
     c._mem.clear()
     reads = []
     real = pd.read_parquet
-    monkeypatch.setattr(env.pd, "read_parquet", lambda p, *a, **k: reads.append(p) or real(p, *a, **k))
+    monkeypatch.setattr(
+        env.pd, "read_parquet", lambda p, *a, **k: reads.append(p) or real(p, *a, **k)
+    )
     a = c.get_ohlc("ABC")
     b = c.get_ohlc("ABC")
     assert len(reads) == 1 and a is b
@@ -208,7 +209,13 @@ def test_yf_download_single_variants(env, monkeypatch):
     df = _recent(5)
     multi = _multi({"X": df})
     env._yf.responses.append(multi)
-    assert list(c._yf_download_single("X", date.today()).columns) == ["Open", "High", "Low", "Close", "Volume"]
+    assert list(c._yf_download_single("X", date.today()).columns) == [
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+    ]
     withnan = df.copy()
     withnan.iloc[2] = np.nan
     env._yf.responses.append(withnan)
@@ -217,7 +224,9 @@ def test_yf_download_single_variants(env, monkeypatch):
 
 def test_yf_download_single_retries_rate_limits_then_gives_up(env):
     c = env.MarketCache(verbose=False)
-    env._yf.responses.extend([RuntimeError("429"), RuntimeError("Rate limited"), RuntimeError("Rate x")])
+    env._yf.responses.extend(
+        [RuntimeError("429"), RuntimeError("Rate limited"), RuntimeError("Rate x")]
+    )
     assert c._yf_download_single("X", date.today()).empty
     assert env._sleeps == [15, 30, 45] and len(env._yf.download_calls) == 3
 
@@ -258,7 +267,9 @@ def test_bulk_yf_download_multiindex_flat_and_missing(env, capsys):
 def test_bulk_yf_download_batches_and_sleep(env, monkeypatch):
     monkeypatch.setattr(env, "BATCH_SIZE", 2)
     c = env.MarketCache(verbose=False)
-    env._yf.responses.extend([_multi({"A": _recent(3), "B": _recent(3)}), _multi({"C": _recent(3)})])
+    env._yf.responses.extend(
+        [_multi({"A": _recent(3), "B": _recent(3)}), _multi({"C": _recent(3)})]
+    )
     out = c._bulk_yf_download(["A", "B", "C"], date.today())
     assert set(out) == {"A", "B", "C"}
     assert [len(call[0]) for call in env._yf.download_calls] == [2, 1]
@@ -412,10 +423,14 @@ def test_get_financials_stale_cache_refetches(env):
     env._yf.tickers["S"] = T()
     c = env.MarketCache(verbose=False)
     c.get_financials("S")
-    c._meta["fund:S:annual"]["updated"] = (datetime.now() - timedelta(days=env.FUND_STALE_DAYS, hours=1)).isoformat()
+    c._meta["fund:S:annual"]["updated"] = (
+        datetime.now() - timedelta(days=env.FUND_STALE_DAYS, hours=1)
+    ).isoformat()
     env._yf.tickers["S"] = RuntimeError("refetch attempted")
     assert c.get_financials("S") == {}
-    c._meta["fund:S:annual"]["updated"] = (datetime.now() - timedelta(days=env.FUND_STALE_DAYS - 1)).isoformat()
+    c._meta["fund:S:annual"]["updated"] = (
+        datetime.now() - timedelta(days=env.FUND_STALE_DAYS - 1)
+    ).isoformat()
     assert "income_stmt" in c.get_financials("S")  # still fresh -> from parquet
 
 
@@ -428,11 +443,15 @@ def test_get_index_computes_indicators_and_caches(env, capsys):
     assert {"dma50", "dma200", "dma200_sl", "vol20"} <= set(out.columns)
     assert out["dma50"].iloc[49] == pytest.approx(df["Close"].iloc[:50].mean())
     assert np.isnan(out["dma50"].iloc[48]) and np.isnan(out["dma200"].iloc[198])
-    assert out["dma200_sl"].iloc[204] == pytest.approx(out["dma200"].iloc[204] - out["dma200"].iloc[199])
+    assert out["dma200_sl"].iloc[204] == pytest.approx(
+        out["dma200"].iloc[204] - out["dma200"].iloc[199]
+    )
     rets = df["Close"].pct_change()
     assert out["vol20"].iloc[40] == pytest.approx(rets.iloc[21:41].std() * np.sqrt(252) * 100)
     assert (env.INDEX_DIR / "NSEI.parquet").exists()
-    assert env._yf.download_calls[0][1]["start"] == date.today() - timedelta(days=env.INDEX_YEARS * 365 + 30)
+    assert env._yf.download_calls[0][1]["start"] == date.today() - timedelta(
+        days=env.INDEX_YEARS * 365 + 30
+    )
     assert "Index cached: ^NSEI 260 bars" in capsys.readouterr().out
     again = c.get_index("^NSEI")  # fresh: from disk, no download
     assert len(again) == 260 and len(env._yf.download_calls) == 1
@@ -453,7 +472,10 @@ def test_report_empty_and_populated(env, capsys):
     c.get_ohlc("ABC")
     c._meta["fund:ABC:annual"] = {"updated": (datetime.now() - timedelta(days=3)).isoformat()}
     c._meta["index:^X"] = {"updated": (datetime.now() - timedelta(hours=5)).isoformat()}
-    c._meta["ohlc:OLD"] = {"updated": (datetime.now() - timedelta(minutes=10)).isoformat(), "rows": 1}
+    c._meta["ohlc:OLD"] = {
+        "updated": (datetime.now() - timedelta(minutes=10)).isoformat(),
+        "rows": 1,
+    }
     c._meta["bad"] = {"updated": "junk"}
     c._meta["none"] = {}
     rep = c.report().set_index("Key")
