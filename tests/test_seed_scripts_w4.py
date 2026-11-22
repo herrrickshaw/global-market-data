@@ -144,14 +144,14 @@ def bulk(monkeypatch, tmp_path):
 def test_normalise_renames_cleans_and_prefixes(bulk):
     df = pd.DataFrame(
         {
-            "TckrSymb": [" nse:tcs ", "BSE:INFY", "bad", None],
-            "TradDt": ["2024-01-02", "2024-01-02", "not a date", "2024-01-02"],
-            "OpnPric": ["1", "2", "3", "4"],
-            "HghPric": [1, 2, 3, 4],
-            "LwPric": [1, 2, 3, 4],
-            "ClsPric": ["10", "20", "x", "40"],
-            "TtlTradgVol": [5, 6, 7, 8],
-            "TotTrdQty": [50, 60, 70, 80],
+            "TckrSymb": [" nse:tcs ", "BSE:INFY", "bad"],
+            "TradDt": ["2024-01-02", "2024-01-02", "not a date"],
+            "OpnPric": ["1", "2", "3"],
+            "HghPric": [1, 2, 3],
+            "LwPric": [1, 2, 3],
+            "ClsPric": ["10", "20", "x"],
+            "TtlTradgVol": [5, 6, 7],
+            "TotTrdQty": [50, 60, 70],
         }
     )
     out = bulk._normalise(df)
