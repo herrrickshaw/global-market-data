@@ -122,7 +122,7 @@ def test_de_uses_first_column_when_no_date_column(bs):
     buf = io.BytesIO()
     feather.write_feather(pa.Table.from_pandas(d, preserve_index=False), buf)
     out = bs._de(buf.getvalue())
-    assert out.index.name == "when" and list(out["Close"]) == [2.0, 1.0] or list(out["Close"]) == [1.0, 2.0]
+    assert out.index.name == "when" and list(out["Close"]) == [2.0, 1.0]
 
 
 def test_info_without_meta_key(bs):
