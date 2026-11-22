@@ -759,3 +759,11 @@ def test_pipeline_main_dispatch(pipe, monkeypatch):
     monkeypatch.setattr("sys.argv", ["p", "--all", "--refresh"])
     pipe.main()
     assert len(calls) == 20 and calls[0] == ("refresh", "IN")
+
+
+def test_local_screen_new_high_boundary_is_inclusive(monkeypatch):
+    df = pd.DataFrame(
+        {"Symbol": ["EDGE", "OUT"], "PctFromHigh": [-1.0, -1.01], "Liquidity": "High"}
+    )
+    monkeypatch.setattr(val.sl, "serving", lambda m: df)
+    assert val.local_screens("US")["companies_creating_new_high"] == {"EDGE"}

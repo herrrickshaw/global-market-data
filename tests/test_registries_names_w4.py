@@ -657,3 +657,16 @@ def test_info_lists_cached_files(rd):
     (rd.CACHE / "b.bin").write_bytes(b"1")
     (rd.CACHE / "a.bin").write_bytes(b"1")
     assert rd.info() == {"cache_dir": str(rd.CACHE), "cached_files": ["a.bin", "b.bin"]}
+
+
+def test_industry_metric_loose_match_uses_first_eight_chars(rd, monkeypatch):
+    df = pd.DataFrame(
+        {
+            "Industry": ["Softwood Timber", "Software Alpha"],
+            "_key": ["softwood timber", "software alpha"],
+            "Current PE": [5.0, 30.0],
+        }
+    )
+    monkeypatch.setattr(rd, "damodaran", lambda m, r: df)
+    # 'software' (8 chars) matches only the first row; a 4-char prefix 'soft' would also hit the second
+    assert rd.industry_metric("Software Systems") == 30.0

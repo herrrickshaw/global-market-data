@@ -242,3 +242,8 @@ def test_main_selfcheck(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert out.startswith("JP: 4 rows, dupes dropped=1")
     assert "'Close': 'float32'" in out
+
+
+def test_to_long_volume_int32_boundary_is_inclusive():
+    assert frames.to_long({"A": _hist(2, vol=2_147_483_647)})["Volume"].dtype == np.int32
+    assert frames.to_long({"A": _hist(2, vol=2_147_483_648)})["Volume"].dtype == np.int64

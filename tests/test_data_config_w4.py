@@ -200,3 +200,8 @@ def test_validate_universe_consistency():
     assert dc.validate_universe_consistency(
         {"symbols": ["A", "B"]}, pd.DataFrame({"symbol": []})
     ) == ["Only 0/2 defined symbols found in data"]
+
+
+def test_acceptable_difference_zero_branch_is_strict_at_one_cent():
+    assert dc.ConsistencyRules.acceptable_difference(0.0, 0.01, 5.0) is False
+    assert dc.ConsistencyRules.acceptable_difference(0.0, 0.0099, 5.0) is True

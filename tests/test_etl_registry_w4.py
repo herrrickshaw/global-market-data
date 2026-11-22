@@ -287,3 +287,11 @@ def test_audit_missing_listing_capped_at_10(er, monkeypatch):
 
 def test_main_dispatch_table_exists(er):
     assert er.STALE_DAYS == 7 and er.EXT[0] == ".parquet"
+
+
+def test_scan_mtime_difference_of_exactly_one_second_is_a_change(er):
+    p = _put(er.root, "a.parquet", b"same", mtime=1_700_000_000)
+    er.scan()
+    os.utime(p, (1_700_000_001, 1_700_000_001))  # same bytes, mtime moved by exactly 1s: re-hashed
+    er.scan()
+    assert _q(er, "select mtime from files") == [(1_700_000_001.0,)]

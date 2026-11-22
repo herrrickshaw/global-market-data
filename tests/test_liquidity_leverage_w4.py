@@ -260,3 +260,11 @@ def test_leverage_main(cache, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["lf", "--market", "QQ"])
     lf.main()
     assert capsys.readouterr().out.strip() == "QQ: 0 symbols with leverage features"
+
+
+def test_build_index_min_bars_boundary(monkeypatch, tmp_path):
+    monkeypatch.setattr(liq, "INDEX_PATH", tmp_path / "i.parquet")
+    data = {"US": {"EXACT": _ohlc(10.0, 1000, n=20), "SHORT": _ohlc(10.0, 1000, n=19)}}
+    fake_module(monkeypatch, "screener_kit", MARKETS=["US"], load=lambda m: data[m])
+    monkeypatch.setattr(liq, "_fx_rates", lambda c: {"USD": 1.0})
+    assert list(liq.build_index(verbose=False)["Symbol"]) == ["EXACT"]  # exactly 20 bars is enough
