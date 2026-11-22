@@ -1,0 +1,18 @@
+[run]
+source = .
+branch = False
+omit =
+    tests/*
+    */tests/*
+    conftest.py
+    test_*.py
+    docs/*
+    *.ipynb
+    setup.py
+    deoldify.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
