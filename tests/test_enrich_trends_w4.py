@@ -202,3 +202,68 @@ def test_score_company_thresholds(qa, trends, expected):
 
 def test_score_company_empty_and_cap(qa):
     assert qa.score_company({}) == 0 and qa.score_company({"trends": {}}) == 0 and qa.score_company(None) == 0
+
+
+# ---------------- sentiment_price_link ----------------
+@pytest.fixture
+def spl(monkeypatch, tmp_path):
+    return load(monkeypatch, "sentiment_price_link", tmp_path)
+
+
+def _shock_frame(mod, up=True, vol_mult=10.0, at=None):
+    n = mod.TRAIL_WIN + 70 + 40
+    rng = np.random.default_rng(0)
+    close = 100 * np.cumprod(1 + rng.normal(0, 0.005, n))
+    vol = np.full(n, 1000.0)
+    i = at or mod.TRAIL_WIN + 10
+    close[i:] *= 1.2 if up else 0.8  # a 20% gap on day i
+    vol[i] = 1000.0 * vol_mult
+    return pd.DataFrame({"Close": close, "Volume": vol}, index=pd.date_range("2022-01-01", periods=n)), i
+
+
+def test_detect_shocks_direction_and_forward_returns(spl):
+    df, i = _shock_frame(spl, up=True)
+    ev = spl.detect_shocks_and_returns("AAA", df)
+    pos = [e for e in ev if e["direction"] == "POS"]
+    assert len(pos) == 1 and pos[0]["symbol"] == "AAA" and pos[0]["z"] >= spl.SHOCK_SIGMA
+    c = df["Close"].to_numpy()
+    for label, h in spl.HORIZONS.items():
+        assert pos[0][f"fwd_{label}"] == pytest.approx((c[i + h] - c[i]) / c[i] * 100)
+    down, _ = _shock_frame(spl, up=False)
+    assert [e["direction"] for e in spl.detect_shocks_and_returns("B", down)] == ["NEG"]
+
+
+def test_detect_shocks_needs_volume_and_history(spl):
+    df, _ = _shock_frame(spl, vol_mult=1.0)
+    assert spl.detect_shocks_and_returns("A", df) == []  # price move without a volume spike
+    df, _ = _shock_frame(spl)
+    assert spl.detect_shocks_and_returns("A", df.iloc[: spl.TRAIL_WIN + 69]) == []  # too short
+    assert spl.detect_shocks_and_returns("A", None) == []
+    flat = pd.DataFrame({"Close": np.full(300, 10.0), "Volume": 100.0})
+    assert spl.detect_shocks_and_returns("A", flat) == []  # zero sigma is skipped
+    late, _ = _shock_frame(spl, at=spl.TRAIL_WIN + 10)
+    late2 = late.copy()
+    assert all("fwd_" + k in e for e in spl.detect_shocks_and_returns("A", late2) for k in spl.HORIZONS)
+
+
+def test_analyse_linkage_groups_and_thresholds(spl):
+    rng = np.random.default_rng(1)
+    first = list(spl.HORIZONS)[0]
+    rows = []
+    for i in range(30):
+        rows.append({"direction": "POS", **{f"fwd_{k}": 1.0 + i * 0.1 for k in spl.HORIZONS}})
+    for i in range(19):  # below the 20-observation floor
+        rows.append({"direction": "NEG", **{f"fwd_{k}": -1.0 for k in spl.HORIZONS}})
+    rows.append({"direction": "POS", **{f"fwd_{k}": 500.0 for k in spl.HORIZONS}})  # outlier is winsorised in the mean only
+    out = spl.analyse_linkage(pd.DataFrame(rows))
+    assert set(out["Implied_Sentiment"]) == {"POSITIVE news-shock"} and list(out["Horizon"]) == list(spl.HORIZONS)
+    r = out[out["Horizon"] == first].iloc[0]
+    vals = pd.Series([1.0 + i * 0.1 for i in range(30)] + [500.0])
+    assert r["N_events"] == 31 and r["Median%"] == round(vals.median(), 3) and r["Hit_rate%"] == 100.0
+    lo, hi = vals.quantile(0.01), vals.quantile(0.99)
+    assert r["Mean_wins%"] == round(vals.clip(lo, hi).mean(), 3) and r["Mean_wins%"] < vals.mean()
+    rows.extend({"direction": "NEG", **{f"fwd_{k}": -1.0 for k in spl.HORIZONS}} for _ in range(1))  # 20th NEG observation
+    both = spl.analyse_linkage(pd.DataFrame(rows))
+    neg = both[both["Implied_Sentiment"] == "NEGATIVE news-shock"]
+    assert len(neg) == len(spl.HORIZONS) and (neg["Hit_rate%"] == 0.0).all() and (neg["N_events"] == 20).all()
+    assert spl.analyse_linkage(pd.DataFrame({"direction": ["POS"], **{f"fwd_{k}": [np.nan] for k in spl.HORIZONS}})).empty
