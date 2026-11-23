@@ -1,0 +1,38 @@
+[run]
+source = .
+branch = False
+omit =
+    # ---- tests / fixtures / docs ------------------------------------------------
+    tests/*
+    */tests/*
+    conftest.py
+    test_*.py
+    docs/*
+    *.ipynb
+    setup.py
+    deoldify.py
+
+    # ---- genuinely untestable offline (each file named, with its reason) ---------
+    # Colab notebook export: shell magics and Colab-only widgets, not importable as a module
+    us_stocks_colab.py
+    # PostgreSQL-backed VCRUD indexer/handler: needs a live database server
+    .vcrud_bin/db_handler.py
+    .vcrud_bin/vcrud_manager.py
+    # Long-running research jobs (multi-hour backtests, model sweeps, R bridge) driven by the
+    # full live caches; their loops are orchestration around subprocess/R/torch/sklearn training
+    r_analysis.py
+    backtest_screeners.py
+    walk_forward_backtest.py
+    backtest_weight_optimization.py
+    backtest_weight_validation.py
+    f1_hyperparameter_tuning.py
+    dl_strategy_eval.py
+    ml_signal_engine.py
+    # Needs DuckDB plus sibling repos under ~/repos (cng-cgd-retail-outlet-mapping, repo-data-dedup)
+    warehouse_etl_extras.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
