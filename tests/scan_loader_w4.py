@@ -17,9 +17,17 @@ class FakeTicker:
         if s.get("ctor_error"):
             raise RuntimeError(s["ctor_error"])
         for k in (
-            "income_stmt", "financials", "balance_sheet", "cash_flow", "cashflow",
-            "quarterly_income_stmt", "quarterly_financials", "quarterly_balance_sheet",
-            "quarterly_cashflow", "dividends", "history_df",
+            "income_stmt",
+            "financials",
+            "balance_sheet",
+            "cash_flow",
+            "cashflow",
+            "quarterly_income_stmt",
+            "quarterly_financials",
+            "quarterly_balance_sheet",
+            "quarterly_cashflow",
+            "dividends",
+            "history_df",
         ):
             setattr(self, k, s.get(k))
         self._info = s.get("info", {})
@@ -45,11 +53,35 @@ class FakeTicker:
 
 
 _STUBS = [
-    "nsepython", "bseindia", "bseindia.libutil", "pykrx", "pykrx.stock", "nse", "bse", "openpyxl", "openpyxl.styles", "openpyxl.utils",
-    "openpyxl.chart", "openpyxl.formatting", "openpyxl.formatting.rule", "openpyxl.worksheet",
-    "openpyxl.worksheet.table", "scipy", "scipy.stats", "scipy.optimize", "sklearn", "sklearn.ensemble",
-    "sklearn.linear_model", "sklearn.preprocessing", "sklearn.metrics", "sklearn.model_selection",
-    "duckdb", "tqdm", "feedparser", "vaderSentiment", "vaderSentiment.vaderSentiment",
+    "nsepython",
+    "bseindia",
+    "bseindia.libutil",
+    "pykrx",
+    "pykrx.stock",
+    "nse",
+    "bse",
+    "openpyxl",
+    "openpyxl.styles",
+    "openpyxl.utils",
+    "openpyxl.chart",
+    "openpyxl.formatting",
+    "openpyxl.formatting.rule",
+    "openpyxl.worksheet",
+    "openpyxl.worksheet.table",
+    "scipy",
+    "scipy.stats",
+    "scipy.optimize",
+    "sklearn",
+    "sklearn.ensemble",
+    "sklearn.linear_model",
+    "sklearn.preprocessing",
+    "sklearn.metrics",
+    "sklearn.model_selection",
+    "duckdb",
+    "tqdm",
+    "feedparser",
+    "vaderSentiment",
+    "vaderSentiment.vaderSentiment",
 ]
 
 

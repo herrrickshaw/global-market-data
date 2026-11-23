@@ -50,9 +50,13 @@ def test_darvas_signals(monkeypatch, tmp_path, name):
 def test_darvas_extended_metrics(monkeypatch, tmp_path, name):
     mod = load(monkeypatch, name, tmp_path)
     up = mod.compute_darvas_box(_box(21.0))
-    assert up["upside_to_top_pct"] == pytest.approx(-4.76, abs=0.01) and up["position_in_box_pct"] == pytest.approx(110.0)
+    assert up["upside_to_top_pct"] == pytest.approx(-4.76, abs=0.01) and up[
+        "position_in_box_pct"
+    ] == pytest.approx(110.0)
     mid = mod.compute_darvas_box(_box(15.0))
-    assert mid["position_in_box_pct"] == 50.0 and mid["box_range"] == 10.0 and mid["data_points"] == 8
+    assert (
+        mid["position_in_box_pct"] == 50.0 and mid["box_range"] == 10.0 and mid["data_points"] == 8
+    )
 
 
 @pytest.mark.parametrize("name", DARVAS)
@@ -63,7 +67,9 @@ def test_darvas_degenerate_inputs(monkeypatch, tmp_path, name):
     assert fn(short)["signal"] == "INSUFFICIENT_DATA" and fn(short)["box_top"] is None
     rising = _ohlc(list(range(1, 21)), list(range(1, 21)), list(range(1, 21)))
     assert fn(rising)["signal"] == "NO_BOX"  # highs only rise: no confirmed top
-    assert fn(_ohlc([0.0] * 20, [0.0] * 20, [1.0] * 20))["signal"] == "NO_BOX"  # zero highs are ignored
+    assert (
+        fn(_ohlc([0.0] * 20, [0.0] * 20, [1.0] * 20))["signal"] == "NO_BOX"
+    )  # zero highs are ignored
 
 
 @pytest.mark.parametrize("name", DARVAS)
@@ -72,15 +78,22 @@ def test_darvas_current_bar_excluded_from_box(monkeypatch, tmp_path, name):
     fn = _darvas_fn(mod)
     base = _box(15.0)
     spike = base.copy()
-    spike.iloc[-1, spike.columns.get_loc("High")] = 99.0  # today's spike must not become the box top
+    spike.iloc[-1, spike.columns.get_loc("High")] = (
+        99.0  # today's spike must not become the box top
+    )
     assert fn(spike)["box_top"] == fn(base)["box_top"] == 20.0
 
 
-@pytest.mark.parametrize("name", [n for n in SCANS if n in ("full_us_market_scan", "full_indian_market_scan")])
+@pytest.mark.parametrize(
+    "name", [n for n in SCANS if n in ("full_us_market_scan", "full_indian_market_scan")]
+)
 def test_golden_crossover(monkeypatch, tmp_path, name):
     mod = load(monkeypatch, name, tmp_path)
     empty = {"gc_signal": False, "dma50_above_200": False, "dma50": None, "dma200": None}
-    assert mod.compute_golden_crossover(None) == empty and mod.compute_golden_crossover(pd.DataFrame()) == empty
+    assert (
+        mod.compute_golden_crossover(None) == empty
+        and mod.compute_golden_crossover(pd.DataFrame()) == empty
+    )
     short = pd.DataFrame({"Close": np.arange(200.0)})
     assert mod.compute_golden_crossover(short) == empty  # needs >= 201 closes
     n = 260
@@ -149,12 +162,26 @@ def _good_spec(market_cap=2e9):
         }
     )
     return {
-        "income_stmt": inc, "financials": inc, "balance_sheet": bal, "cash_flow": cf, "cashflow": cf,
-        "quarterly_income_stmt": q, "quarterly_financials": q, "market_cap": market_cap,
+        "income_stmt": inc,
+        "financials": inc,
+        "balance_sheet": bal,
+        "cash_flow": cf,
+        "cashflow": cf,
+        "quarterly_income_stmt": q,
+        "quarterly_financials": q,
+        "market_cap": market_cap,
         "info": {
-            "shortName": "Acme", "sector": "Tech", "debtToEquity": 40.0, "totalDebt": 100e6, "totalCash": 200e6,
-            "bookValue": 20.0, "marketCap": market_cap, "trailingPE": 12.0, "sharesOutstanding": 100e6,
-            "currentPrice": 20.0, "returnOnEquity": 0.2,
+            "shortName": "Acme",
+            "sector": "Tech",
+            "debtToEquity": 40.0,
+            "totalDebt": 100e6,
+            "totalCash": 200e6,
+            "bookValue": 20.0,
+            "marketCap": market_cap,
+            "trailingPE": 12.0,
+            "sharesOutstanding": 100e6,
+            "currentPrice": 20.0,
+            "returnOnEquity": 0.2,
         },
     }
 
@@ -179,7 +206,9 @@ def test_fundamental_scan_strong_company(monkeypatch, tmp_path, name):
     cagr = out.get("Revenue_CAGR_%", out.get("cc_rev_cagr"))
     assert cagr == pytest.approx(13.62, abs=0.01)  # (1000/600)^(1/4) - 1
     if name == "full_european_market_scan":
-        assert out["cc_qualifies"] == "PASS" and out["cc_score"] == "6/6" and out["pe_ratio"] == 12.0
+        assert (
+            out["cc_qualifies"] == "PASS" and out["cc_score"] == "6/6" and out["pe_ratio"] == 12.0
+        )
 
 
 def test_us_fundamental_scan_screeners_exact(monkeypatch, tmp_path):
@@ -187,12 +216,20 @@ def test_us_fundamental_scan_screeners_exact(monkeypatch, tmp_path):
     FakeTicker.spec = _good_spec()
     out = mod.fundamental_scan("AAA")
     assert out["name"] == "Acme" and out["sector"] == "Tech"
-    assert out["f_score"] == 9 and out["f_strong"] is True  # every Piotroski test passes on this fixture
+    assert (
+        out["f_score"] == 9 and out["f_strong"] is True
+    )  # every Piotroski test passes on this fixture
     assert out["Revenue_CAGR_%"] == pytest.approx(((1000 / 600) ** (1 / 4) - 1) * 100, abs=0.01)
     assert out["qualifies_cc"] is True and out["cc_score"] == "6/6"
-    assert out["ROIC_%"] == pytest.approx(37.5) and out["Earnings_Yield_%"] == pytest.approx(15.79, abs=0.01)
+    assert out["ROIC_%"] == pytest.approx(37.5) and out["Earnings_Yield_%"] == pytest.approx(
+        15.79, abs=0.01
+    )
     assert out["qualifies_mf"] is True
-    assert out["Sales_Growth_YoY_%"] == 50.0 and out["Profit_Growth_YoY_%"] == 100.0 and out["Net_Profit_$M"] == 60.0
+    assert (
+        out["Sales_Growth_YoY_%"] == 50.0
+        and out["Profit_Growth_YoY_%"] == 100.0
+        and out["Net_Profit_$M"] == 60.0
+    )
     assert out["qualifies_bc"] is True
 
 
@@ -222,7 +259,12 @@ def test_us_fundamental_scan_missing_data_and_errors(monkeypatch, tmp_path):
     mod = load(monkeypatch, "full_us_market_scan", tmp_path)
     FakeTicker.spec = {"info": {}, "market_cap": 0}
     out = mod.fundamental_scan("AAA")
-    assert out["f_score"] is None and out["cc_score"] == "N/A" and out["qualifies_bc"] is False and out["ROIC_%"] is None
+    assert (
+        out["f_score"] is None
+        and out["cc_score"] == "N/A"
+        and out["qualifies_bc"] is False
+        and out["ROIC_%"] is None
+    )
     FakeTicker.spec = {"ctor_error": "boom"}
     out = mod.fundamental_scan("AAA")
     assert out["error"] == "boom" and out["f_score"] is None and out["qualifies_mf"] is False
@@ -232,6 +274,53 @@ def test_us_fundamental_scan_missing_data_and_errors(monkeypatch, tmp_path):
     out = mod.fundamental_scan("AAA")
     assert out["error"] == "" and out["name"] == "" and out["qualifies_cc"] is False
     spec = _good_spec()
-    spec["quarterly_income_stmt"] = spec["quarterly_financials"] = spec["quarterly_income_stmt"].iloc[:, :4]
+    spec["quarterly_income_stmt"] = spec["quarterly_financials"] = spec[
+        "quarterly_income_stmt"
+    ].iloc[:, :4]
     FakeTicker.spec = spec
     assert mod.fundamental_scan("AAA")["Sales_Growth_YoY_%"] is None  # needs 5 quarters
+
+
+def test_golden_cross_requires_strictly_below_yesterday(monkeypatch, tmp_path):
+    mod = load(monkeypatch, "full_us_market_scan", tmp_path)
+    close = np.concatenate(
+        [np.full(259, 100.0), [400.0]]
+    )  # 50-DMA == 200-DMA yesterday, above it today
+    r = mod.compute_golden_crossover(pd.DataFrame({"Close": close}))
+    assert r["dma50_above_200"] and not bool(r["gc_signal"])
+
+
+def test_us_scan_threshold_boundaries(monkeypatch, tmp_path):
+    mod = load(monkeypatch, "full_us_market_scan", tmp_path)
+    spec = _good_spec(market_cap=1e9)  # exactly $1B counts
+    FakeTicker.spec = spec
+    assert mod.fundamental_scan("AAA")["cc_score"] == "6/6"
+    # Piotroski: exactly 7 is strong, 6 is not
+    seven = _good_spec()
+    bal = seven["balance_sheet"].copy()
+    bal.loc["Share Issued"] = [110e6, 100e6, 100e6, 100e6, 100e6]  # dilution
+    bal.loc["Current Assets"] = bal.loc["Total Current Assets"] = [
+        400e6,
+        500e6,
+        450e6,
+        400e6,
+        350e6,
+    ]  # liquidity falls
+    seven["balance_sheet"] = bal
+    FakeTicker.spec = seven
+    out = mod.fundamental_scan("AAA")
+    assert out["f_score"] == 7 and out["f_strong"] is True
+    inc = seven["income_stmt"].copy()
+    inc.loc["Gross Profit"] = [300e6, 420e6, 380e6, 330e6, 280e6]  # gross margin falls too
+    seven["income_stmt"] = seven["financials"] = inc
+    out = mod.fundamental_scan("AAA")
+    assert out["f_score"] == 6 and out["f_strong"] is False
+    # Magic formula needs market cap strictly above $50M (use zero net debt so EV is positive)
+    small = _good_spec(market_cap=10e6)
+    small["info"].update(totalDebt=0, totalCash=0)
+    FakeTicker.spec = small
+    assert mod.fundamental_scan("AAA")["qualifies_mf"] is False
+    big = _good_spec(market_cap=60e6)
+    big["info"].update(totalDebt=0, totalCash=0)
+    FakeTicker.spec = big
+    assert mod.fundamental_scan("AAA")["qualifies_mf"] is True
