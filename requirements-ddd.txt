@@ -11,7 +11,7 @@ mypy>=0.950
 # Code quality
 black>=22.0.0
 flake8>=4.0.0
-isort>=5.10.0
+isort>=9.0.2
 
 # Async/Event handling (future)
 aiofiles>=0.8.0
