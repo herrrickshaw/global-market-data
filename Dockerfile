@@ -10,7 +10,7 @@
 # $BHAV_CACHE and expanded into the LMDB store during build. No network needed to
 # run against the shipped data; live fetch (nsepython/BSE) refreshes incrementally.
 
-FROM python:3.11-slim AS base
+FROM python:3.15-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
