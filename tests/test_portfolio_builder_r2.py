@@ -615,3 +615,10 @@ def test_build_forwards_optimiser_arguments(pb, monkeypatch, tmp_path):
     assert seen["max_weight"] == 0.33 and seen["target_return"] == 0.12
     assert seen["shrink"] == 0.8 and seen["rf"] == 0.07
     assert sorted(seen["cols"]) == ["S0", "S1", "S2", "S3", "S4"]
+
+
+def test_optimise_keeps_column_with_exactly_90pct_data(pb):
+    R = rets_frame(n=100, k=4)
+    R.iloc[:10, 0] = np.nan  # exactly 90% non-null -> kept (>=), so 4 assets
+    pb.optimise(R, 0.05)
+    assert len(pb.fm.of("sharpe")[0].bounds) == 4

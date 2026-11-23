@@ -277,3 +277,32 @@ def test_export_recommendations_writes_csv(pca, tmp_path, capsys):
     ]
     assert back.loc["profit_reinvestment", "adjustment_factor"] == 1.5
     assert f"exported to {f}" in capsys.readouterr().out
+
+
+def test_generate_report_marks_p_equal_to_threshold_not_significant(pca, capsys):
+    df = pd.DataFrame(
+        {
+            "stock_return_12m": [1.0, 2.0],
+            "price_movement": pd.Categorical(
+                ["Flat", "Flat"],
+                categories=["Down >5%", "Down <5%", "Flat", "Up <10%", "Up >10%"],
+                ordered=True,
+            ),
+        }
+    )
+    pca.PriceCorrelationAnalyzer(_tier2(1)).generate_report(_recs(), df)
+    lines = capsys.readouterr().out.splitlines()
+    row = next(ln for ln in lines if ln.strip().startswith("profitability_quality"))
+    assert "❌" in row and "✅" not in row  # p == 0.05 exactly
+    row = next(ln for ln in lines if ln.strip().startswith("capex_acceleration"))
+    assert "❌" in row  # p == 0.2
+    row = next(ln for ln in lines if ln.strip().startswith("debt_expansion"))
+    assert "✅" in row
+
+
+def test_import_has_no_side_effects(monkeypatch, capsys):
+    stats = fake_module(monkeypatch, "scipy.stats", pearsonr=_pearsonr, spearmanr=_spearmanr)
+    fake_module(monkeypatch, "scipy", stats=stats)
+    capsys.readouterr()
+    fresh_import(monkeypatch, "price_correlation_analysis")
+    assert capsys.readouterr().out == ""  # banner only under __main__

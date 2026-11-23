@@ -393,3 +393,12 @@ def test_analyze_portfolio_with_no_successes_returns_empty_frame(qa, monkeypatch
     _stub_fetch(qa, monkeypatch, {})
     df = qa.QuarterlyAnalyzer().analyze_portfolio(["A", "B"])
     assert len(df) == 0
+
+
+def test_trends_debt_cagr_with_exactly_two_points(qa):
+    a = qa.QuarterlyAnalyzer()
+    qs = [_q(DATES[i]) for i in range(4)]
+    qs[0]["total_debt"] = 32.0
+    qs[3]["total_debt"] = 1.0
+    t = a._calculate_trends(qs)
+    assert t["debt_cagr"] == pytest.approx((32 ** (1 / 5) - 1) * 100)

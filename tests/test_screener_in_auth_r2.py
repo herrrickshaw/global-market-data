@@ -442,3 +442,25 @@ def test_company_financials_without_borrowings_row_should_not_crash(sa, monkeypa
     _patch_excel(monkeypatch, sa, _sheet(rows))
     f = sa.company_financials("ABC")
     assert f["net_income"] == 50
+
+
+@pytest.mark.parametrize("which", ["email", "password"])
+def test_session_with_only_one_credential_never_opens_a_session(sa, monkeypatch, which):
+    monkeypatch.setenv("SCREENER_EMAIL" if which == "email" else "SCREENER_PASSWORD", "dummy-x")
+    fake = FakeSession({})
+    _install(monkeypatch, sa, fake)
+    with pytest.raises(sa.AuthError, match="SCREENER_EMAIL"):
+        sa.session()
+    assert fake.calls == []
+
+
+def test_earnings_yield_needs_both_ebit_and_market_cap(sa, monkeypatch):
+    monkeypatch.setattr(sa, "company_export_bytes", lambda s: b"PK")
+    with_ebit = [["Net profit", 50], ["Profit before tax", 150], ["Interest", 10]]
+    no_ebit = [["Net profit", 50]]
+    _patch_excel(monkeypatch, sa, _sheet(with_ebit), names=("Data Sheet",))
+    monkeypatch.setattr(sa, "page_ratios", lambda s: {})
+    assert "earnings_yield" not in sa.company_financials("ABC")  # ebit but no market cap
+    _patch_excel(monkeypatch, sa, _sheet(no_ebit), names=("Data Sheet",))
+    monkeypatch.setattr(sa, "page_ratios", lambda s: {"market_cap_cr": 1000.0})
+    assert "earnings_yield" not in sa.company_financials("ABC")  # market cap but no ebit

@@ -892,3 +892,14 @@ def test_inst_score_non_string_buy_sell_column_swallowed(env):
     env.hd.h["get_bulkdeals"] = pd.DataFrame({"Buy/Sell": [1, 2]})
     r = env.NSEDataFetcher().get_institutional_activity_score()
     assert r["score"] == 1 and "bulk_buys" not in r
+
+
+def test_regime_empty_fii_frame_with_net_column_is_unknown(env):
+    h = env.hd.h
+    h["nse_get_index_quote"] = {"last": 0, "yearHigh": 0, "yearLow": 0}
+    h["download"] = _ohlc(30, start=100, step=1.0)
+    h["indiavix"] = 0
+    h["nse_fiidii"] = pd.DataFrame({"fii net": []})
+    r = env.NSEDataFetcher().get_regime()
+    assert r["fii_sentiment"] == "UNKNOWN"
+    assert "fii_net_cr" not in r or r["fii_net_cr"] is None
